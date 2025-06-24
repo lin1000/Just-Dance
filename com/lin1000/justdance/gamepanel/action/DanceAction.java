@@ -45,8 +45,58 @@ public class DanceAction {
                     case RIGHT_SHOULDER:
                         break;
                     case UP:
+                        mainWindowTarget.direct[2]=true;//讓gui反應出有按到
+                        try
+                        {
+                            for(int element_index=0 ; element_index < 4 ; element_index++)
+                            {
+                                //mainWindowTarget.producer.vec[0].removeElementAt(element_index);
+                                arrow myarrow =(arrow) mainWindowTarget.producer.vec[2].get(element_index);
+
+                                //y=55~70是perfect
+                                if(myarrow.y >= 50 && myarrow.y <= 70 )
+                                {
+                                    mainWindowTarget.producer.vec[2].removeElementAt(element_index);
+                                    mainWindowTarget.conditionControl.setCondition(1);//１代表perfect
+                                    mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
+                                }
+                                //y=71~90是good
+                                if(myarrow.y > 70 && myarrow.y <= 90)
+                                {
+                                    mainWindowTarget.producer.vec[2].removeElementAt(element_index);
+                                    mainWindowTarget.conditionControl.setCondition(2);//２代表good
+                                    mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
+                                }
+                            }
+
+                        }catch(java.lang.ArrayIndexOutOfBoundsException e){}
                         break;
                     case DOWN:
+                        mainWindowTarget.direct[1]=true;//讓gui反應出有按到
+                        try
+                        {
+                            for(int element_index=0 ; element_index < 4 ; element_index++)
+                            {
+                                //mainWindowTarget.producer.vec[0].removeElementAt(element_index);
+                                arrow myarrow =(arrow) mainWindowTarget.producer.vec[1].get(element_index);
+
+                                //y=55~70是perfect
+                                if(myarrow.y >= 50 && myarrow.y <= 70 )
+                                {
+                                    mainWindowTarget.producer.vec[1].removeElementAt(element_index);
+                                    mainWindowTarget.conditionControl.setCondition(1);//１代表perfect
+                                    mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
+                                }
+                                //y=71~90是good
+                                if(myarrow.y > 70 && myarrow.y <= 90)
+                                {
+                                    mainWindowTarget.producer.vec[1].removeElementAt(element_index);
+                                    mainWindowTarget.conditionControl.setCondition(2);//２代表good
+                                    mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
+                                }
+                            }
+
+                        }catch(java.lang.ArrayIndexOutOfBoundsException e){}
                         break;
                     case LEFT:
                         mainWindowTarget.direct[0]=true;//讓gui反應出有按到
@@ -73,13 +123,37 @@ public class DanceAction {
                                     mainWindowTarget.conditionControl.setCondition(2);//２代表good
                                     mainWindowTarget.soundController.playEffectSound(1);
                                 }
-
                             }
 
                         }catch(java.lang.ArrayIndexOutOfBoundsException e){}
 
                         break;
                     case RIGHT:
+                        mainWindowTarget.direct[3]=true;//讓gui反應出有按到
+                        try
+                        {
+                            for(int element_index=0 ; element_index < 4 ; element_index++)
+                            {
+                                //mainWindowTarget.producer.vec[0].removeElementAt(element_index);
+                                arrow myarrow =(arrow) mainWindowTarget.producer.vec[3].get(element_index);
+
+                                //y=55~70是perfect
+                                if(myarrow.y >= 50 && myarrow.y <= 70 )
+                                {
+                                    mainWindowTarget.producer.vec[3].removeElementAt(element_index);
+                                    mainWindowTarget.conditionControl.setCondition(1);//１代表perfect
+                                    mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
+                                }
+                                //y=71~90是good
+                                if(myarrow.y > 70 && myarrow.y <= 90)
+                                {
+                                    mainWindowTarget.producer.vec[3].removeElementAt(element_index);
+                                    mainWindowTarget.conditionControl.setCondition(2);//２代表good
+                                    mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
+                                }
+                            }
+
+                        }catch(java.lang.ArrayIndexOutOfBoundsException e){}
                         break;
                     case LEFT_THUMBSTICK:
                         break;
@@ -118,13 +192,16 @@ public class DanceAction {
                     case RIGHT_SHOULDER:
                         break;
                     case UP:
+                        mainWindowTarget.direct[2]=false;//讓gui反應出有按到
                         break;
                     case DOWN:
+                        mainWindowTarget.direct[1]=false;//讓gui反應出有按到
                         break;
                     case LEFT:
                         mainWindowTarget.direct[0]=false;//讓gui反應出有按到
                         break;
                     case RIGHT:
+                        mainWindowTarget.direct[3]=false;//讓gui反應出有按到
                         break;
                     case LEFT_THUMBSTICK:
                         break;

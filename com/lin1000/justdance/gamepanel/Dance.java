@@ -520,9 +520,9 @@ public class Dance extends JWindow
                 else gc.drawImage(image_leftfill, 30, arrow_y_position, this);
                 if (!this.direct[1]) gc.drawImage(image_down, 130, arrow_y_position, this);
                 else gc.drawImage(image_downfill, 130, arrow_y_position, this);
-                if (!this.direct[3]) gc.drawImage(image_up, 230, arrow_y_position, this);
+                if (!this.direct[2]) gc.drawImage(image_up, 230, arrow_y_position, this);
                 else gc.drawImage(image_upfill, 230, arrow_y_position, this);
-                if (!this.direct[2]) gc.drawImage(image_right, 330, arrow_y_position, this);
+                if (!this.direct[3]) gc.drawImage(image_right, 330, arrow_y_position, this);
                 else gc.drawImage(image_rightfill, 330, arrow_y_position, this);
                 //-- 箭頭反應區 -->
 

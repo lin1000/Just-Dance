@@ -123,7 +123,7 @@ public class BeatsProducer extends Object implements Runnable
                                 if(remove_or_not < 0)
                                 {
                                 	vec[vec_index].removeElementAt(element_index); 
-                                	//conditionControl.setCondition(3);
+                                	conditionControl.setCondition(3); //MISS
                                 }
                         }
                 }
