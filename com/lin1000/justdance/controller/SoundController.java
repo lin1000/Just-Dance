@@ -19,10 +19,8 @@ public class SoundController extends Object implements Runnable
 
     private Clip danceClip;
     private Clip effectClip;
-    private Clip mainMenuClip; // 單一 Clip 物件
-    //private static Clip[] mainMenuClip;
-
-    private Thread soundthread;
+    private Clip mainMenuClip;
+    //private static Clip[] effectClips (should be useful in the future, but not now);
 
     private int music;
 
@@ -88,27 +86,6 @@ public class SoundController extends Object implements Runnable
             mainmenubox[i] = new File(soundFilePaths.get(i));
             System.out.println("mainmenubox[" + i + "]=" + mainmenubox[i]);
         }
-
-//        //load mainmenubox into beginClipArray
-//        mainMenuClip = new Clip[mainmenubox.length];
-//        for (int i = 0; i < mainmenubox.length; i++) {
-//            AudioInputStream audioIn = null;
-//            try {
-//                audioIn = AudioSystem.getAudioInputStream(mainmenubox[i]);
-//            } catch (UnsupportedAudioFileException e) {
-//                throw new RuntimeException(e);
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//            try {
-//                mainMenuClip[i] = AudioSystem.getClip(); //取得Clip物件
-//                mainMenuClip[i].open(audioIn); // 將音頻資料載入Clip
-//            } catch (LineUnavailableException e) {
-//                throw new RuntimeException(e);
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-//        }
     }
 
     static{
@@ -136,14 +113,6 @@ public class SoundController extends Object implements Runnable
             effectbox[i] = new File(soundFilePaths.get(i));
             System.out.println("mainmenubox[" + i + "]=" + effectbox[i]);
         }
-    }
-
-    public Thread setBackgroundMusicThread(int music){
-        this.music=music;
-        System.out.println("set music to music="+music);
-        //讀入音樂loading
-        //soundthread=new Thread(this);
-        return soundthread;
     }
 
     //constructor
