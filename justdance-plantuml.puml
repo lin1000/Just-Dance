@@ -1,0 +1,119 @@
+@startuml
+annotation java.lang.Override
+class com.github.strikerx3.jxinput.XInputAxes
+class com.github.strikerx3.jxinput.XInputComponents
+class com.github.strikerx3.jxinput.XInputDevice
+class com.github.strikerx3.jxinput.enums.XInputAxis
+class com.github.strikerx3.jxinput.enums.XInputButton
+class com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException
+class com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
+class com.github.strikerx3.jxinput.listener.XInputDeviceListener
+class com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener
+class com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener
+class com.lin1000.justdance.beats.BeatsProducer
+class com.lin1000.justdance.beats.arrow
+class com.lin1000.justdance.controller.ConditionController
+class com.lin1000.justdance.controller.FPSTimerTask
+class com.lin1000.justdance.controller.SoundController
+class com.lin1000.justdance.gamepanel.Dance
+class com.lin1000.justdance.gamepanel.JFrame
+class com.lin1000.justdance.gamepanel.JWindow
+class com.lin1000.justdance.gamepanel.MainMenu
+class com.lin1000.justdance.gamepanel.Project
+class com.lin1000.justdance.gamepanel.action.DanceAction
+class com.lin1000.justdance.gamepanel.action.MainMenuAction
+class com.lin1000.justdance.gamepanel.input.Input
+class com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
+class com.lin1000.justdance.gamepanel.input.XBoxControllerInput
+class java.awt.event.KeyAdapter
+class java.awt.event.KeyEvent
+class java.io.File
+class java.io.FileInputStream
+class java.io.IOException
+class java.lang.Object
+class java.util.Timer
+class java.util.TimerTask
+class java.util.Vector
+interface java.lang.Runnable
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> java.lang.Override
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputAxes
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputComponents
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputAxis
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputButton
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener --|> com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.beats.arrow
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.action.DanceAction
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
+com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.input.XBoxControllerInput
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> java.lang.Override
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputAxes
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputComponents
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputAxis
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputButton
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener --|> com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.input.XBoxControllerInput
+com.lin1000.justdance.beats.BeatsProducer ..> com.lin1000.justdance.controller.ConditionController
+com.lin1000.justdance.beats.BeatsProducer ..> java.io.File
+com.lin1000.justdance.beats.BeatsProducer ..> java.io.FileInputStream
+com.lin1000.justdance.beats.BeatsProducer --|> java.lang.Object
+com.lin1000.justdance.beats.BeatsProducer ..> java.util.Vector
+com.lin1000.justdance.beats.BeatsProducer --|> java.lang.Runnable
+com.lin1000.justdance.beats.arrow --|> java.lang.Object
+com.lin1000.justdance.controller.ConditionController --|> java.lang.Object
+com.lin1000.justdance.controller.FPSTimerTask ..> java.lang.Override
+com.lin1000.justdance.controller.FPSTimerTask ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.controller.FPSTimerTask --|> java.util.TimerTask
+com.lin1000.justdance.controller.SoundController ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.controller.SoundController ..> java.io.File
+com.lin1000.justdance.controller.SoundController ..> java.io.IOException
+com.lin1000.justdance.controller.SoundController --|> java.lang.Object
+com.lin1000.justdance.controller.SoundController ..> java.util.Timer
+com.lin1000.justdance.controller.SoundController ..> java.util.Vector
+com.lin1000.justdance.controller.SoundController --|> java.lang.Runnable
+com.lin1000.justdance.gamepanel.Dance ..> java.lang.Override
+com.lin1000.justdance.gamepanel.Dance ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.gamepanel.Dance ..> com.github.strikerx3.jxinput.listener.XInputDeviceListener
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.beats.BeatsProducer
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.beats.arrow
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.controller.ConditionController
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.controller.SoundController
+com.lin1000.justdance.gamepanel.Dance --|> com.lin1000.justdance.gamepanel.JWindow
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.action.DanceAction
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
+com.lin1000.justdance.gamepanel.Dance ..> java.awt.event.KeyAdapter
+com.lin1000.justdance.gamepanel.Dance ..> java.awt.event.KeyEvent
+com.lin1000.justdance.gamepanel.MainMenu ..> java.lang.Override
+com.lin1000.justdance.gamepanel.MainMenu ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.gamepanel.MainMenu ..> com.github.strikerx3.jxinput.listener.XInputDeviceListener
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.controller.SoundController
+com.lin1000.justdance.gamepanel.MainMenu --|> com.lin1000.justdance.gamepanel.JWindow
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.input.XBoxControllerInput
+com.lin1000.justdance.gamepanel.MainMenu ..> java.awt.event.KeyAdapter
+com.lin1000.justdance.gamepanel.MainMenu ..> java.awt.event.KeyEvent
+com.lin1000.justdance.gamepanel.Project ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.gamepanel.Project ..> com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException
+com.lin1000.justdance.gamepanel.Project ..> com.lin1000.justdance.controller.SoundController
+com.lin1000.justdance.gamepanel.Project --|> com.lin1000.justdance.gamepanel.JFrame
+com.lin1000.justdance.gamepanel.Project --|> java.lang.Runnable
+com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.beats.arrow
+com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.input.KeyboardControllerInput --|> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.input.KeyboardControllerInput ..> java.awt.event.KeyEvent
+com.lin1000.justdance.gamepanel.input.XBoxControllerInput ..> com.github.strikerx3.jxinput.enums.XInputButton
+com.lin1000.justdance.gamepanel.input.XBoxControllerInput --|> com.lin1000.justdance.gamepanel.input.Input
+@enduml

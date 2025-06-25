@@ -1,0 +1,307 @@
+@startuml
+class MainMenuAction {
+- {static} MainMenuAction mainMenuAction
+- {static} Object mainMenuActionSingletonLock
++ {static} MainMenuAction getInstance()
++ void inputAction(Input,MainMenu)
+}
+
+
+class ConditionController {
++ int condition
++ int perfectCounter
++ long score
++ double e
++ int life
++ boolean exit
++ boolean continuetoplay
++ boolean gameover
++ int x_position
++ int y_position
++ void setCondition(int)
++ int getCondition()
++ int getX()
++ int getY()
++ String getperfectCounter()
++ long getScore()
++ int getLife()
++ boolean getGameOver()
++ boolean getExit()
++ boolean getContinue()
+}
+
+
+class arrow {
++ int x
++ int y
++ int move(int)
+}
+
+
+class Input {
+~ InputType inputType
+~ boolean pressed
++ InputType getInputType()
++ void setInputType(InputType)
++ boolean isPressed()
++ void setPressed(boolean)
+}
+
+
+enum InputType {
++  A
++  B
++  X
++  Y
++  BACK
++  START
++  LEFT_SHOULDER
++  RIGHT_SHOULDER
++  UP
++  DOWN
++  LEFT
++  RIGHT
++  LEFT_THUMBSTICK
++  RIGHT_THUMBSTICK
++  GUIDE_BUTTON
++  UNKNOWN
+}
+
+class DanceAction {
+- {static} DanceAction danceAction
+- {static} Object danceActionSingletonLock
++ {static} DanceAction getInstance()
++ void inputAction(Input,Dance)
+}
+
+
+class MainMenuXInputDeviceListener {
+~ MainMenu mainWindowTarget
+~ {static} float lastLX
+~ {static} float lastLY
++ void connected()
++ void disconnected()
++ void buttonChanged(XInputButton,boolean)
++ {static} void calculateAxis(XInputDevice)
+- {static} void onAxisChanged(String,float,float)
+}
+
+
+class XBoxControllerInput {
+- XBoxControllerInputType xBoxControllerInputType
++ XBoxControllerInputType getxBoxControllerInputType()
++ void setXInputButton(XInputButton)
++ void setXBoxControllerInputType(XBoxControllerInputType)
+}
+
+
+enum XBoxControllerInputType {
++  A
++  B
++  X
++  Y
++  BACK
++  START
++  LEFT_SHOULDER
++  RIGHT_SHOULDER
++  DPAD_UP
++  DPAD_DOWN
++  DPAD_LEFT
++  DPAD_RIGHT
++  LEFT_THUBMSTICK
++  RIGHT_THUMBSTICK
++  GUIDE_BUTTON
++  UNKNOWN
+}
+
+class BeatsProducer {
++ Vector[] vec
++ Thread produceThread
++ int position_left
++ int position_down
++ int position_up
++ int position_right
+~ File foot_file
+~ FileInputStream foot
++ int BPM
++ void run()
++ void stop()
++ void produce()
++ void move(ConditionController,int)
+}
+
+
+class Dance {
+- Window window
+- boolean isSuperPaint
+- Project project
++ boolean[] direct
+- XInputDevice device
+~ XInputDeviceListener listener
++ Dimension dim
++ Image buffer
++ Graphics gc
+~ Image image_left
+~ Image image_leftfill
+~ Image image_up
+~ Image image_upfill
+~ Image image_down
+~ Image image_downfill
+~ Image image_right
+~ Image image_rightfill
+~ Image[] arrow
+~ Image image_leftman
++ BeatsProducer producer
++ ConditionController conditionControl
++ SoundController soundController
++ int arrow_y_position
++ int width
+- int dropSpeed
+- int judgeLineY
++ int music
++ int y_movement
++ int BPM
++ int gameover_left
++ int gameover_right
++ void update(Graphics)
++ void paint(Graphics)
++ void loadImage()
++ Project getProject()
+}
+
+
+class KeyboardControllerInput {
+- KeyboardControllerInputType keyboardControllerInputType
++ void setKeyEvent(KeyEvent)
++ void setKeyboardControllerInputType(KeyboardControllerInputType)
+}
+
+
+enum KeyboardControllerInputType {
++  ENTER
++  UP
++  DOWN
++  LEFT
++  RIGHT
++  ESCAPE
++  UNKNOWN
+}
+
+class FPSTimerTask {
+- Dance mainTargetWindow
++ void run()
+}
+
+
+class MainMenu {
+- Window window
+- boolean[] direct
+- XInputDevice device
+~ XInputDeviceListener listener
+- Dimension dim
+- Image buffer
+- Graphics gc
+~ Image mark
+~ Image menutitle
+~ Image background
+~ Image[] option
+~ Image[] optionSelected
++ {static} int musicOptionIndex
++ SoundController soundController
++ {static} int controlFlow
+- int whichmusic
+- int y_movement
+- int BPM
+- boolean multiplePlay
++ Object pauseLock
++ boolean pause
++ void update(Graphics)
++ void paint(Graphics)
++ void loadImage()
++ void paintInitial(int)
++ void menuscreen()
++ int getcontrolFlow()
++ int getwhichMusic()
++ int getMovement()
++ int getBPM()
+}
+
+
+class SoundController {
+- boolean status
+- Clip danceClip
+- Clip effectClip
+- {static} Clip[] mainMenuClip
+- Thread soundthread
+- int music
+- Dance mainTargetWindow
+- java.util.Timer fpsTimer
+- long startTimeMicros
+- {static} File[] effectbox
+- {static} File[] mainmenubox
+- {static} File[] musicbox
++ Thread setBackgroundMusicThread(int)
++ void playEffectSound(int)
++ void playMainMenuSound(int)
++ boolean getStatus()
++ void run()
++ void playBackgroundSound(int,boolean)
++ void stop_all()
++ void stop_mainmenu_sound()
++ long getStartTimeMicros()
++ void setStartTimeMicros(long)
++ JWindow getMainTargetWindow()
++ void setMainTargetWindow(Dance)
++ Timer getFpsTimer()
+}
+
+
+class DanceXInputDeviceListener {
+~ Dance mainWindowTarget
+~ {static} float lastLX
+~ {static} float lastLY
++ void connected()
++ void disconnected()
++ void buttonChanged(XInputButton,boolean)
++ {static} void calculateAxis(XInputDevice)
+- {static} void onAxisChanged(String,float,float)
+}
+
+
+class Project {
+- Thread projectThread
+~ XInputDevice device
+~ SoundController soundController
+- Dance dance
++ int controlFlow
++ int music
++ int y_movement
++ int BPM
++ boolean multiplePlay
+- Object mainThreadPauseLock
++ void run()
++ void stop()
++ XInputDevice initJXInputDevice()
++ Object getMainThreadPauseLock()
++ {static} void main(String[])
+}
+
+
+
+
+Object <|-- ConditionController
+Object <|-- arrow
+SimpleXInputDeviceListener <|-- MainMenuXInputDeviceListener
+Input <|-- XBoxControllerInput
+Runnable <|.. BeatsProducer
+Object <|-- BeatsProducer
+JWindow <|-- Dance
+Input <|-- KeyboardControllerInput
+TimerTask <|-- FPSTimerTask
+JWindow <|-- MainMenu
+Runnable <|.. SoundController
+Object <|-- SoundController
+SimpleXInputDeviceListener <|-- DanceXInputDeviceListener
+Runnable <|.. Project
+JFrame <|-- Project
+@enduml

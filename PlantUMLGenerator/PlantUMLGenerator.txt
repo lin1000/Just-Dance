@@ -1,0 +1,8 @@
+source : https://github.com/lorenzovngl/plantuml-generator?tab=readme-ov-file#usage
+Usage
+Download the PlantUMLGenerator jar.
+Download the PlantUML jar and place it in the same folder of the previous jar.
+Open a terminal and navigate to the location of both jars and choose one of the following commands.
+
+
+D:\github\Just-Dance\out\production\justdance>java -jar PlantUMLGenerator.jar ./com ./plantuml/justdance.puml

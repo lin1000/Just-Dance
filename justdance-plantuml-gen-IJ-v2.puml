@@ -1,0 +1,261 @@
+@startuml
+class com.lin1000.justdance.gamepanel.action.MainMenuAction {
++ {static} MainMenuAction getInstance()
++ void inputAction(Input,MainMenu)
+}
+
+class com.lin1000.justdance.controller.ConditionController {
++ int condition
++ int perfectCounter
++ long score
++ double e
++ int life
++ boolean exit
++ boolean continuetoplay
++ boolean gameover
++ int x_position
++ int y_position
++ void setCondition(int)
++ int getCondition()
++ int getX()
++ int getY()
++ String getperfectCounter()
++ long getScore()
++ int getLife()
++ boolean getGameOver()
++ boolean getExit()
++ boolean getContinue()
+}
+
+
+class com.lin1000.justdance.beats.arrow {
++ int x
++ int y
++ int move(int)
+}
+
+
+class com.lin1000.justdance.gamepanel.input.Input {
+~ InputType inputType
+~ boolean pressed
++ InputType getInputType()
++ void setInputType(InputType)
++ boolean isPressed()
++ void setPressed(boolean)
+}
+
+
+enum com.lin1000.justdance.gamepanel.input.InputType {
++  A
++  B
++  X
++  Y
++  BACK
++  START
++  LEFT_SHOULDER
++  RIGHT_SHOULDER
++  UP
++  DOWN
++  LEFT
++  RIGHT
++  LEFT_THUMBSTICK
++  RIGHT_THUMBSTICK
++  GUIDE_BUTTON
++  UNKNOWN
+}
+
+class com.lin1000.justdance.gamepanel.action.DanceAction {
++ {static} DanceAction getInstance()
++ void inputAction(Input,Dance)
+}
+
+class com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener {
+~ MainMenu mainWindowTarget
+~ {static} float lastLX
+~ {static} float lastLY
++ void connected()
++ void disconnected()
++ void buttonChanged(XInputButton,boolean)
++ {static} void calculateAxis(XInputDevice)
+}
+
+
+class com.lin1000.justdance.gamepanel.input.XBoxControllerInput {
++ XBoxControllerInputType getxBoxControllerInputType()
++ void setXInputButton(XInputButton)
++ void setXBoxControllerInputType(XBoxControllerInputType)
+}
+
+enum com.lin1000.justdance.gamepanel.input.XBoxControllerInputType {
++  A
++  B
++  X
++  Y
++  BACK
++  START
++  LEFT_SHOULDER
++  RIGHT_SHOULDER
++  DPAD_UP
++  DPAD_DOWN
++  DPAD_LEFT
++  DPAD_RIGHT
++  LEFT_THUBMSTICK
++  RIGHT_THUMBSTICK
++  GUIDE_BUTTON
++  UNKNOWN
+}
+
+class com.lin1000.justdance.beats.BeatsProducer {
++ Vector[] vec
++ Thread produceThread
++ int position_left
++ int position_down
++ int position_up
++ int position_right
+~ File foot_file
+~ FileInputStream foot
++ int BPM
++ void run()
++ void stop()
++ void produce()
++ void move(ConditionController,int)
+}
+
+
+class com.lin1000.justdance.gamepanel.Dance {
++ boolean[] direct
+~ XInputDeviceListener listener
++ Dimension dim
++ Image buffer
++ Graphics gc
+~ Image image_left
+~ Image image_leftfill
+~ Image image_up
+~ Image image_upfill
+~ Image image_down
+~ Image image_downfill
+~ Image image_right
+~ Image image_rightfill
+~ Image[] arrow
+~ Image image_leftman
++ BeatsProducer producer
++ ConditionController conditionControl
++ SoundController soundController
++ int arrow_y_position
++ int width
++ int music
++ int y_movement
++ int BPM
++ int gameover_left
++ int gameover_right
++ void update(Graphics)
++ void paint(Graphics)
++ void loadImage()
++ Project getProject()
+}
+
+
+class com.lin1000.justdance.gamepanel.input.KeyboardControllerInput {
++ void setKeyEvent(KeyEvent)
++ void setKeyboardControllerInputType(KeyboardControllerInputType)
+}
+
+enum com.lin1000.justdance.gamepanel.input.KeyboardControllerInputType {
++  ENTER
++  UP
++  DOWN
++  LEFT
++  RIGHT
++  ESCAPE
++  UNKNOWN
+}
+
+class com.lin1000.justdance.controller.FPSTimerTask {
++ void run()
+}
+
+class com.lin1000.justdance.gamepanel.MainMenu {
+~ XInputDeviceListener listener
+~ Image mark
+~ Image menutitle
+~ Image background
+~ Image[] option
+~ Image[] optionSelected
++ {static} int musicOptionIndex
++ SoundController soundController
++ {static} int controlFlow
++ Object pauseLock
++ boolean pause
++ void update(Graphics)
++ void paint(Graphics)
++ void loadImage()
++ void paintInitial(int)
++ void menuscreen()
++ int getcontrolFlow()
++ int getwhichMusic()
++ int getMovement()
++ int getBPM()
+}
+
+
+class com.lin1000.justdance.controller.SoundController {
++ Thread setBackgroundMusicThread(int)
++ void playEffectSound(int)
++ void playMainMenuSound(int)
++ boolean getStatus()
++ void run()
++ void playBackgroundSound(int,boolean)
++ void stop_all()
++ void stop_mainmenu_sound()
++ long getStartTimeMicros()
++ void setStartTimeMicros(long)
++ JWindow getMainTargetWindow()
++ void setMainTargetWindow(Dance)
++ Timer getFpsTimer()
+}
+
+class com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener {
+~ Dance mainWindowTarget
+~ {static} float lastLX
+~ {static} float lastLY
++ void connected()
++ void disconnected()
++ void buttonChanged(XInputButton,boolean)
++ {static} void calculateAxis(XInputDevice)
+}
+
+
+class com.lin1000.justdance.gamepanel.Project {
+~ XInputDevice device
+~ SoundController soundController
++ int controlFlow
++ int music
++ int y_movement
++ int BPM
++ boolean multiplePlay
++ void run()
++ void stop()
++ XInputDevice initJXInputDevice()
++ Object getMainThreadPauseLock()
++ {static} void main(String[])
+}
+
+
+
+
+com.lin1000.justdance.controller.Object <|-- com.lin1000.justdance.controller.ConditionController
+com.lin1000.justdance.beats.Object <|-- com.lin1000.justdance.beats.arrow
+com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener <|-- com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener
+com.lin1000.justdance.gamepanel.input.Input <|-- com.lin1000.justdance.gamepanel.input.XBoxControllerInput
+com.lin1000.justdance.beats.Runnable <|.. com.lin1000.justdance.beats.BeatsProducer
+com.lin1000.justdance.beats.Object <|-- com.lin1000.justdance.beats.BeatsProducer
+com.lin1000.justdance.gamepanel.JWindow <|-- com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.gamepanel.input.Input <|-- com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
+java.util.TimerTask <|-- com.lin1000.justdance.controller.FPSTimerTask
+com.lin1000.justdance.gamepanel.JWindow <|-- com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.controller.Runnable <|.. com.lin1000.justdance.controller.SoundController
+com.lin1000.justdance.controller.Object <|-- com.lin1000.justdance.controller.SoundController
+com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener <|-- com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener
+com.lin1000.justdance.gamepanel.Runnable <|.. com.lin1000.justdance.gamepanel.Project
+com.lin1000.justdance.gamepanel.JFrame <|-- com.lin1000.justdance.gamepanel.Project
+@enduml
