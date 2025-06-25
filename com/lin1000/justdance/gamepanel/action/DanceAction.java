@@ -57,14 +57,14 @@ public class DanceAction {
                                 if(myarrow.y >= 50 && myarrow.y <= 70 )
                                 {
                                     mainWindowTarget.producer.vec[2].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(1);//１代表perfect
+                                    mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                                 //y=71~90是good
                                 if(myarrow.y > 70 && myarrow.y <= 90)
                                 {
                                     mainWindowTarget.producer.vec[2].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(2);//２代表good
+                                    mainWindowTarget.conditionControl.setCondition(1);//1代表good
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                             }
@@ -84,14 +84,14 @@ public class DanceAction {
                                 if(myarrow.y >= 50 && myarrow.y <= 70 )
                                 {
                                     mainWindowTarget.producer.vec[1].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(1);//１代表perfect
+                                    mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                                 //y=71~90是good
                                 if(myarrow.y > 70 && myarrow.y <= 90)
                                 {
                                     mainWindowTarget.producer.vec[1].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(2);//２代表good
+                                    mainWindowTarget.conditionControl.setCondition(1);//1代表good
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                             }
@@ -112,7 +112,7 @@ public class DanceAction {
                                 if(myarrow.y >= 50 && myarrow.y <= 70 )
                                 {
                                     mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(1);//１代表perfect
+                                    mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
                                     //mainWindowTarget.soundController.play_conditionSound(mainWindowTarget.conditionControl.getCondition());
                                     mainWindowTarget.soundController.playEffectSound(0);
                                 }
@@ -120,7 +120,7 @@ public class DanceAction {
                                 if(myarrow.y > 70 && myarrow.y <= 90)
                                 {
                                     mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(2);//２代表good
+                                    mainWindowTarget.conditionControl.setCondition(1);//1代表good
                                     mainWindowTarget.soundController.playEffectSound(1);
                                 }
                             }
@@ -141,14 +141,14 @@ public class DanceAction {
                                 if(myarrow.y >= 50 && myarrow.y <= 70 )
                                 {
                                     mainWindowTarget.producer.vec[3].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(1);//１代表perfect
+                                    mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                                 //y=71~90是good
                                 if(myarrow.y > 70 && myarrow.y <= 90)
                                 {
                                     mainWindowTarget.producer.vec[3].removeElementAt(element_index);
-                                    mainWindowTarget.conditionControl.setCondition(2);//２代表good
+                                    mainWindowTarget.conditionControl.setCondition(1);//1代表good
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                             }

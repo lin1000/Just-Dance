@@ -22,7 +22,7 @@ public class MainMenuAction {
 
     public void inputAction(Input input, MainMenu mainWindowTarget) {
         switch (mainWindowTarget.getcontrolFlow()) {
-            case 1:
+            case 1: //1 means in game landing screen
                 if (input.getInputType() == Input.InputType.DOWN && input.isPressed()) {
                     //do nothing
                 } else if (input.getInputType() == Input.InputType.UP && input.isPressed()) {
@@ -41,7 +41,7 @@ public class MainMenuAction {
                 }
 
                 break;
-            case 2:
+            case 2://2 means in chose music (main menu screen)
                 if (input.getInputType() == Input.InputType.DOWN && input.isPressed()) {
                     mainWindowTarget.musicOptionIndex++;
                     if (mainWindowTarget.musicOptionIndex == 4) mainWindowTarget.musicOptionIndex = 0;

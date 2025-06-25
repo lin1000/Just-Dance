@@ -19,7 +19,8 @@ public class SoundController extends Object implements Runnable
 
     private Clip danceClip;
     private Clip effectClip;
-    private static Clip[] mainMenuClip;
+    private Clip mainMenuClip; // 單一 Clip 物件
+    //private static Clip[] mainMenuClip;
 
     private Thread soundthread;
 
@@ -88,26 +89,26 @@ public class SoundController extends Object implements Runnable
             System.out.println("mainmenubox[" + i + "]=" + mainmenubox[i]);
         }
 
-        //load mainmenubox into beginClipArray
-        mainMenuClip = new Clip[mainmenubox.length];
-        for (int i = 0; i < mainmenubox.length; i++) {
-            AudioInputStream audioIn = null;
-            try {
-                audioIn = AudioSystem.getAudioInputStream(mainmenubox[i]);
-            } catch (UnsupportedAudioFileException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            try {
-                mainMenuClip[i] = AudioSystem.getClip(); //取得Clip物件
-                mainMenuClip[i].open(audioIn); // 將音頻資料載入Clip
-            } catch (LineUnavailableException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        //load mainmenubox into beginClipArray
+//        mainMenuClip = new Clip[mainmenubox.length];
+//        for (int i = 0; i < mainmenubox.length; i++) {
+//            AudioInputStream audioIn = null;
+//            try {
+//                audioIn = AudioSystem.getAudioInputStream(mainmenubox[i]);
+//            } catch (UnsupportedAudioFileException e) {
+//                throw new RuntimeException(e);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//            try {
+//                mainMenuClip[i] = AudioSystem.getClip(); //取得Clip物件
+//                mainMenuClip[i].open(audioIn); // 將音頻資料載入Clip
+//            } catch (LineUnavailableException e) {
+//                throw new RuntimeException(e);
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
     }
 
     static{
@@ -155,6 +156,7 @@ public class SoundController extends Object implements Runnable
         // 啟動聲音播放
         if (effectClip != null) {
             effectClip.stop();
+            //effectClip.close();
             effectClip=null;
         }
 
@@ -175,10 +177,27 @@ public class SoundController extends Object implements Runnable
         }
     }
 
-    public void playMainMenuSound(int shortmusic)
-    {
+    public void playMainMenuSound(int shortmusic) {
+        // 停止目前的主選單音效
+        if (mainMenuClip != null) {
+            mainMenuClip.stop();
+            mainMenuClip.close();
+            mainMenuClip = null;
+        }
+
+        // 載入並開啟音效檔
+        try {
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(mainmenubox[shortmusic]);
+            mainMenuClip = AudioSystem.getClip();
+            mainMenuClip.open(audioIn); // 將音頻資料載入 Clip
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // 啟動聲音播放
-        mainMenuClip[shortmusic].start();
+        if (mainMenuClip != null) {
+            mainMenuClip.start();
+        }
     }
 
     public boolean getStatus()
@@ -197,6 +216,7 @@ public class SoundController extends Object implements Runnable
         // 啟動聲音播放
         if (danceClip != null) {
             danceClip.stop();
+            danceClip.close();
             danceClip=null;
         }
 
@@ -227,11 +247,23 @@ public class SoundController extends Object implements Runnable
     public void stop_all()
     {
         try{
-            if(danceClip!=null) danceClip.stop();
-            if(effectClip!=null) effectClip.stop();
-            //if(mainMenuClip !=null) mainMenuClip.stop();
+            if(danceClip!=null) {danceClip.stop();danceClip.close();}
+            if(effectClip!=null) {effectClip.stop(); effectClip.close();}
+            if(mainMenuClip !=null) {mainMenuClip.stop(); mainMenuClip.close();}
 
-        }catch(java.lang.NullPointerException e){e.printStackTrace();}
+        }catch(java.lang.NullPointerException e){
+            e.printStackTrace();
+        }
+        finally{
+            danceClip = null;
+            effectClip = null;
+            mainMenuClip = null;
+            if(fpsTimer != null) {
+                fpsTimer.cancel();
+                fpsTimer = null;
+            }
+            startTimeMicros = 0; // Reset start time
+        }
         return;
 
     }
