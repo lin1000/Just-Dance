@@ -22,6 +22,13 @@ class com.lin1000.justdance.gamepanel.MainMenu
 class com.lin1000.justdance.gamepanel.Project
 class com.lin1000.justdance.gamepanel.action.DanceAction
 class com.lin1000.justdance.gamepanel.action.MainMenuAction
+class com.lin1000.justdance.gamepanel.effect.Effect
+class com.lin1000.justdance.gamepanel.effect.EffectManager
+class com.lin1000.justdance.gamepanel.effect.FlashEffect
+class com.lin1000.justdance.gamepanel.effect.LifeParticle
+class com.lin1000.justdance.gamepanel.effect.LifeParticleExtreme
+class com.lin1000.justdance.gamepanel.effect.Particle
+class com.lin1000.justdance.gamepanel.effect.TextFlashEffect
 class com.lin1000.justdance.gamepanel.input.Input
 class com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
 class com.lin1000.justdance.gamepanel.input.XBoxControllerInput
@@ -31,6 +38,9 @@ class java.io.File
 class java.io.FileInputStream
 class java.io.IOException
 class java.lang.Object
+class java.util.ArrayList
+class java.util.Iterator
+class java.util.List
 class java.util.Timer
 class java.util.TimerTask
 class java.util.Vector
@@ -65,6 +75,7 @@ com.lin1000.justdance.beats.BeatsProducer --|> java.lang.Object
 com.lin1000.justdance.beats.BeatsProducer ..> java.util.Vector
 com.lin1000.justdance.beats.BeatsProducer --|> java.lang.Runnable
 com.lin1000.justdance.beats.arrow --|> java.lang.Object
+com.lin1000.justdance.controller.ConditionController ..> com.lin1000.justdance.gamepanel.Dance
 com.lin1000.justdance.controller.ConditionController --|> java.lang.Object
 com.lin1000.justdance.controller.FPSTimerTask ..> java.lang.Override
 com.lin1000.justdance.controller.FPSTimerTask ..> com.lin1000.justdance.gamepanel.Dance
@@ -86,7 +97,7 @@ com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.controller.Condi
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.controller.SoundController
 com.lin1000.justdance.gamepanel.Dance --|> com.lin1000.justdance.gamepanel.JWindow
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.action.DanceAction
-com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.effect.EffectManager
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
 com.lin1000.justdance.gamepanel.Dance ..> java.awt.event.KeyAdapter
 com.lin1000.justdance.gamepanel.Dance ..> java.awt.event.KeyEvent
@@ -108,10 +119,12 @@ com.lin1000.justdance.gamepanel.Project --|> com.lin1000.justdance.gamepanel.JFr
 com.lin1000.justdance.gamepanel.Project --|> java.lang.Runnable
 com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.beats.arrow
 com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.Dance
-com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.MainMenu
 com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.input.Input
 com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.gamepanel.MainMenu
 com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.effect.EffectManager ..> java.util.ArrayList
+com.lin1000.justdance.gamepanel.effect.EffectManager ..> java.util.Iterator
+com.lin1000.justdance.gamepanel.effect.EffectManager ..> java.util.List
 com.lin1000.justdance.gamepanel.input.KeyboardControllerInput --|> com.lin1000.justdance.gamepanel.input.Input
 com.lin1000.justdance.gamepanel.input.KeyboardControllerInput ..> java.awt.event.KeyEvent
 com.lin1000.justdance.gamepanel.input.XBoxControllerInput ..> com.github.strikerx3.jxinput.enums.XInputButton

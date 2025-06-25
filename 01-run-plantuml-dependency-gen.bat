@@ -1,1 +1,1 @@
-java -jar plantuml-dependency-cli-1.4.0.jar -o justdance-plantuml.puml
+java -jar plantuml-dependency-cli-1.4.0-jar-with-dependencies.jar -o justdance-plantuml.puml
