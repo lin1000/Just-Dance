@@ -51,14 +51,41 @@ public class Project extends JFrame implements Runnable
 		// 如果有第二個螢幕，就使用它
 		if (screens.length > 1) {
 			activeScreen = screens[1];
+			System.out.println("activeScreen.isDisplayChangeSupported()="+activeScreen.isDisplayChangeSupported());
+//			// Get the display modes
+//			DisplayMode[] dm = activeScreen.getDisplayModes();
+//			DisplayMode desiredMode = null;
+//			for (DisplayMode mode : dm) {
+//				System.out.println("Mode: " + mode.getWidth() + "x" + mode.getHeight() + ", Refresh Rate: " + mode.getRefreshRate());
+//				if (mode.getWidth() == 3840 && mode.getHeight() == 2160 ) {
+//					desiredMode = mode;
+//					break;
+//				}
+//			}
+//			if (desiredMode != null) {
+//				// Set the display mode (if supported, otherwise handle gracefully)
+//				try {
+//					activeScreen.setDisplayMode(desiredMode);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					System.err.println("Failed to set display mode: " + e.getMessage());
+//					System.exit(1);
+//				}
+//			this.setSize(desiredMode.getWidth(), desiredMode.getHeight()); // Set the size
+//			this.setUndecorated(true); // Remove window decorations
+//			}
+			activeScreen.setFullScreenWindow(this);
+			this.setVisible(true);
 			Rectangle bounds = activeScreen.getDefaultConfiguration().getBounds();
 			int x = bounds.x + (bounds.width - this.getWidth()) / 2;
 			int y = bounds.y + (bounds.height - this.getHeight()) / 2;
-			this.setLocation(x, y);
+			bounds.setLocation(x,y);
+
 		} else {
 			// 否則顯示在預設螢幕中央
 			activeScreen = screens[0];
 			//this.setLocationRelativeTo(null);
+			activeScreen.setFullScreenWindow(this);
 		}
 		this.setVisible(false);
 

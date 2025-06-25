@@ -74,10 +74,12 @@ public class MainMenu extends JWindow
                 int y = bounds.y + (bounds.height - this.getHeight()) / 2;
                 this.setLocation(x, y);
                 this.setBounds(bounds);
+                activeScreen.setFullScreenWindow(this);
             } else {
                 // 沒有第二螢幕就顯示在主螢幕中央
                 this.setLocationRelativeTo(null);
                 setSize(1024,768);
+                activeScreen.setFullScreenWindow(this);
             }
 
             // 加上 KeyListener（需設定 focusable）

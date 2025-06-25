@@ -2,13 +2,13 @@ package com.lin1000.justdance.gamepanel.action;
 
 import com.lin1000.justdance.beats.arrow;
 import com.lin1000.justdance.gamepanel.Dance;
-import com.lin1000.justdance.gamepanel.MainMenu;
 import com.lin1000.justdance.gamepanel.input.Input;
 
 public class DanceAction {
 
     private static DanceAction danceAction = null;
     private static Object danceActionSingletonLock = new Object();
+    private static int judgeLine[] = {60, 80, 105}; // 判斷線位置，根據需要調整
 
     private DanceAction() {
     }
@@ -54,14 +54,15 @@ public class DanceAction {
                                 arrow myarrow =(arrow) mainWindowTarget.producer.vec[2].get(element_index);
 
                                 //y=55~70是perfect
-                                if(myarrow.y >= 50 && myarrow.y <= 70 )
+                                if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
                                 {
                                     mainWindowTarget.producer.vec[2].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
+                                    mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                                 //y=71~90是good
-                                if(myarrow.y > 70 && myarrow.y <= 90)
+                                if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
                                 {
                                     mainWindowTarget.producer.vec[2].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(1);//1代表good
@@ -81,14 +82,15 @@ public class DanceAction {
                                 arrow myarrow =(arrow) mainWindowTarget.producer.vec[1].get(element_index);
 
                                 //y=55~70是perfect
-                                if(myarrow.y >= 50 && myarrow.y <= 70 )
+                                if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
                                 {
                                     mainWindowTarget.producer.vec[1].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
+                                    mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                                 //y=71~90是good
-                                if(myarrow.y > 70 && myarrow.y <= 90)
+                                if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
                                 {
                                     mainWindowTarget.producer.vec[1].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(1);//1代表good
@@ -109,15 +111,16 @@ public class DanceAction {
                                 arrow myarrow =(arrow) mainWindowTarget.producer.vec[0].get(element_index);
 
                                 //y=55~70是perfect
-                                if(myarrow.y >= 50 && myarrow.y <= 70 )
+                                if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
                                 {
                                     mainWindowTarget.producer.vec[0].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
                                     //mainWindowTarget.soundController.play_conditionSound(mainWindowTarget.conditionControl.getCondition());
+                                    mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
                                     mainWindowTarget.soundController.playEffectSound(0);
                                 }
                                 //y=71~90是good
-                                if(myarrow.y > 70 && myarrow.y <= 90)
+                                if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
                                 {
                                     mainWindowTarget.producer.vec[0].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(1);//1代表good
@@ -138,14 +141,15 @@ public class DanceAction {
                                 arrow myarrow =(arrow) mainWindowTarget.producer.vec[3].get(element_index);
 
                                 //y=55~70是perfect
-                                if(myarrow.y >= 50 && myarrow.y <= 70 )
+                                if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
                                 {
                                     mainWindowTarget.producer.vec[3].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
+                                    mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
                                     mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
                                 }
                                 //y=71~90是good
-                                if(myarrow.y > 70 && myarrow.y <= 90)
+                                if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
                                 {
                                     mainWindowTarget.producer.vec[3].removeElementAt(element_index);
                                     mainWindowTarget.conditionControl.setCondition(1);//1代表good
