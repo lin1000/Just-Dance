@@ -63,7 +63,8 @@ public class Dance extends JWindow
 
     //控制上排箭頭的位置
     public int arrow_y_position = 50;
-    public int width = 1280, height = 720;
+    //public int width = 1280, height = 720;
+    public int width = 2560, height = 1440;
     private final int dropSpeed = 300; // 每秒移動300像素
     private final int judgeLineY = 500; // 判定線Y座標
 
@@ -144,6 +145,10 @@ public class Dance extends JWindow
             }
         });
 
+        //初始化情況控制中心 (must before window visible paint or it will not work)
+        conditionControl = new ConditionController(this);
+        conditionControl.setCondition(7);
+
         window.setVisible(true);
         window.requestFocus();
         getContentPane().setBackground(Color.white);
@@ -153,9 +158,7 @@ public class Dance extends JWindow
         System.out.println("dim.width=" + dim.width);
         System.out.println("dim.height=" + dim.height);
 
-        //初始化情況控制中心
-        conditionControl = new ConditionController(this);
-        conditionControl.setCondition(7);
+
 
         //loading image
         loadImage();
@@ -189,7 +192,6 @@ public class Dance extends JWindow
 //        while (!this.soundController.getStatus()) {
 //            System.out.println("loading music");
 //        }
-
     }
         
         
@@ -275,18 +277,14 @@ public class Dance extends JWindow
             if(soundController!= null) {
                 nowMicros = System.nanoTime() / 1000;
                 elapsedSeconds = (nowMicros - soundController.getStartTimeMicros()) / 1_000_000.0;
-                //System.out.println("nowMicros=" + nowMicros);
-                //System.out.println("elapsedSeconds=" + elapsedSeconds);
-            }
-            //double buffering of entire screen
-            //dim = getSize();
-            buffer = createImage(width, height);
-            gc = buffer.getGraphics();
+                System.out.println("nowMicros=" + nowMicros);
+                System.out.println("elapsedSeconds=" + elapsedSeconds);
 
-            // screen control logic 20250510
-            try {
-                int removecondition = 0;
-                //while (true) {
+
+                // screen control logic 20250510
+                try {
+                    int removecondition = 0;
+                    //while (true) {
                     if (device.poll()) {
                         // 輪詢控制器狀態，觸發事件
                         DanceXInputDeviceListener.calculateAxis(device);
@@ -294,7 +292,7 @@ public class Dance extends JWindow
 
                     //定時把字幕消除
                     if ((removecondition %= 200) == 0) {
-                         //conditionControl.setCondition(7);
+                        //conditionControl.setCondition(7);
                     }
                     removecondition++;
 
@@ -304,7 +302,7 @@ public class Dance extends JWindow
 
 
 
-                //}
+                    //}
 
 //                if (device.poll()) {
 //                    // 輪詢控制器狀態，觸發事件
@@ -320,12 +318,18 @@ public class Dance extends JWindow
 //                    repaint();
 //
 //                } //離開此歌
-                //結束所有音樂
+                    //結束所有音樂
 //                this.soundController.stop_all();
-            } catch (Exception e) {
-                //throw new RuntimeException(e);
-                e.printStackTrace();
-            }
+                } catch (Exception e) {
+                    //throw new RuntimeException(e);
+                    e.printStackTrace();
+                }
+
+            //double buffering of entire screen
+            //dim = getSize();
+            buffer = createImage(width, height);
+            gc = buffer.getGraphics();
+
 //            catch (java.lang.InterruptedException e) {
 //            }
 
@@ -429,6 +433,8 @@ public class Dance extends JWindow
 
             } catch (java.lang.NullPointerException f) {
                 f.printStackTrace();
+            }
+
             }
                 
         }

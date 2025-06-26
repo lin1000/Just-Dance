@@ -7,6 +7,8 @@ import com.lin1000.justdance.controller.SoundController;
 import javax.swing.*;
 import java.awt.*;
 
+import static java.awt.GraphicsDevice.WindowTranslucency.*;
+
 public class Project extends JFrame implements Runnable
 {
 	private Thread projectThread;
@@ -51,8 +53,12 @@ public class Project extends JFrame implements Runnable
 		// 如果有第二個螢幕，就使用它
 		if (screens.length > 1) {
 			activeScreen = screens[1];
+			System.out.println("activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSPARENT)="+activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSPARENT));
+			System.out.println("activeScreen.isWindowTranslucencySupported(TRANSLUCENT)="+activeScreen.isWindowTranslucencySupported(TRANSLUCENT));
+			System.out.println("activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSLUCENT)="+activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSLUCENT));
 			System.out.println("activeScreen.isDisplayChangeSupported()="+activeScreen.isDisplayChangeSupported());
-//			// Get the display modes
+			System.out.println("activeScreen.getType()="+activeScreen.getType());
+//			// Get the display modes (Not Supported)
 //			DisplayMode[] dm = activeScreen.getDisplayModes();
 //			DisplayMode desiredMode = null;
 //			for (DisplayMode mode : dm) {
@@ -114,7 +120,8 @@ public class Project extends JFrame implements Runnable
 			dance=new Dance(this, this.music,this.y_movement,this.BPM, device,soundController,activeScreen);//傳入值是曲目!
 			soundController.setMainTargetWindow(dance);
 			//Setting up and start counting the rhythm nanos
-			this.soundController.playBackgroundSound(music, false);
+			//this.soundController.playBackgroundSound(music, false);
+			soundController.initiateAudioDrivenMainTheadGameLoop(music); //non-blocking
 
 			System.out.println("Step=(4)Dance Ready");
 			//開始玩
