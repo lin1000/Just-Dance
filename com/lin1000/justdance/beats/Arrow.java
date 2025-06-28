@@ -1,14 +1,14 @@
 package com.lin1000.justdance.beats;
 
 //真正的箭頭
-public class arrow extends Object {
+public class Arrow extends Object {
     public int x;
     public int y;
+    public boolean triggered = false;
 
-    arrow(int x_position) {
+    public Arrow(int x_position, int y_position) {
         x = x_position;
-        y = 730;
-
+        y = y_position;
     }
 
     public int move(int y_movement) {

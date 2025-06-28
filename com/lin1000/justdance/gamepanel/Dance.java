@@ -2,20 +2,17 @@ package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
+import com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener;
 import com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener;
-import com.lin1000.justdance.beats.BeatsProducer;
-import com.lin1000.justdance.beats.arrow;
+import com.lin1000.justdance.beats.ArrowsProducer;
+import com.lin1000.justdance.beats.Arrow;
 import com.lin1000.justdance.controller.ConditionController;
 import com.lin1000.justdance.controller.SoundController;
-import com.lin1000.justdance.gamepanel.action.DanceAction;
 import com.lin1000.justdance.gamepanel.effect.EffectManager;
-import com.lin1000.justdance.gamepanel.input.KeyboardControllerInput;
 
 public class Dance extends JWindow
 {
@@ -28,10 +25,10 @@ public class Dance extends JWindow
     public boolean direct[] = new boolean[4];
 
     //Joystick Device passed into Main Menu
-    private XInputDevice device = null;
+    private XInputDevice xInputDevice = null;
 
     //Joystick listener cache
-    XInputDeviceListener listener = null;
+    XInputDeviceListener xInputDeviceListener = null;
 
     //paint要用到的
     public Dimension dim;
@@ -51,7 +48,7 @@ public class Dance extends JWindow
 
 
     //產生箭頭的class producer
-    public BeatsProducer producer;
+    public ArrowsProducer producer;
     //情況控制中心
     public ConditionController conditionControl;
     //音樂控制中心
@@ -86,7 +83,7 @@ public class Dance extends JWindow
     public final EffectManager effectManager = new EffectManager(g_off_x,g_off_y);
 
     //constructor傳入值為曲目
-    public Dance(Project project, int whichmusic, int y_movement, int BPM, XInputDevice device, SoundController soundController, GraphicsDevice activeScreen) {
+    public Dance(Project project, int whichmusic, int y_movement, int BPM, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen) {
         super(project);
         this.project = project;
         //歌曲參數
@@ -98,7 +95,7 @@ public class Dance extends JWindow
         System.out.println("y_movement=" + y_movement);
         System.out.println("BPM=" + BPM);
 
-        //JFrame
+        //JWindow
         window = this;
         if (activeScreen != null) {
             activeScreen.setFullScreenWindow(this);
@@ -107,8 +104,12 @@ public class Dance extends JWindow
             int y = bounds.y + (bounds.height - this.getHeight()) / 2;
             bounds.setLocation(x,y);
             this.setBounds(bounds);
+            width =  this.getWidth();
+            height = this.getHeight();
             life_x = 20;
             life_y = bounds.height - 98;
+            gameover_left = 1;
+            gameover_right = width;
             System.out.println("bounds.width="+ bounds.width);
             System.out.println("bounds.height="+bounds.height);
             System.out.println("this.getWidth()="+ this.getWidth());
@@ -120,6 +121,8 @@ public class Dance extends JWindow
             // 沒有第二螢幕就顯示在主螢幕中央
             this.setLocationRelativeTo(null);
             setSize(1024,768);
+            width = 1024;
+            height = 768;
             life_x = 20;
             life_y = 670;
             activeScreen.setFullScreenWindow(this);
@@ -127,38 +130,22 @@ public class Dance extends JWindow
 
         // 加上 KeyListener（需設定 focusable）
         this.setFocusable(true);
-        this.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                //Translate Keyboard Event into InputType
-                KeyboardControllerInput keybnoardControllerInput = new KeyboardControllerInput();
-                keybnoardControllerInput.setKeyEvent(e);
-                keybnoardControllerInput.setPressed(true);
-                DanceAction.getInstance().inputAction(keybnoardControllerInput,Dance.this);
-            }
-            public void keyReleased(KeyEvent e) {
-                //Translate Keyboard Event into InputType
-                KeyboardControllerInput keyboardControllerInput = new KeyboardControllerInput();
-                keyboardControllerInput.setKeyEvent(e);
-                keyboardControllerInput.setPressed(false);
-                DanceAction.getInstance().inputAction(keyboardControllerInput,Dance.this);
-            }
-        });
+        this.addKeyListener(new DanceKeyboardDeviceListener(this));
+        // 設定視窗屬性
+        window.setVisible(true);
+        window.requestFocus();
+        getContentPane().setBackground(Color.white);
+
 
         //初始化情況控制中心 (must before window visible paint or it will not work)
         conditionControl = new ConditionController(this);
         conditionControl.setCondition(7);
 
-        window.setVisible(true);
-        window.requestFocus();
-        getContentPane().setBackground(Color.white);
 
         //double buffering
         dim = getSize();
         System.out.println("dim.width=" + dim.width);
         System.out.println("dim.height=" + dim.height);
-
-
 
         //loading image
         loadImage();
@@ -170,23 +157,28 @@ public class Dance extends JWindow
         direct[3] = false;
 
         //初始化搖捍setup joystick
-        this.device = device;
-        if (device != null) {
+        this.xInputDevice = xInputDevice;
+        if (xInputDevice != null) {
             // The SimpleXInputDeviceListener allows us to implement only the methods we actually need
-            this.listener = new DanceXInputDeviceListener(this);
+            this.xInputDeviceListener = new DanceXInputDeviceListener(this);
 
             //add listener
-            device.addListener(listener);
+            xInputDevice.addListener(xInputDeviceListener);
         } else {
-            System.err.println("System have no input devices");
-            throw new RuntimeException("JXInputDevice is null");
+            System.err.println("System have no input devices, please use keyboard to play");
+           // throw new RuntimeException("JXInputDevice is null");
         }
 
-        producer = new BeatsProducer(30, 130, 230, 330, this.BPM);//produce是一個thread會產生箭頭喔，BPM歌曲參數節拍數
+        System.err.println(" this.BPM=" +this.BPM);
+        producer = new ArrowsProducer(30, 130, 230, 330, this.BPM);//produce是一個thread會產生箭頭喔，BPM歌曲參數節拍數
 
         //Setting up and start counting the rhythm nanos
         this.soundController = soundController;
-        //暫時拿掉20250510: device.removeListener(listener);
+
+        //remove xInputDevice listener when xInputDevice is available.
+//        if (xInputDevice!=null) {
+//            xInputDevice.removeListener(xInputDeviceListener);
+//        }
 
 //        //usually not triggered unless loading music has some issues.
 //        while (!this.soundController.getStatus()) {
@@ -272,22 +264,23 @@ public class Dance extends JWindow
 
         public void paint(Graphics g) 
         {
-            long nowMicros = 0;
+            long nowNanos = 0;
             double elapsedSeconds = 0;
             if(soundController!= null) {
-                nowMicros = System.nanoTime() / 1000;
-                elapsedSeconds = (nowMicros - soundController.getStartTimeMicros()) / 1_000_000.0;
-                System.out.println("nowMicros=" + nowMicros);
-                System.out.println("elapsedSeconds=" + elapsedSeconds);
-
+                nowNanos = System.nanoTime() ;
+                elapsedSeconds = (nowNanos - soundController.getStartTimeNanos()) / 1_000_000_000.0;
+//                System.out.print("nowMicros=" + System.currentTimeMillis());
+//                System.out.print(",nowNanos=" + nowNanos);
+//                System.out.print(",nowNanos=" + nowNanos);
+//                System.out.println(", elapsedSeconds=" + elapsedSeconds);
 
                 // screen control logic 20250510
                 try {
                     int removecondition = 0;
                     //while (true) {
-                    if (device.poll()) {
+                    if (xInputDevice!=null && xInputDevice.poll()) {
                         // 輪詢控制器狀態，觸發事件
-                        DanceXInputDeviceListener.calculateAxis(device);
+                        DanceXInputDeviceListener.calculateAxis(xInputDevice);
                     }
 
                     //定時把字幕消除
@@ -338,7 +331,6 @@ public class Dance extends JWindow
                 if (isSuperPaint) {
                     super.paint(g);
                     isSuperPaint = false;
-
                 }
 
                 //-- clear background -->
@@ -362,7 +354,7 @@ public class Dance extends JWindow
                     //把畫布上所有的箭頭畫出來，共四個vec[0,1,2,3]
                     for (int vec_index = 0; vec_index < 4; vec_index++) {
                         for (int element_index = 0; element_index < producer.vec[vec_index].size(); element_index++) {
-                            arrow myarrow = (com.lin1000.justdance.beats.arrow) producer.vec[vec_index].get(element_index);
+                            Arrow myarrow = (Arrow) producer.vec[vec_index].get(element_index);
                             gc.drawImage(arrow[vec_index], g_off_x+myarrow.x, g_off_y+myarrow.y, null);
                         }
                     }
@@ -381,8 +373,7 @@ public class Dance extends JWindow
                         effectManager.addTextFlashEffect("Miss", g_off_x + ((width - g_off_x) / 6), g_off_y + (height / 2));
                         conditionControl.setCondition(7);
                     }
-                        //gc.drawString("  Miss", 120, conditionControl.getY());
-
+                    //gc.drawString("  Miss", 120, conditionControl.getY());
 
                     //分數顯示
                     gc.setFont(new Font("verdana", Font.PLAIN, 18));
@@ -395,6 +386,23 @@ public class Dance extends JWindow
                     gc.drawRect(g_off_x+life_x, g_off_y+life_y + 10, 300, 25);
                     gc.fillRect(g_off_x+life_x, g_off_y+life_y+10, conditionControl.getLife() * 3, 25);
 
+                    //FPS Info Block
+                    int fps_x = g_off_x+300;
+                    int fps_y = g_off_y+20;
+                    int fps_w = 150;
+                    int fps_h = 20;
+                    gc.setColor(Color.white);
+                    gc.fillRect(fps_x,fps_y,fps_w,fps_h);
+                    gc.setColor(Color.blue);
+                    gc.drawString(" Time:", fps_x, fps_y);
+                    gc.drawString(String.format("%.2f s", elapsedSeconds) , fps_x+80, fps_y);
+                    gc.setColor(Color.BLACK);
+                    gc.drawRect(1,1,width-2, height-2);
+                    //畫左邊的人
+                    gc.drawImage(image_leftman, 0, 0, 360, 669, null);
+                    //Special Effects
+                    effectManager.drawAll((Graphics2D) gc);
+
                 } else {
                     gc.setColor(Color.black);
                     gc.fillRect(0, 0, gameover_left, height);
@@ -406,30 +414,12 @@ public class Dance extends JWindow
                         gameover_right = 0;
                         gc.setColor(Color.white);
                         gc.setFont(new Font("標階體", Font.PLAIN, 26));
-                        gc.drawString("GAME OVER", 155, (height / 2) - 20);
-                        gc.drawString("(A) DANCE!!!  (X) EXIT", 110, (height / 2) + 15);
+                        gc.drawString("GAME OVER", g_off_x+155, g_off_y+(height / 2) - 20);
+                        gc.drawString("(A) DANCE!!!  (X) EXIT", g_off_x+110, g_off_y+(height / 2) + 15);
                     }
                 }
 
-
-                //FPS Info Block
-                int fps_x = g_off_x+300;
-                int fps_y = g_off_y+20;
-                int fps_w = 150;
-                int fps_h = 20;
-                gc.setColor(Color.white);
-                gc.fillRect(fps_x,fps_y,fps_w,fps_h);
-                gc.setColor(Color.blue);
-                gc.drawString("Seconds:", fps_x, fps_y);
-                gc.drawString(elapsedSeconds + "", fps_x+80, fps_y);
-                gc.setColor(Color.BLACK);
-                gc.drawRect(1,1,width-2, height-2);
-                //畫左邊的人
-                gc.drawImage(image_leftman, 0, 0, 360, 669, null);
-                //Special Effects
-                effectManager.drawAll((Graphics2D) gc);
                 g.drawImage(buffer, 0, 0, width, height, this);
-
 
             } catch (java.lang.NullPointerException f) {
                 f.printStackTrace();

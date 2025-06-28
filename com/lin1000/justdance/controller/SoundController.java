@@ -1,5 +1,6 @@
 package com.lin1000.justdance.controller;
 
+import com.lin1000.justdance.beats.BeatMapGenerator;
 import com.lin1000.justdance.gamepanel.Dance;
 
 import java.io.File;
@@ -32,14 +33,16 @@ public class SoundController implements Runnable
     private AudioFormat.Encoding soundEcoding;
     private float sampleRate;
     private int sampleSizeInBits;
+    private int audioChannelSize;
     private volatile long bufferedSample = 0;
+
 
 
     //Generic JWindow control the main game screen repainting process
     private Dance mainTargetWindow = null;
     private java.util.Timer fpsTimer = null;
     //exact timing of main dance background music clip start
-    private long startTimeMicros;
+    private long startTimeNanos;
 
     private static File effectbox[] = null;
     private static File mainmenubox[] = null;
@@ -67,7 +70,7 @@ public class SoundController implements Runnable
         musicbox = new File[soundFilePaths.size()];
         for (int i = 0; i < soundFilePaths.size(); i++) {
             musicbox[i] = new File(soundFilePaths.get(i));
-            System.out.println("soundbox[" + i + "]=" + musicbox[i]);
+            System.out.println("musicbox[" + i + "]=" + musicbox[i]);
         }
     }
 
@@ -122,7 +125,7 @@ public class SoundController implements Runnable
         effectbox = new File[soundFilePaths.size()];
         for (int i = 0; i < soundFilePaths.size(); i++) {
             effectbox[i] = new File(soundFilePaths.get(i));
-            System.out.println("mainmenubox[" + i + "]=" + effectbox[i]);
+            System.out.println("effectbox[" + i + "]=" + effectbox[i]);
         }
     }
 
@@ -136,6 +139,12 @@ public class SoundController implements Runnable
 
     public void playEffectSound(int condition)
     {
+        /* *
+         * TODO:
+         *  資源關閉與重播： 使用 Clip 時如果需要反覆播放，應避免頻繁建立和關閉音效資源。
+         * 可以呼叫 clip.setFramePosition(0) 將播放位置重設到開頭，再次 start() 來重播音效，而不必每次重新開啟檔案。
+         * 當遊戲結束或不再需要音效時，記得呼叫 clip.stop() 並關閉資源以釋放記憶體和音頻通道。
+         * */
         // 啟動聲音播放
         if (effectClip != null) {
             effectClip.stop();
@@ -211,7 +220,7 @@ public class SoundController implements Runnable
             //record the exact timing of clip start
             if(!isPreview){
                 System.out.println("entering is not preview : isPreview="+isPreview);
-                setStartTimeMicros(System.nanoTime() / 1000);
+                setStartTimeNanos(System.nanoTime());
                 // Schedule task to run every 16 milliseconds after an initial 0 second delay
                 fpsTimer = new java.util.Timer("FPSTimer");
                 FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
@@ -233,6 +242,17 @@ public class SoundController implements Runnable
         // initiate a new thread to play the audio driven game loop engine
         try {
             this.music = music;//must set before starting the thread
+
+            /**
+             * Audio BPM Analysis by FFT
+             */
+            BeatMapGenerator beatMapGenerator = new BeatMapGenerator();
+            beatMapGenerator.generate(musicbox[music]);
+
+
+            /**
+             * handover major game loop engine to Audio Driven Thead
+             */
             new Thread(this).start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -259,7 +279,7 @@ public class SoundController implements Runnable
                 fpsTimer.cancel();
                 fpsTimer = null;
             }
-            startTimeMicros = 0; // Reset start time
+            startTimeNanos = 0; // Reset start time
         }
         return;
 
@@ -274,12 +294,12 @@ public class SoundController implements Runnable
 
     }
 
-    public long getStartTimeMicros() {
-        return startTimeMicros;
+    public long getStartTimeNanos() {
+        return startTimeNanos;
     }
 
-    public void setStartTimeMicros(long startTimeMicros) {
-        this.startTimeMicros = startTimeMicros;
+    public void setStartTimeNanos(long startTimeNanos) {
+        this.startTimeNanos = startTimeNanos;
     }
 
     public JWindow getMainTargetWindow() {
@@ -292,6 +312,10 @@ public class SoundController implements Runnable
 
     public Timer getFpsTimer() {
         return fpsTimer;
+    }
+
+    public static File[] getMusicbox() {
+        return musicbox;
     }
 
     @Override
@@ -307,7 +331,7 @@ public class SoundController implements Runnable
             soundEcoding = format.getEncoding();
             sampleRate = format.getSampleRate();
             sampleSizeInBits = format.getSampleSizeInBits();
-
+            audioChannelSize = format.getChannels();
 
             System.out.println("musicbox[music]: " + musicbox[music].getName());
             System.out.println("frameLength: " + frameLength);
@@ -315,10 +339,11 @@ public class SoundController implements Runnable
             System.out.println("format.getFrameSize(): " + frameSize);
             System.out.println("format.getEncoding(): " + soundEcoding.toString());
             System.out.println("format.getSampleSizeInBits(): " + sampleSizeInBits);
+            System.out.println("format.getChannels(): " + audioChannelSize);
 
             //if(!isPreview){
             System.out.println("entering game play");
-            setStartTimeMicros(System.nanoTime() / 1000);
+            setStartTimeNanos(System.nanoTime());
             // Schedule task to run every 16 milliseconds after an initial 0 second delay
             fpsTimer = new java.util.Timer("FPSTimer");
             FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
@@ -326,7 +351,11 @@ public class SoundController implements Runnable
             //}
 
             SourceDataLine line = AudioSystem.getSourceDataLine(format);
-            line.addLineListener(new SourceDataLineEventListener());
+            /**
+             * 執行緒協調： 若聲音播放和畫面更新在不同執行緒，注意執行緒間的協作。例如在主執行緒啟動音效執行緒後，可以使用同步機制等待音效真正開始再進行遊戲計時。
+             * 此外，不要在音效回呼（如 LineListener）中執行太耗時的操作，這可能阻塞音效執行緒導致聲音延遲。
+             * line.addLineListener(new SourceDataLineEventListener());
+             */
             line.open(format);
             line.start();
 
@@ -335,7 +364,7 @@ public class SoundController implements Runnable
             while ((bytesRead = audioIn.read(buffer)) != -1) {
                 line.write(buffer, 0, bytesRead);
                 bufferedSample += bytesRead / frameSize;
-                System.out.println("bufferedSample="+ bufferedSample);
+                //System.out.println("bufferedSample="+ bufferedSample);
                 /* *
                  * magic done by 1000 (ms/per second) / FrameRate(e.g. 16000, a.k.a 16Hz/per second) * sending-frame-byte-array(4096) / framesize(e.g. 4)
                  * result is number of milliseconds can take rest while sending enough (4096 bytes) to SourceDataLine Buffer Area.
@@ -348,7 +377,9 @@ public class SoundController implements Runnable
                  * if the frameate is increase to 32000, the result will be 32
                  * */
                 Thread.sleep(32);
-
+                if(mainTargetWindow.conditionControl.getGameOver()){
+                    break;
+                }
             }
 
             line.drain();

@@ -12,6 +12,7 @@ public class KeyboardControllerInput extends Input{
         DOWN,
         LEFT,
         RIGHT,
+        SPACE,
         ESCAPE,
         UNKNOWN
     }
@@ -39,8 +40,11 @@ public class KeyboardControllerInput extends Input{
             case KeyEvent.VK_ESCAPE:
                 setKeyboardControllerInputType(KeyboardControllerInputType.ESCAPE);
                 break;
-                default:
-                    setKeyboardControllerInputType(KeyboardControllerInputType.UNKNOWN);
+            case KeyEvent.VK_SPACE:
+                setKeyboardControllerInputType(KeyboardControllerInputType.SPACE);
+                break;
+            default:
+                setKeyboardControllerInputType(KeyboardControllerInputType.UNKNOWN);
                 break;
         }
     }
@@ -62,6 +66,9 @@ public class KeyboardControllerInput extends Input{
                 break;
             case RIGHT:
                 super.setInputType(InputType.RIGHT);
+                break;
+            case SPACE:
+                super.setInputType(InputType.START);
                 break;
             case ESCAPE:
                 super.setInputType(InputType.BACK);

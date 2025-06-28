@@ -79,7 +79,10 @@ public class ConditionController extends Object {
                 break;
             case 3://MISS
                 this.life -= 3;
-                if(this.life<=0) life=0;
+                if(this.life<=0) {
+                    life=0;
+                    this.setCondition(4);//4代表gameover
+                }
                 if(this.life > 30) {
                     for (int i = 0; i < 10; i++) {
                         mainWindowTarget.effectManager.addLifeParticleEffect(mainWindowTarget.g_off_x + mainWindowTarget.life_x + (getLife() * 3), mainWindowTarget.g_off_y + mainWindowTarget.life_y);
@@ -92,12 +95,15 @@ public class ConditionController extends Object {
                 break;
             case 4://GAMEOVER
                 this.gameover = true;
+                mainWindowTarget.producer.stop();
                 break;
             case 5://NOT PLAYING
+                System.out.println("***ConditionController setCondition: exit game:" + this.toString());
                 this.exit = true;
                 this.continuetoplay = false;
                 break;
             case 6://PLAY AGAIN
+                System.out.println("***ConditionController setCondition: replay!"+ this.toString());
                 this.exit = true;
                 this.continuetoplay = true;
                 break;

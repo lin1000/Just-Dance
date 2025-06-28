@@ -1,18 +1,17 @@
 package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import javax.swing.*;
 
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
+import com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener;
 import com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
-import com.lin1000.justdance.gamepanel.input.KeyboardControllerInput;
-import com.lin1000.justdance.gamepanel.input.XBoxControllerInput;
+import com.lin1000.justdance.gamepanel.input.Input;
+import com.lin1000.justdance.song.Song;
 //import de.hardcode.jxinput.JXInputManager;
 //import de.hardcode.jxinput.JXInputDevice;
 //import de.hardcode.jxinput.test.ButtonListener;
@@ -28,10 +27,10 @@ public class MainMenu extends JWindow
         private boolean direct[]=new boolean[4];
 
         //Joystick Device passed into Main Menu
-        private XInputDevice device = null;
+        private XInputDevice xInputDevice = null;
 
         //Joystick listener cache
-        XInputDeviceListener listener = null;
+        XInputDeviceListener xInputDeviceListener = null;
         //paint
         private Dimension dim;
         private Image buffer;
@@ -48,23 +47,24 @@ public class MainMenu extends JWindow
         public SoundController soundController;
                        
         //Game Main Control Flow
-        public static int controlFlow=1; //1,2,3,4(exit)
+        public int controlFlow=1; //1,2,3,4(exit)
         
         //Which Music
         //y_movement
         //BPM(Beats per Minutes)
+        public Song whichSong;
         private int whichmusic;
         private int y_movement;
         private int BPM;
         
-        //played multiple times
-        private boolean multiplePlay=false;
+        //isFirstRound
+        private boolean isFirstRound = true;
 
         // lock object for synchronization
         public final Object pauseLock = new Object();
         public boolean pause = false;
 
-        public MainMenu(Project project, boolean multiplePlay, XInputDevice device, SoundController soundController, GraphicsDevice activeScreen)
+        public MainMenu(Project project, boolean isFirstRound, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen)
         {
             super(project);
             window = this;
@@ -74,7 +74,7 @@ public class MainMenu extends JWindow
                 int y = bounds.y + (bounds.height - this.getHeight()) / 2;
                 this.setLocation(x, y);
                 this.setBounds(bounds);
-                activeScreen.setFullScreenWindow(this);
+                //activeScreen.setFullScreenWindow(this);
             } else {
                 // 沒有第二螢幕就顯示在主螢幕中央
                 this.setLocationRelativeTo(null);
@@ -84,29 +84,13 @@ public class MainMenu extends JWindow
 
             // 加上 KeyListener（需設定 focusable）
             this.setFocusable(true);
-            this.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e) {
-                    //Translate Keyboard Event into InputType
-                    KeyboardControllerInput keyboardControllerInput = new KeyboardControllerInput();
-                    keyboardControllerInput.setKeyEvent(e);
-                    keyboardControllerInput.setPressed(true);
-                    MainMenuAction.getInstance().inputAction(keyboardControllerInput,MainMenu.this);
-                }
-                public void keyReleased(KeyEvent e) {
-                    //Translate Keyboard Event into InputType
-                    KeyboardControllerInput keyboardControllerInput = new KeyboardControllerInput();
-                    keyboardControllerInput.setKeyEvent(e);
-                    keyboardControllerInput.setPressed(false);
-                    MainMenuAction.getInstance().inputAction(keyboardControllerInput,MainMenu.this);
-                }
-            });
-
+            this.addKeyListener(new MainMenuKeyboardDeviceListener(this));
+            // 設定視窗屬性
             window.setVisible(true);
             window.requestFocusInWindow();
 
             //temp
-        	this.multiplePlay=multiplePlay;
+        	this.isFirstRound = isFirstRound;
             getContentPane().setBackground(Color.white);
 
             //double buffering
@@ -120,20 +104,19 @@ public class MainMenu extends JWindow
             //Sound Controller
             this.soundController = soundController;
             //setup joystick and register joystic event listener
-            this.device = device;
-            if (device != null) {
+            this.xInputDevice = xInputDevice;
+            if (xInputDevice != null) {
                 // The SimpleXInputDeviceListener allows us to implement only the methods we actually need
-                this.listener = new MainMenuXInputDeviceListener(this);
-
+                this.xInputDeviceListener = new MainMenuXInputDeviceListener(this);
                 //add listener
-                device.addListener(listener);
+                xInputDevice.addListener(xInputDeviceListener);
 
             } else {
-                System.err.println("System have no input devices");
-                throw new RuntimeException("JXInputDevice is null");
+                System.err.println("System have no input devices, please use keyboard to play");
+                //throw new RuntimeException("JXInputDevice is null");
             }
-            //JXInputEventManager.setTriggerIntervall( 5 );
-            if (!multiplePlay)//???O??@????
+
+            if (isFirstRound)//show game landing screen for the first time
             {
                 //soundControl.play_beginSound(2);
                 paintInitial(0);//
@@ -145,43 +128,52 @@ public class MainMenu extends JWindow
 
                 int paintIndex = 0;
                 while (controlFlow == 1) {
-                            try {
-                                if (device.poll()) {
-                                    // 輪詢控制器狀態，觸發事件
-                                    MainMenuXInputDeviceListener.calculateAxis(device);
-                                }
-                                Thread.sleep(50);
-                                paintInitial(paintIndex++);
-                            } catch (java.lang.InterruptedException e) {
-                            }
+                    try {
+                        if (xInputDevice != null && xInputDevice.poll()) {
+                            //輪詢控制器狀態，觸發事件
+                            MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
+                        }
+                        Thread.sleep(50);
+                        paintInitial(paintIndex++);
+                    } catch (java.lang.InterruptedException e) {
+                        e.printStackTrace();
+                    }
 
-                            if(controlFlow == 4) // leave game directly
-                                System.exit(0);
+                    if (controlFlow == 4) // leave game directly
+                        System.exit(0);
 
-                            paintIndex %= 20;
-
-
+                    paintIndex %= 20;
                 }
                 mark = null;
             }
 
             if (controlFlow == 1) controlFlow = 2;
-            while (controlFlow == 2) {
+
+            boolean isDefaultMusic = true;
+            while (controlFlow == 2) { // show main menu screen
                 try {
-                    if (device.poll()) {
+                    if (xInputDevice !=null && xInputDevice.poll()) {
                         // 輪詢控制器狀態，觸發事件
-                        MainMenuXInputDeviceListener.calculateAxis(device);
+                        MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
                     }
                     Thread.sleep(50);
-                    menuscreen();
+                    if (isDefaultMusic) {
+                        isDefaultMusic = false;
+                        Input defaultInput = new Input();
+                        defaultInput.setInputType(Input.InputType.GUIDE_BUTTON);
+                        defaultInput.setPressed(true);
+                        MainMenuAction.getInstance().inputAction(defaultInput, this);
+                    }
+                    menuscreen(musicOptionIndex);
                     //controlFlow=3;
                 } catch (java.lang.InterruptedException e) {
+                    e.printStackTrace();
                 }
-
             }
 
-            this.device.removeListener(this.listener);
-
+            if(this.xInputDeviceListener!=null) {
+                this.xInputDevice.removeListener(this.xInputDeviceListener);
+            }
         }
 
         
@@ -237,47 +229,61 @@ public class MainMenu extends JWindow
         }
         
         //?e?X?D???
-        public void menuscreen()
+        public void menuscreen(int musicOptionIndex)
         {
-                        gc.drawImage(background,0,0,1024,768,this);
-                        gc.drawImage(menutitle,255,80,555,60,this);
-                        
-                        switch(musicOptionIndex)
-                        {			
-                        	case 0:	this.whichmusic=0;//??whichmusic?M?w????
-                        		this.y_movement=15;//??y_movement?M?w????t??
-                        		this.BPM=400;//??BPM?M?w?`???
-                        		gc.drawImage(option[1],255,260,555,60,this);
-                        		gc.drawImage(option[2],255,320,555,60,this);
-                        		gc.drawImage(option[3],255,380,555,60,this);
-                        		gc.drawImage(optionSelected[0],213,195,640,69,this);
-                        		break;
-                        	case 1: this.whichmusic=1;//??whichmusic?M?w????
-                        		this.y_movement=7;//??y_movement?M?w????t??
-                        		this.BPM=120;//??BPM?M?w?`???
-                        		gc.drawImage(option[0],255,200,555,60,this);
-                        		gc.drawImage(option[2],255,320,555,60,this);
-                        		gc.drawImage(option[3],255,380,555,60,this);
-                        		gc.drawImage(optionSelected[1],213,255,640,69,this);
-                        		break;
-                        	case 2:	this.whichmusic=2;//??whichmusic?M?w????
-                        		this.y_movement=5;//??y_movement?M?w????t??
-                        		this.BPM=180;//??BPM?M?w?`???
-                        		gc.drawImage(option[0],255,200,555,60,this);
-                        		gc.drawImage(option[1],255,260,555,60,this);
-                        		gc.drawImage(option[3],255,380,555,60,this);
-                        		gc.drawImage(optionSelected[2],213,315,640,69,this);
-                        		break;
-                        	case 3:	this.whichmusic=3;//??whichmusic?M?w????
-                        		this.y_movement=12;//??y_movement?M?w????t??
-                        		this.BPM=300;//??BPM?M?w?`???
-                        		gc.drawImage(option[0],255,200,555,60,this);
-                        		gc.drawImage(option[1],255,260,555,60,this);
-                        		gc.drawImage(option[2],255,320,555,60,this);
-                        		gc.drawImage(optionSelected[3],213,375,640,69,this);
-                        		break;
-                        }
-                        repaint();
+            this.musicOptionIndex = musicOptionIndex;
+            gc.drawImage(background, 0, 0, 1024, 768, this);
+            gc.drawImage(menutitle, 255, 80, 555, 60, this);
+
+            switch (musicOptionIndex) {
+                case 0:
+                    this.whichmusic = 0;//??whichmusic?M?w????
+                    this.y_movement = 15;//??y_movement?M?w????t??
+                    this.BPM = 400;//??BPM?M?w?`???
+                    gc.drawImage(option[1], 255, 260, 555, 60, this);
+                    gc.drawImage(option[2], 255, 320, 555, 60, this);
+                    gc.drawImage(option[3], 255, 380, 555, 60, this);
+                    gc.drawImage(optionSelected[0], 213, 195, 640, 69, this);
+                    break;
+                case 1:
+                    this.whichmusic = 1;//??whichmusic?M?w????
+                    this.y_movement = 7;//??y_movement?M?w????t??
+                    this.BPM = 120;//??BPM?M?w?`???
+                    gc.drawImage(option[0], 255, 200, 555, 60, this);
+                    gc.drawImage(option[2], 255, 320, 555, 60, this);
+                    gc.drawImage(option[3], 255, 380, 555, 60, this);
+                    gc.drawImage(optionSelected[1], 213, 255, 640, 69, this);
+                    break;
+                case 2:
+                    this.whichmusic = 2;//??whichmusic?M?w????
+                    this.y_movement = 5;//??y_movement?M?w????t??
+                    this.BPM = 180;//??BPM?M?w?`???
+                    gc.drawImage(option[0], 255, 200, 555, 60, this);
+                    gc.drawImage(option[1], 255, 260, 555, 60, this);
+                    gc.drawImage(option[3], 255, 380, 555, 60, this);
+                    gc.drawImage(optionSelected[2], 213, 315, 640, 69, this);
+                    break;
+                case 3:
+                    this.whichmusic = 3;//??whichmusic?M?w????
+                    this.y_movement = 12;//??y_movement?M?w????t??
+                    this.BPM = 300;//??BPM?M?w?`???
+                    gc.drawImage(option[0], 255, 200, 555, 60, this);
+                    gc.drawImage(option[1], 255, 260, 555, 60, this);
+                    gc.drawImage(option[2], 255, 320, 555, 60, this);
+                    gc.drawImage(optionSelected[3], 213, 375, 640, 69, this);
+                    break;
+            }
+
+            //draw song information
+            gc.setColor(Color.black);
+            gc.setFont(new Font("verdana", Font.ITALIC, 25));
+            gc.drawString("Song Name: " + whichSong.getName(), 255, 500);
+            gc.drawString("Song Duration: " + String.format("%02d",whichSong.getSongLengthInMinutesAndSeconds()[0]) + ":" + String.format("%02d", whichSong.getSongLengthInMinutesAndSeconds()[1]), 255, 525);
+            gc.drawString("Song Feature: " + whichSong.getSongFeature(), 255, 550);
+            gc.drawString("Total Beats: " + whichSong.getSongBeats(), 255, 575);
+            gc.drawString("BPM: " + whichSong.getSongBPM(), 255, 600);
+
+            repaint();
         }
         
         //return controlflow
@@ -302,6 +308,14 @@ public class MainMenu extends JWindow
         public int getBPM()
         {
         	return this.BPM;
+        }
+
+        public Song getWhichSong() {
+            return whichSong;
+        }
+
+        public void setWhichSong(Song whichSong) {
+            this.whichSong = whichSong;
         }
 }
 

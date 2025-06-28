@@ -6,10 +6,8 @@ import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.enums.XInputAxis;
 import com.github.strikerx3.jxinput.enums.XInputButton;
 import com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener;
-import com.lin1000.justdance.beats.arrow;
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.gamepanel.action.DanceAction;
-import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.input.XBoxControllerInput;
 
 public class DanceXInputDeviceListener extends SimpleXInputDeviceListener {

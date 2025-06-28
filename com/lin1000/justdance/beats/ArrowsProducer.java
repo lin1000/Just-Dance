@@ -19,7 +19,7 @@ import java.util.Vector;
 //      5.刪除   vec[x].removeElementAt(int index);
 //
 //=======================================================================
-public class BeatsProducer extends Object implements Runnable
+public class ArrowsProducer extends Object implements Runnable
 {
 
         public Vector vec[]= new Vector[4];; //vec陣列儲存上下左右箭頭
@@ -39,7 +39,7 @@ public class BeatsProducer extends Object implements Runnable
         public int BPM;
         
                         
-        public BeatsProducer(int position_left, int position_down, int position_up, int position_right, int BPM)
+        public ArrowsProducer(int position_left, int position_down, int position_up, int position_right, int BPM)
         {
                 //把四個Vector實體化，一定要用
                 vec[0]=new Vector();
@@ -76,8 +76,14 @@ public class BeatsProducer extends Object implements Runnable
                 while(true)
                 {
                         try{
-                        Thread.sleep((1000)/(BPM/60)); //控制BPM!!!Beats Per Minitue
-                        }catch(InterruptedException e){}
+
+                                //System.out.println ("1.(1000L)/(BPM/60L)="+(1000f)/(BPM/60f));
+                                //System.out.println ("2.(1000L)/(BPM/60L)="+(long)((1000f)/(BPM/60f)));
+                                //Thread.sleep((long)((1000f)/(BPM/60f))); //控制BPM!!!Beats Per Minute
+                                Thread.sleep(300); //控制BPM!!!Beats Per Minute
+                        }catch(InterruptedException e){
+                                e.printStackTrace();
+                        }
                         produce();//核心
                 }
         }
@@ -91,20 +97,21 @@ public class BeatsProducer extends Object implements Runnable
         {
                 try
                 {
+                        System.out.println("***Generation Foot steps in ArrowProducer***");
                 //極重要!!讀取舞步檔!!input為ASCII碼，如 0-->讀出來變48 ,eof=-1
                 int input[]={foot.read()-48,foot.read()-48,foot.read()-48,foot.read()-48};
                 //int input[]={(int)(Math.random()*2)%2,(int)(Math.random()*2)%2,(int)(Math.random()*2)%2,(int)(Math.random()*2)%2};
                                                         
-                if(input[0]==1) vec[0].addElement(new arrow(position_left));    
-                if(input[1]==1) vec[1].addElement(new arrow(position_down));    
-                if(input[2]==1) vec[2].addElement(new arrow(position_up));      
-                if(input[3]==1) vec[3].addElement(new arrow(position_right));
+                if(input[0]==1) vec[0].addElement(new Arrow(position_left,730));
+                if(input[1]==1) vec[1].addElement(new Arrow(position_down,730));
+                if(input[2]==1) vec[2].addElement(new Arrow(position_up,730));
+                if(input[3]==1) vec[3].addElement(new Arrow(position_right,730));
                 
                 //if(input[0]==-1 || input[1]==-1 || input[2]==-1 || input[3]==-1) ; //檔案結束
                 
                 foot.skip(1);
                 
-                }catch(java.io.IOException e){}
+                }catch(java.io.IOException e){e.printStackTrace();}
                 
         }
         
@@ -116,7 +123,7 @@ public class BeatsProducer extends Object implements Runnable
                 {               
                         for(int element_index=0;element_index < vec[vec_index].size();element_index++)
                         {
-                                arrow myarrow=(arrow)vec[vec_index].get(element_index);
+                                Arrow myarrow=(Arrow)vec[vec_index].get(element_index);
                                 int remove_or_not=myarrow.move(y_movement);
                                 
                                 //檢測要不要把箭頭kick掉，如果kick掉顯示MISS然後perfectCounter重設

@@ -31,7 +31,7 @@ public class Project extends JFrame implements Runnable
 	public int BPM;
 
 	//temp
-	public boolean multiplePlay=false;
+	public boolean isFirstRound =true;
 
 	//lock
 	private final Object mainThreadPauseLock = new Object();
@@ -39,6 +39,8 @@ public class Project extends JFrame implements Runnable
 	public Project()
 	{
 		super("Just Dance");
+		//setting up keystroke
+
 		//temp
 		projectThread=new Thread(this);
 		projectThread.start();
@@ -93,7 +95,7 @@ public class Project extends JFrame implements Runnable
 			//this.setLocationRelativeTo(null);
 			activeScreen.setFullScreenWindow(this);
 		}
-		this.setVisible(false);
+		this.setVisible(true);
 
 		while(true)
 		{
@@ -101,19 +103,19 @@ public class Project extends JFrame implements Runnable
 			soundController = new SoundController();
 
 			//com.lin1000.justdance.gamepanel.MainMenu
-			System.out.println("(1)Step=MainMenu");
-			MainMenu main=new MainMenu(this, multiplePlay,device,soundController,activeScreen);
+			System.out.println("****************(1)Step=MainMenu");
+			MainMenu mainMenu=new MainMenu(this, isFirstRound,device,soundController,activeScreen);
 			//Window mainwindow=new Window(main);
 			//mainwindow.show();
 
 			//GamePlay
 			//眔瑈祘跑计单瑈祘近3
-			System.out.println("Step=(2)After Music Chosen");
+			System.out.println("****************Step=(2)After Music Chosen");
 			//眔Ρヘ跑计
-			this.music = main.getwhichMusic();
-			this.y_movement = main.getMovement();
-			this.BPM = main.getBPM();
-			main = null;
+			this.music = mainMenu.getwhichMusic();
+			this.y_movement = mainMenu.getMovement();
+			this.BPM = mainMenu.getWhichSong().getSongBPM();
+			mainMenu = null;
 			this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");
@@ -142,12 +144,12 @@ public class Project extends JFrame implements Runnable
 			if(!(dance.conditionControl.getContinue())) stop();//
 			//replay
 			soundController.stop_all();
-			soundController.getFpsTimer().cancel();
+			//soundController.getFpsTimer().cancel();
 			dance = null;
 			soundController=null;
 
 			//dance=null;
-			multiplePlay=false;//竒材筁Ω
+			isFirstRound =false;//竒材筁Ω
 		}
 	}
 	public void stop()
@@ -175,7 +177,7 @@ public class Project extends JFrame implements Runnable
 					System.out.println("device is Connected.");
 					break;
 				}
-
+				device=null;
 			}
 		} catch (XInputNotLoadedException e) {
 			throw new RuntimeException(e);
@@ -200,6 +202,7 @@ public class Project extends JFrame implements Runnable
 		myproject.setName("Just com.lin1000.justdance.gamepanel.Dance");
 		myproject.setVisible(true);
 		myproject.setSize(300,300);
+
 
 	}
 		
