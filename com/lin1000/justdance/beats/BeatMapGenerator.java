@@ -11,7 +11,11 @@ import java.util.List;
 
 public class BeatMapGenerator {
 
-    public static Song analyze(File musicFile) throws Exception {
+    public enum Mode {
+        ENERGY_PEAK, FFT_BASS
+    }
+
+    public static Song analyze(File musicFile, Mode mode) throws Exception {
 
         AudioInputStream stream = AudioSystem.getAudioInputStream(musicFile);
         AudioFormat format = stream.getFormat();
@@ -51,6 +55,7 @@ public class BeatMapGenerator {
         int windowSize = 2048;
 
         double[] window = new double[windowSize];
+        double[] imag = new double[windowSize]; //imaginary number means
 
         for (int i = 0; i < frameCount - windowSize; i += windowSize / 2) {
             // count the energy power of each window
@@ -71,17 +76,26 @@ public class BeatMapGenerator {
                     sum += sample / 32768.0; // normalize
                 }
                 window[j] = sum / channels;
+                imag[j] = 0;
             }
 
-            // 簡單能量檢測法：總能量超過門檻則產生節奏點
-            double energy = 0;
-            for (double v : window) {
-                energy += Math.abs(v);
-            }
-            energy /= windowSize;
+            boolean isBeat = false;
 
-            // add beats at specific time point whenever energy is over the threshold
-            if (energy > 0.02) {
+            if (mode == Mode.ENERGY_PEAK) { // 簡單能量檢測法：總能量超過門檻則產生節奏點
+                double energy = 0;
+                for (double v : window) energy += Math.abs(v);
+                energy /= windowSize;
+                isBeat = energy > 0.1;
+            }else if (mode == Mode.FFT_BASS) {
+                FFT.fft(window, imag);
+                double bassEnergy = 0;
+                for (int b = 1; b <= 10; b++) {
+                    bassEnergy += Math.sqrt(window[b] * window[b] + imag[b] * imag[b]); //計算低頻的幅度(振幅)
+                }
+                isBeat = bassEnergy > 5;
+            }
+
+            if (isBeat) {
                 double time = i / frameRate;
                 beats.add(new Beat(time, 200, 730));
             }
@@ -106,11 +120,13 @@ public class BeatMapGenerator {
         song.setChannels(channels);
         song.setSoundEcoding(soundEcoding);
         song.setAudioFileLength(audioFileLength);
+        song.setAudioAnalysisMethod(mode.toString());
         song.setSongFeature("Analyzed by BeatMapGenerator");
         return song;
+
     }
 
-    public static List<Beat> generate(File musicFile) throws Exception {
+    public static List<Beat> generateBeats(File musicFile, Mode mode) throws Exception {
 
         AudioInputStream stream = AudioSystem.getAudioInputStream(musicFile);
         AudioFormat format = stream.getFormat();
@@ -125,7 +141,7 @@ public class BeatMapGenerator {
         int channels = format.getChannels();
         boolean bigEndian = format.isBigEndian();
 
-
+        System.out.println("=========================================");
         System.out.println("musicbox[music]: " + musicFile.getName());
         System.out.println("frameLength: " + frameLength);
         System.out.println("format.getFrameRate(): " + frameRate);
@@ -150,6 +166,7 @@ public class BeatMapGenerator {
         int windowSize = 2048;
 
         double[] window = new double[windowSize];
+        double[] imag = new double[windowSize]; //imaginary number means
 
         for (int i = 0; i < frameCount - windowSize; i += windowSize / 2) {
             // count the energy power of each window
@@ -170,19 +187,27 @@ public class BeatMapGenerator {
                     sum += sample / 32768.0; // normalize
                 }
                 window[j] = sum / channels;
+                imag[j] = 0;
             }
 
-            // 簡單能量檢測法：總能量超過門檻則產生節奏點
-            double energy = 0;
-            for (double v : window) {
-                energy += Math.abs(v);
-            }
-            energy /= windowSize;
+            boolean isBeat = false;
 
-            // add beats at specific time point whenever energy is over the threshold
-            if (energy > 0.1) {
+            if (mode == Mode.ENERGY_PEAK) { // 簡單能量檢測法：總能量超過門檻則產生節奏點
+                double energy = 0;
+                for (double v : window) energy += Math.abs(v);
+                energy /= windowSize;
+                isBeat = energy > 0.1;
+            }else if (mode == Mode.FFT_BASS) {
+                FFT.fft(window, imag);
+                double bassEnergy = 0;
+                for (int b = 1; b <= 10; b++) {
+                    bassEnergy += Math.sqrt(window[b] * window[b] + imag[b] * imag[b]); //計算低頻的幅度(振幅)
+                }
+                isBeat = bassEnergy > 5;
+            }
+
+            if (isBeat) {
                 double time = i / frameRate;
-                System.out.println("time (seconds):" + time);
                 beats.add(new Beat(time, 200, 730));
             }
         }
@@ -206,37 +231,12 @@ public class BeatMapGenerator {
         song.setChannels(channels);
         song.setSoundEcoding(soundEcoding);
         song.setAudioFileLength(audioFileLength);
-        song.setSongFeature("Generated by BeatMapGenerator");
-
-        System.out.println(song.toString());
-
-//        double[] windowReal = new double[windowSize];
-//        double[] windowImag = new double[windowSize];
-//
-//        for (int i = 0; i < sampleCount - windowSize; i += windowSize / 2) {
-//            for (int j = 0; j < windowSize; j++) {
-//                int low = audioBytes[(i + j) * 2] & 0xff;
-//                int high = audioBytes[(i + j) * 2 + 1];
-//                int sample = (high << 8) | low;
-//                windowReal[j] = sample / 32768.0;
-//                windowImag[j] = 0;
-//            }
-//
-//            FFT.fft(windowReal, windowImag);
-//
-//            double bassEnergy = 0;
-//            int bassStart = 1;
-//            int bassEnd = 10;
-//            for (int k = bassStart; k <= bassEnd; k++) {
-//                bassEnergy += Math.sqrt(windowReal[k] * windowReal[k] + windowImag[k] * windowImag[k]);
-//            }
-//
-//            if (bassEnergy > 5) {
-//                double time = i / frameRate;
-//                //beats.add(new Beat(time, 200)); // x=200固定座標
-//            }
-//        }
+        song.setAudioAnalysisMethod(mode.toString());
+        song.setSongFeature("Analyzed by BeatMapGenerator");
+        //return song;
 
         return beats;
+
     }
+
 }

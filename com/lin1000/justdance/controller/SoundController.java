@@ -15,6 +15,7 @@ import javax.swing.*;
 //=============================================================
 public class SoundController implements Runnable
 {
+    public BeatMapGenerator.Mode currentAudioAnalysisMode = BeatMapGenerator.Mode.FFT_BASS;
     private boolean status=false;//代表目前中心是否已經把音樂準備好
 
     private Clip danceClip;
@@ -137,6 +138,22 @@ public class SoundController implements Runnable
     {
     }
 
+    public BeatMapGenerator.Mode getCurrentAudioAnalysisMode() {
+        return currentAudioAnalysisMode;
+    }
+
+    public void setCurrentAudioAnalysisMode(BeatMapGenerator.Mode currentAudioAnalysisMode) {
+        this.currentAudioAnalysisMode = currentAudioAnalysisMode;
+    }
+
+    public void switchAudioAnalysisMode(){
+        if(currentAudioAnalysisMode == BeatMapGenerator.Mode.FFT_BASS) {
+            currentAudioAnalysisMode = BeatMapGenerator.Mode.ENERGY_PEAK;
+        } else {
+            currentAudioAnalysisMode = BeatMapGenerator.Mode.FFT_BASS;
+        }
+    }
+
     public void playEffectSound(int condition)
     {
         /* *
@@ -247,7 +264,7 @@ public class SoundController implements Runnable
              * Audio BPM Analysis by FFT
              */
             BeatMapGenerator beatMapGenerator = new BeatMapGenerator();
-            beatMapGenerator.generate(musicbox[music]);
+            beatMapGenerator.generateBeats(musicbox[music], BeatMapGenerator.Mode.FFT_BASS);
 
 
             /**

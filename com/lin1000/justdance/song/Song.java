@@ -19,6 +19,7 @@ public class Song {
     float sampleRate;
     int sampleSizeInBits ;
     int channels;
+    public String audioAnalysisMethod;
 
 
     public Song(){}
@@ -149,6 +150,14 @@ public class Song {
         return new int[]{minutes, seconds};
     }
 
+    public String getAudioAnalysisMethod() {
+        return audioAnalysisMethod;
+    }
+
+    public void setAudioAnalysisMethod(String audioAnalysisMethod) {
+        this.audioAnalysisMethod = audioAnalysisMethod;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Song Name: ").append(name).append("\n");
@@ -167,6 +176,8 @@ public class Song {
         sb.append("Sample Rate: ").append(sampleRate).append("\n");
         sb.append("Sample Size in Bits: ").append(sampleSizeInBits).append("\n");
         sb.append("Channels: ").append(channels).append("\n");
+        sb.append("Audio Analysis Method: ").append(audioAnalysisMethod).append("\n");
+
         return sb.toString();
     }
 

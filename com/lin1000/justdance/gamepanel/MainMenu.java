@@ -282,6 +282,7 @@ public class MainMenu extends JWindow
             gc.drawString("Song Feature: " + whichSong.getSongFeature(), 255, 550);
             gc.drawString("Total Beats: " + whichSong.getSongBeats(), 255, 575);
             gc.drawString("BPM: " + whichSong.getSongBPM(), 255, 600);
+            gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), 255, 625);
 
             repaint();
         }
