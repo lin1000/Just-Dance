@@ -1,6 +1,7 @@
 package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
+import java.text.DecimalFormat;
 import javax.swing.*;
 
 
@@ -63,6 +64,11 @@ public class MainMenu extends JWindow
         // lock object for synchronization
         public final Object pauseLock = new Object();
         public boolean pause = false;
+
+        //Formatter
+        DecimalFormat optional1Decimalformatter = new DecimalFormat("0.#");
+        DecimalFormat optional2Decimalformatter = new DecimalFormat("0.##");
+        DecimalFormat optional3Decimalformatter = new DecimalFormat("0.###");
 
         public MainMenu(Project project, boolean isFirstRound, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen)
         {
@@ -185,7 +191,7 @@ public class MainMenu extends JWindow
         public void paint(Graphics g) 
         {
                 try{
-                    //?p?G?s?Fsuper.paint?e???|?{?{,?]??super.paint()?|?h????M???e??????@
+                    
                     g.drawImage(buffer,0,0,dim.width,dim.height,this);
 
                 }catch(java.lang.NullPointerException f){}
@@ -282,7 +288,8 @@ public class MainMenu extends JWindow
             gc.drawString("Song Feature: " + whichSong.getSongFeature(), 255, 550);
             gc.drawString("Total Beats: " + whichSong.getSongBeats(), 255, 575);
             gc.drawString("BPM: " + whichSong.getSongBPM(), 255, 600);
-            gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), 255, 625);
+            gc.drawString("Frame Rate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz", 255, 625);
+            gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), 255, 650);
 
             repaint();
         }

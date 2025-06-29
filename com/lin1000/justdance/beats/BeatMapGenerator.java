@@ -12,7 +12,15 @@ import java.util.List;
 public class BeatMapGenerator {
 
     public enum Mode {
-        ENERGY_PEAK, FFT_BASS
+        ENERGY_PEAK, FFT_BASS, FFT_FLUX,;
+
+        private static final Mode[] vals = values();
+        public Mode next() {
+            return vals[(this.ordinal() + 1) % vals.length];
+        }
+        public Mode prev() {
+            return vals[(this.ordinal() -1) % vals.length==-1?vals.length-1:(this.ordinal() -1) % vals.length];
+        }
     }
 
     public static Song analyze(File musicFile, Mode mode) throws Exception {
@@ -48,7 +56,7 @@ public class BeatMapGenerator {
         byte[] audioBytes = stream.readAllBytes();
         frameSize = format.getFrameSize();
         frameRate = format.getFrameRate();
-        int frameCount = audioBytes.length / frameSize;
+        int frameCount = audioBytes.length / (frameSize * channels);
         int sampleSize = format.getSampleSizeInBits()/8;
         System.out.println("frameCount: " + frameCount);
         List<Beat> beats = new ArrayList<>();
@@ -58,7 +66,6 @@ public class BeatMapGenerator {
         double[] imag = new double[windowSize]; //imaginary number means
 
         for (int i = 0; i < frameCount - windowSize; i += windowSize / 2) {
-            // count the energy power of each window
             for (int j = 0; j < windowSize; j++) {
                 int sampleIndex = (i + j) * frameSize;
                 //System.out.println("sampleIndex="+sampleIndex);
@@ -81,6 +88,7 @@ public class BeatMapGenerator {
 
             boolean isBeat = false;
 
+            // analyze the energy pattern of each window (entire window,imag array is the result of FFT)
             if (mode == Mode.ENERGY_PEAK) { // 簡單能量檢測法：總能量超過門檻則產生節奏點
                 double energy = 0;
                 for (double v : window) energy += Math.abs(v);
@@ -93,6 +101,21 @@ public class BeatMapGenerator {
                     bassEnergy += Math.sqrt(window[b] * window[b] + imag[b] * imag[b]); //計算低頻的幅度(振幅)
                 }
                 isBeat = bassEnergy > 5;
+            }else if (mode == Mode.FFT_FLUX) {
+                FFT.fft(window, imag);
+                double[] prevSpectrum = new double[windowSize / 2];
+                double threshold = 0.5;
+                double flux = 0;
+                for (int b = 0; b < windowSize / 2; b++) {
+                    double magnitude = Math.sqrt(window[b] * window[b] + imag[b] * imag[b]);
+                    double diff = magnitude - prevSpectrum[b];
+                    flux += (diff > 0) ? diff : 0;
+                    prevSpectrum[b] = magnitude;
+                }
+
+                if (flux > threshold) {
+                    isBeat=true;
+                }
             }
 
             if (isBeat) {
@@ -159,7 +182,7 @@ public class BeatMapGenerator {
         byte[] audioBytes = stream.readAllBytes();
         frameSize = format.getFrameSize();
         frameRate = format.getFrameRate();
-        int frameCount = audioBytes.length / frameSize;
+        int frameCount = audioBytes.length / (frameSize * channels);
         int sampleSize = format.getSampleSizeInBits()/8;
         System.out.println("frameCount: " + frameCount);
         List<Beat> beats = new ArrayList<>();
@@ -169,7 +192,6 @@ public class BeatMapGenerator {
         double[] imag = new double[windowSize]; //imaginary number means
 
         for (int i = 0; i < frameCount - windowSize; i += windowSize / 2) {
-            // count the energy power of each window
             for (int j = 0; j < windowSize; j++) {
                 int sampleIndex = (i + j) * frameSize;
                 //System.out.println("sampleIndex="+sampleIndex);
@@ -192,6 +214,7 @@ public class BeatMapGenerator {
 
             boolean isBeat = false;
 
+            // analyze the energy pattern of each window (entire window,imag array is the result of FFT)
             if (mode == Mode.ENERGY_PEAK) { // 簡單能量檢測法：總能量超過門檻則產生節奏點
                 double energy = 0;
                 for (double v : window) energy += Math.abs(v);
@@ -204,6 +227,21 @@ public class BeatMapGenerator {
                     bassEnergy += Math.sqrt(window[b] * window[b] + imag[b] * imag[b]); //計算低頻的幅度(振幅)
                 }
                 isBeat = bassEnergy > 5;
+            }else if (mode == Mode.FFT_FLUX) {
+                FFT.fft(window, imag);
+                double[] prevSpectrum = new double[windowSize / 2];
+                double threshold = 0.5;
+                double flux = 0;
+                for (int b = 0; b < windowSize / 2; b++) {
+                    double magnitude = Math.sqrt(window[b] * window[b] + imag[b] * imag[b]);
+                    double diff = magnitude - prevSpectrum[b];
+                    flux += (diff > 0) ? diff : 0;
+                    prevSpectrum[b] = magnitude;
+                }
+
+                if (flux > threshold) {
+                    isBeat=true;
+                }
             }
 
             if (isBeat) {
@@ -211,6 +249,7 @@ public class BeatMapGenerator {
                 beats.add(new Beat(time, 200, 730));
             }
         }
+
 
         int songBeats = beats.size();
         long songLengthInMillis = (long) (1000 * frameLength / frameRate);

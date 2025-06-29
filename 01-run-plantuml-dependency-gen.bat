@@ -1,1 +1,1 @@
-java -jar plantuml-dependency-cli-1.4.0-jar-with-dependencies.jar -o justdance-plantuml.puml
+java -jar plantuml-dependency-cli-1.4.0-jar-with-dependencies.jar -dt abstract_classes,annotations,classes,enums,extensions,implementations,imports,interfaces,native_methods  -dp ^(?!java)(.+)$ -o justdance-plantuml.puml

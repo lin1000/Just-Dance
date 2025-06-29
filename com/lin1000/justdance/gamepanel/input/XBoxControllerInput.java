@@ -124,6 +124,8 @@ public class XBoxControllerInput extends Input{
             case DPAD_RIGHT:
                 super.setInputType(InputType.RIGHT);
                 break;
+            case GUIDE_BUTTON:
+                super.setInputType(InputType.GUIDE_BUTTON);
         }
     }
 }

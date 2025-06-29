@@ -97,6 +97,8 @@ public class Project extends JFrame implements Runnable
 		}
 		this.setVisible(true);
 
+		MainMenu mainMenu = null;
+		Dance dance = null;
 		while(true)
 		{
 			device = initJXInputDevice();
@@ -104,7 +106,11 @@ public class Project extends JFrame implements Runnable
 
 			//com.lin1000.justdance.gamepanel.MainMenu
 			System.out.println("****************(1)Step=MainMenu");
-			MainMenu mainMenu=new MainMenu(this, isFirstRound,device,soundController,activeScreen);
+			mainMenu=null;
+			if(mainMenu==null) {
+				mainMenu = new MainMenu(this, isFirstRound, device, soundController, activeScreen);
+			}
+
 			//Window mainwindow=new Window(main);
 			//mainwindow.show();
 
@@ -115,12 +121,12 @@ public class Project extends JFrame implements Runnable
 			this.music = mainMenu.getwhichMusic();
 			this.y_movement = mainMenu.getMovement();
 			this.BPM = mainMenu.getWhichSong().getSongBPM();
-			mainMenu = null;
-			this.repaint();
+            this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");
 			dance=new Dance(this, this.music,this.y_movement,this.BPM, device,soundController,activeScreen);//傳入值是曲目!
 			soundController.setMainTargetWindow(dance);
+			mainMenu.setVisible(false);
 			//Setting up and start counting the rhythm nanos
 			//this.soundController.playBackgroundSound(music, false);
 			soundController.initiateAudioDrivenMainTheadGameLoop(music); //non-blocking
@@ -141,18 +147,28 @@ public class Project extends JFrame implements Runnable
 			/**
 			 * Handle the restart or continues the game
 			 */
-			if(!(dance.conditionControl.getContinue())) stop();//
+			if(!(dance.conditionControl.getContinue())) gameStop();
 			//replay
-			soundController.stop_all();
-			//soundController.getFpsTimer().cancel();
-			dance = null;
-			soundController=null;
+			if(dance!=null){
+				//如果dance已經存在，則關閉它
+				System.out.println("dance is not null, dispose it.");
+				dance.producer.produceThread.stop();
+				dance.producer.stop();
+				dance.soundController.stop_all();
+				dance.removeInputDeviceListener();//remove xInputDevice listener when xInputDevice is available.
+				dance.setVisible(false);
+				dance.dispose();
+				dance = null;
 
+				//dance.producer=null;
+			}
+			//soundController.getFpsTimer().cancel();
+			soundController=null;
 			//dance=null;
-			isFirstRound =false;//已經第玩過一次
+			isFirstRound = false;//已經第玩過一次
 		}
 	}
-	public void stop()
+	public void gameStop()
 	{
 		projectThread=null;
 		System.exit(0);

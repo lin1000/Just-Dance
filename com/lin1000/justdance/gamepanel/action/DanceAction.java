@@ -42,6 +42,7 @@ public class DanceAction {
                         case START:
                             break;
                         case LEFT_SHOULDER:
+                            //mainWindowTarget.isListening=false;
                             break;
                         case RIGHT_SHOULDER:
                             break;
@@ -224,6 +225,11 @@ public class DanceAction {
             switch (pressedInt) {
                 case 1: //pressed
                     switch (input.getInputType()) {
+                        case LEFT_SHOULDER:
+                            //mainWindowTarget.isListening=false;
+                            break;
+                        case RIGHT_SHOULDER:
+                            break;
                         case A://play again (replay), not leave the game
                             synchronized (mainWindowTarget.getProject().getMainThreadPauseLock()){
                                 mainWindowTarget.conditionControl.setCondition(6);//6代表replay

@@ -59,12 +59,12 @@ public class MainMenuAction {
                 } else if (input.getInputType() == Input.InputType.A && input.isPressed()) {
                     switch (mainWindowTarget.controlFlow) {
                         case 1:
-                            mainWindowTarget.controlFlow++;
+                            mainWindowTarget.controlFlow=2;
                             //mainWindowTarget.soundController.playBackgroundSound(mainWindowTarget.musicOptionIndex);
                             break;
                         case 2:
                             mainWindowTarget.soundController.playMainMenuSound(1);
-                            mainWindowTarget.controlFlow++;
+                            mainWindowTarget.controlFlow=3;
                             List<Beat> songBeats = generateBeats(mainWindowTarget);
                             //mainWindowTarget.menuscreen();
                             break;
@@ -77,12 +77,12 @@ public class MainMenuAction {
                 } else if (input.getInputType() == Input.InputType.GUIDE_BUTTON && input.isPressed()) {
                     switchSong(mainWindowTarget);
                 } else if (input.getInputType() == Input.InputType.LEFT_SHOULDER && input.isPressed()) {
-                    //do nothing
-                    mainWindowTarget.soundController.switchAudioAnalysisMode();
+                    //switch audio analysis mode
+                    mainWindowTarget.soundController.switchAudioAnalysisMode(0); //previous algorithm
                     switchSong(mainWindowTarget);
                 } else if (input.getInputType() == Input.InputType.RIGHT_SHOULDER && input.isPressed()) {
-                    //do nothing
-                    mainWindowTarget.soundController.switchAudioAnalysisMode();
+                    //switch audio analysis mode
+                    mainWindowTarget.soundController.switchAudioAnalysisMode(1);//next algorithm
                     switchSong(mainWindowTarget);
                 }
                 break;

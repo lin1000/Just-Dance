@@ -37,6 +37,9 @@ public class ArrowsProducer extends Object implements Runnable
         
         //歌曲參數BPM
         public int BPM;
+
+        //stop indicator
+        private boolean isStop = false;
         
                         
         public ArrowsProducer(int position_left, int position_down, int position_up, int position_right, int BPM)
@@ -84,13 +87,15 @@ public class ArrowsProducer extends Object implements Runnable
                         }catch(InterruptedException e){
                                 e.printStackTrace();
                         }
+                        if(isStop) break;
                         produce();//核心
                 }
         }
         
         public void stop()
         {
-                produceThread=null;
+                //produceThread=null;
+                isStop=true;
         }
                 
         public void produce()

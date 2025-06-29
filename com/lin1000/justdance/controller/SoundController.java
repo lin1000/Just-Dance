@@ -1,11 +1,13 @@
 package com.lin1000.justdance.controller;
 
+import com.lin1000.justdance.audio.FFT;
 import com.lin1000.justdance.beats.BeatMapGenerator;
 import com.lin1000.justdance.gamepanel.Dance;
 
 import java.io.File;
+import java.util.*;
 import java.util.Timer;
-import java.util.Vector;
+import java.util.stream.Stream;
 import javax.sound.sampled.*;
 import javax.swing.*;
 
@@ -36,8 +38,6 @@ public class SoundController implements Runnable
     private int sampleSizeInBits;
     private int audioChannelSize;
     private volatile long bufferedSample = 0;
-
-
 
     //Generic JWindow control the main game screen repainting process
     private Dance mainTargetWindow = null;
@@ -131,7 +131,13 @@ public class SoundController implements Runnable
     }
 
 
-
+    //Audio Frequency Analysis
+    public static final int BINS = 1024;
+    public static final int HOP_SIZE = BINS/2;
+    public double[] lastMagnitudes = new double[BINS / 2];
+    public double[] currentMagnitudes = new double[BINS / 2];
+    public double AFFlux = 0;
+    public double AFFluxBeatStrength = 0;
 
     //constructor
     public SoundController()
@@ -146,12 +152,9 @@ public class SoundController implements Runnable
         this.currentAudioAnalysisMode = currentAudioAnalysisMode;
     }
 
-    public void switchAudioAnalysisMode(){
-        if(currentAudioAnalysisMode == BeatMapGenerator.Mode.FFT_BASS) {
-            currentAudioAnalysisMode = BeatMapGenerator.Mode.ENERGY_PEAK;
-        } else {
-            currentAudioAnalysisMode = BeatMapGenerator.Mode.FFT_BASS;
-        }
+    public void switchAudioAnalysisMode(int previousOrNext){
+        if(previousOrNext == 0 ) currentAudioAnalysisMode = currentAudioAnalysisMode.prev();
+        if(previousOrNext == 1 )currentAudioAnalysisMode = currentAudioAnalysisMode.next();
     }
 
     public void playEffectSound(int condition)
@@ -382,6 +385,9 @@ public class SoundController implements Runnable
                 line.write(buffer, 0, bytesRead);
                 bufferedSample += bytesRead / frameSize;
                 //System.out.println("bufferedSample="+ bufferedSample);
+
+                //Real time chunk based Audio Analysis
+                fftFluxAudioAnalysis(bytesRead,buffer);
                 /* *
                  * magic done by 1000 (ms/per second) / FrameRate(e.g. 16000, a.k.a 16Hz/per second) * sending-frame-byte-array(4096) / framesize(e.g. 4)
                  * result is number of milliseconds can take rest while sending enough (4096 bytes) to SourceDataLine Buffer Area.
@@ -393,7 +399,7 @@ public class SoundController implements Runnable
                  * the result should be 64
                  * if the frameate is increase to 32000, the result will be 32
                  * */
-                Thread.sleep(32);
+                //Thread.sleep(16);
                 if(mainTargetWindow.conditionControl.getGameOver()){
                     break;
                 }
@@ -403,10 +409,48 @@ public class SoundController implements Runnable
             line.close();
             audioIn.close();
 
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
+
+    private double fftFluxAudioAnalysis(int bytesRead, byte[] chunk) {
+        AFFluxBeatStrength = 0 ;
+        try {
+            byte[] buffer = chunk;
+            double[] real = new double[BINS];
+            double[] imag = new double[BINS];
+
+                if (bytesRead < BINS * 2) return 0;
+
+                for (int i = 0, j = 0; i < BINS; i++, j += 2) {
+                    int low = buffer[j] & 0xFF;
+                    int high = buffer[j + 1];
+                    int sample = (high << 8) | low;
+                    real[i] = sample / 32768.0;
+                    imag[i] = 0;
+                }
+
+                FFT.fft(real, imag);
+                AFFlux = 0;
+                for (int i = 0; i < BINS / 2; i++) {
+                    currentMagnitudes[i] = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
+                    double diff = currentMagnitudes[i] - lastMagnitudes[i];
+                    if (diff > 0) AFFlux += diff;
+                    lastMagnitudes[i] = currentMagnitudes[i];
+                }
+
+                if (AFFlux > 0) {
+                    AFFluxBeatStrength = AFFlux;
+                }else{
+                    AFFluxBeatStrength = 0 ;
+                }
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return AFFluxBeatStrength;
+    }
+
 }
