@@ -8,6 +8,10 @@ public class KeyboardControllerInput extends Input{
 
     public enum KeyboardControllerInputType{
         ENTER,
+        A,
+        X,
+        Y,
+        B,
         UP,
         DOWN,
         LEFT,
@@ -25,7 +29,17 @@ public class KeyboardControllerInput extends Input{
     public void setKeyEvent(KeyEvent keyEvent){
         switch(keyEvent.getKeyCode()){
             case KeyEvent.VK_ENTER:
-                setKeyboardControllerInputType(KeyboardControllerInputType.ENTER);
+            case KeyEvent.VK_A:
+                setKeyboardControllerInputType(KeyboardControllerInputType.A);
+                break;
+            case KeyEvent.VK_X:
+                super.setInputType(InputType.X);
+                break;
+            case KeyEvent.VK_Y:
+                super.setInputType(InputType.Y);
+                break;
+            case KeyEvent.VK_B:
+                super.setInputType(InputType.B);
                 break;
             case KeyEvent.VK_UP:
                 setKeyboardControllerInputType(KeyboardControllerInputType.UP);
@@ -62,6 +76,18 @@ public class KeyboardControllerInput extends Input{
         switch(keyboardControllerInputType){
             case ENTER:
                 super.setInputType(InputType.A);
+                break;
+            case A:
+                super.setInputType(InputType.A);
+                break;
+            case X:
+                super.setInputType(InputType.X);
+                break;
+            case Y:
+                super.setInputType(InputType.Y);
+                break;
+            case B:
+                super.setInputType(InputType.B);
                 break;
             case UP:
                 super.setInputType(InputType.UP);

@@ -81,15 +81,15 @@ public class ConditionController extends Object {
                 this.life -= 3;
                 if(this.life<=0) {
                     life=0;
-                    this.setCondition(4);//4代表gameover
+                    //this.setCondition(4);//4代表gameover
                 }
                 if(this.life > 30) {
                     for (int i = 0; i < 10; i++) {
-                        mainWindowTarget.effectManager.addLifeParticleEffect(mainWindowTarget.g_off_x + mainWindowTarget.life_x + (getLife() * 3), mainWindowTarget.g_off_y + mainWindowTarget.life_y);
+                        mainWindowTarget.effectManager.addLifeParticleEffect( mainWindowTarget.life_x + (getLife() * 3), mainWindowTarget.g_off_y + mainWindowTarget.life_y);
                     }
                 }else{
                     for (int i = 0; i < 20; i++) {
-                        mainWindowTarget.effectManager.addLifeParticleExtremeEffect(mainWindowTarget.g_off_x + mainWindowTarget.life_x + (getLife() * 3), mainWindowTarget.g_off_y + mainWindowTarget.life_y);
+                        mainWindowTarget.effectManager.addLifeParticleExtremeEffect( mainWindowTarget.life_x + (getLife() * 3), mainWindowTarget.g_off_y + mainWindowTarget.life_y);
                     }
                 }
                 break;

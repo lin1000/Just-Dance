@@ -65,7 +65,8 @@ public class MainMenuAction {
                         case 2:
                             mainWindowTarget.soundController.playMainMenuSound(1);
                             mainWindowTarget.controlFlow=3;
-                            List<Beat> songBeats = generateBeats(mainWindowTarget);
+                            //beats already auto generated in switchSong when choosing music
+                            //List<Beat> songBeats = generateBeats(mainWindowTarget);
                             //mainWindowTarget.menuscreen();
                             break;
                         case 3:

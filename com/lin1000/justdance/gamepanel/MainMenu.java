@@ -191,7 +191,7 @@ public class MainMenu extends JWindow
         public void paint(Graphics g) 
         {
                 try{
-                    
+
                     g.drawImage(buffer,0,0,dim.width,dim.height,this);
 
                 }catch(java.lang.NullPointerException f){}
@@ -286,7 +286,7 @@ public class MainMenu extends JWindow
             gc.drawString("Song Name: " + whichSong.getName(), 255, 500);
             gc.drawString("Song Duration: " + String.format("%02d",whichSong.getSongLengthInMinutesAndSeconds()[0]) + ":" + String.format("%02d", whichSong.getSongLengthInMinutesAndSeconds()[1]), 255, 525);
             gc.drawString("Song Feature: " + whichSong.getSongFeature(), 255, 550);
-            gc.drawString("Total Beats: " + whichSong.getSongBeats(), 255, 575);
+            gc.drawString("Total Beats: " + whichSong.getSongNumOfBeats(), 255, 575);
             gc.drawString("BPM: " + whichSong.getSongBPM(), 255, 600);
             gc.drawString("Frame Rate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz", 255, 625);
             gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), 255, 650);

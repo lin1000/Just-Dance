@@ -1,12 +1,15 @@
 package com.lin1000.justdance.song;
 
+import com.lin1000.justdance.beats.Beat;
+
 import javax.sound.sampled.AudioFormat;
+import java.util.List;
 
 public class Song {
 
     public String name;
     public String songFilePath;
-    int songBeats;
+    int songNumOfBeats;
     int songBPM;
     String songFeature;
     long songLengthInMillis;
@@ -20,7 +23,10 @@ public class Song {
     int sampleSizeInBits ;
     int channels;
     public String audioAnalysisMethod;
-
+    public List<Beat> beats ;
+    public double[] samples;
+    public double maxSignalStrength;
+    public double minSignalStrength;
 
     public Song(){}
 
@@ -40,12 +46,12 @@ public class Song {
         this.songFilePath = songFilePath;
     }
 
-    public int getSongBeats() {
-        return songBeats;
+    public int getSongNumOfBeats() {
+        return songNumOfBeats;
     }
 
-    public void setSongBeats(int songBeats) {
-        this.songBeats = songBeats;
+    public void setSongNumOfBeats(int songNumOfBeats) {
+        this.songNumOfBeats = songNumOfBeats;
     }
 
     public int getSongBPM() {
@@ -158,11 +164,43 @@ public class Song {
         this.audioAnalysisMethod = audioAnalysisMethod;
     }
 
+    public double getMaxSignalStrength() {
+        return maxSignalStrength;
+    }
+
+    public void setMaxSignalStrength(double maxSignalStrength) {
+        this.maxSignalStrength = maxSignalStrength;
+    }
+
+    public double getMinSignalStrength() {
+        return minSignalStrength;
+    }
+
+    public void setMinSignalStrength(double minSignalStrength) {
+        this.minSignalStrength = minSignalStrength;
+    }
+
+    public List<Beat> getBeats() {
+        return beats;
+    }
+
+    public void setBeats(List<Beat> beats) {
+        this.beats = beats;
+    }
+
+    public double[] getSamples() {
+        return samples;
+    }
+
+    public void setSamples(double[] samples) {
+        this.samples = samples;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Song Name: ").append(name).append("\n");
         sb.append("Song File Path: ").append(songFilePath).append("\n");
-        sb.append("Song Beats: ").append(songBeats).append("\n");
+        sb.append("Song Number Of Beats: ").append(songNumOfBeats).append("\n");
         sb.append("Song BPM: ").append(songBPM).append("\n");
         sb.append("Song Feature: ").append(songFeature).append("\n");
         sb.append("Song Length (ms): ").append(songLengthInMillis).append("\n");

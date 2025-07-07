@@ -124,7 +124,7 @@ public class Project extends JFrame implements Runnable
             this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");
-			dance=new Dance(this, this.music,this.y_movement,this.BPM, device,soundController,activeScreen);//傳入值是曲目!
+			dance=new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, device,soundController,activeScreen);//傳入值是曲目!
 			soundController.setMainTargetWindow(dance);
 			mainMenu.setVisible(false);
 			//Setting up and start counting the rhythm nanos

@@ -1,9 +1,8 @@
 package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.TargetDataLine;
+import java.text.DecimalFormat;
+import java.util.Optional;
 import javax.swing.*;
 
 
@@ -11,12 +10,13 @@ import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
 import com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener;
 import com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener;
-import com.lin1000.justdance.audio.FFT;
 import com.lin1000.justdance.beats.ArrowsProducer;
 import com.lin1000.justdance.beats.Arrow;
+import com.lin1000.justdance.beats.Beat;
 import com.lin1000.justdance.controller.ConditionController;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.effect.EffectManager;
+import com.lin1000.justdance.song.Song;
 
 public class Dance extends JWindow
 {
@@ -37,7 +37,7 @@ public class Dance extends JWindow
     //paint要用到的
     public Dimension dim;
     public Image buffer;
-    public Graphics gc;
+    public Graphics2D gc;
     //很多圖片
     Image image_left;
     Image image_leftfill;
@@ -61,13 +61,15 @@ public class Dance extends JWindow
     //Game Area Offset
     public final int g_off_x = 450; // 遊戲區域X偏移量
     public final int g_off_y = 0; // 遊戲區域Y偏移量
-
     //控制上排箭頭的位置
     public int arrow_y_position = 50;
     //public int width = 1280, height = 720;
     public int width = 2560, height = 1440;
     private final int dropSpeed = 300; // 每秒移動300像素
     private final int judgeLineY = 500; // 判定線Y座標
+
+    //
+    public Song song;
 
     //歌曲參數
     //music曲目值,移動速度值
@@ -81,10 +83,13 @@ public class Dance extends JWindow
 
     //生命LIFE顯示區塊
     public int life_x = 20;
-    public int life_y = 670;
+    public int life_y = 690;
 
     //Game Special Effects
     public final EffectManager effectManager = new EffectManager(g_off_x,g_off_y);
+
+    //Audio Analysis Visualizer
+    private static final int DISPLAY_SECONDS = 5;
 
 //    //Audio Frequency Analysis Visualizer
 //    public Thread audioVisualizerThread = null;
@@ -95,15 +100,21 @@ public class Dance extends JWindow
 //    private double AFFlux = 0;
 //    public boolean isListening =  false;
 
+    private DecimalFormat AFTimeFormat = new DecimalFormat("0.0");
+
     //constructor傳入值為曲目
-    public Dance(Project project, int whichmusic, int y_movement, int BPM, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen) {
+    public Dance(Project project, Song song, int whichmusic, int y_movement, int BPM, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen) {
         super(project);
         this.project = project;
+        //砍曲信息及Beats
+        this.song = song;
         //歌曲參數
         this.music = whichmusic;
         this.y_movement = y_movement;
         this.BPM = BPM;
-
+        System.out.println("==Dance Constructor==");
+        System.out.println("song.getName()=" + song.getName());
+        System.out.println("song.getBeats().size()=" + song.getBeats().size());
         System.out.println("whichmusic=" + whichmusic);
         System.out.println("y_movement=" + y_movement);
         System.out.println("BPM=" + BPM);
@@ -120,7 +131,10 @@ public class Dance extends JWindow
             width =  this.getWidth();
             height = this.getHeight();
             life_x = 20;
-            life_y = bounds.height - 98;
+            System.out.println("height="+height);
+            System.out.println("bounds.getHeight()="+bounds.getHeight());
+            System.out.println("life_y="+life_y);
+            life_y = Math.min(life_y,height - 98);
             gameover_left = 0;
             gameover_right = width;
             System.out.println("bounds.width="+ bounds.width);
@@ -149,11 +163,9 @@ public class Dance extends JWindow
         window.requestFocus();
         getContentPane().setBackground(Color.white);
 
-
         //初始化情況控制中心 (must before window visible paint or it will not work)
         conditionControl = new ConditionController(this);
         conditionControl.setCondition(7);
-
 
         //double buffering
         dim = getSize();
@@ -268,8 +280,25 @@ public class Dance extends JWindow
                                                 
                 }
         }*/
-        
-        public void update(Graphics g)
+
+    public int getWaveX() {
+        return g_off_x;
+    }
+
+    public int getWaveY() {
+        return height - getWaveH();
+    }
+
+    public int getWaveW() {
+        return width - g_off_x;
+    }
+
+    public int getWaveH() {
+        return 150;
+    }
+
+
+    public void update(Graphics g)
         {
                 System.out.println("update before paint");
                 paint(g);
@@ -334,7 +363,9 @@ public class Dance extends JWindow
                 //double buffering of entire screen
                 //dim = getSize();
                 buffer = createImage(width, height);
-                gc = buffer.getGraphics();
+                gc = (Graphics2D) buffer.getGraphics();
+                gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
     //            catch (java.lang.InterruptedException e) {
     //            }
@@ -395,12 +426,6 @@ public class Dance extends JWindow
                         gc.drawString("SCORE:", g_off_x+20, g_off_y+20);
                         gc.drawString(conditionControl.getScore() + "", g_off_x+100, g_off_y+20);
 
-                        //生命顯示
-                        gc.drawString("LIFE", g_off_x+life_x, g_off_y+life_y);
-                        gc.setColor(Color.red);
-                        gc.drawRect(g_off_x+life_x, g_off_y+life_y + 10, 300, 25);
-                        gc.fillRect(g_off_x+life_x, g_off_y+life_y+10, conditionControl.getLife() * 3, 25);
-
                         //FPS Info Block
                         int fps_x = g_off_x+300;
                         int fps_y = g_off_y+20;
@@ -422,40 +447,202 @@ public class Dance extends JWindow
                         gc.setColor(Color.black);
                         gc.fillRect(0, 0, gameover_left, height);
                         gc.fillRect(gameover_right, 0, width, height);
-                        gameover_left = 1;
-                        gameover_left *= 2.8;
-                        gameover_right /= 1.1;
-                        if (gameover_left >= 480 || gameover_right <= 50) {
-                            gameover_left = 500;
-                            gameover_right = 0;
-                            gc.setColor(Color.white);
-                            gc.setFont(new Font("標階體", Font.PLAIN, 26));
-                            gc.drawString("GAME OVER", g_off_x+155, g_off_y+(height / 2) - 20);
-                            gc.drawString("(A) DANCE!!!  (X) EXIT", g_off_x+110, g_off_y+(height / 2) + 15);
+                        gc.setFont(new Font("標階體", Font.PLAIN, 26));
+                        gc.drawString("GAME OVER", g_off_x+155, g_off_y+(height / 2) - 20);
+                        gc.drawString("(A) DANCE!!!  (X) EXIT", g_off_x+110, g_off_y+(height / 2) + 15);
+//                        gameover_left = 1;
+//                        gameover_left *= 2.8;
+//                        gameover_right /= 1.1;
+//                        if (gameover_left >= 480 || gameover_right <= 50) {
+//                            gameover_left = 500;
+//                            gameover_right = 0;
+//                            gc.setColor(Color.white);
+//                            gc.setFont(new Font("標階體", Font.PLAIN, 26));
+//                            gc.drawString("GAME OVER", g_off_x+155, g_off_y+(height / 2) - 20);
+//                            gc.drawString("(A) DANCE!!!  (X) EXIT", g_off_x+110, g_off_y+(height / 2) + 15);
+//                        }
+                    }
+
+                    /**
+                     * audio analysis visualizer - INFO
+                     */
+                    // 顯示時間與樣本數資訊
+                    gc.setColor(Color.black);
+                    gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSec) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", 10, 20);
+                    gc.drawString("Sample: " + soundController.currentPlaybackSample + " / " + song.getSamples().length, 10, 40);
+                    gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", 10, 60);
+                    gc.drawString("Sample: " + soundController.currentLongFramePositionSourceDataLine + " / " + song.getSamples().length, 10, 80);
+                    gc.drawString("available: " + soundController.currentAvailableSourceDataLine  , 10, 100);
+                    gc.drawString("currentBufferSize: " + soundController.currentBufferSize  , 10, 120);
+
+                    /**
+                     * Audio analysis visualizer - v2 (paint in wave block defined by waveX,Y,W,H)
+                     * int waveX = x of wave form
+                     * int waveY = y of wave form
+                     * int waveW = wave form area width
+                     * int waveH = wave form area height
+                     */
+                    int waveX = getWaveX();
+                    int waveY = getWaveY();
+                    int waveW = getWaveW();
+                    int waveH = getWaveH();
+//                    System.out.println("waveX=" + waveX);
+//                    System.out.println("waveY=" + waveY);
+//                    System.out.println("waveW=" + waveW);
+//                    System.out.println("waveH=" + waveH);
+
+                    // 畫波形（避免跳動：預先平均 + 定點計算）
+                    // Normal Wave Color
+                    gc.setColor(Color.green);
+                    int middle = waveH / 2;
+                    int totalVisibleSamples = (int)(DISPLAY_SECONDS * song.getSampleRate());
+                    int startSample = Math.max(0, soundController.currentPlaybackSample - totalVisibleSamples/2);
+                    int samplesPerPixel = Math.max(1, totalVisibleSamples / waveW); //will calculate how many samples should be considered in 1 X pixel
+                    int widthPerBar = 20;
+                    System.out.println("middle=" + middle);
+                    System.out.println("totalVisibleSamples=" + totalVisibleSamples);
+                    System.out.println("totalVisibleSamples/2=" + totalVisibleSamples/2);
+                    System.out.println("soundController.currentPlaybackSample=" + soundController.currentPlaybackSample);
+                    System.out.println("startSample=" + startSample);
+                    System.out.println("samplesPerPixel=" + samplesPerPixel);
+
+                    int beatSuppressionBar = 0;
+                    for (int x = 0; x < waveW; x+=widthPerBar) { //FOR EACH POINT(BAR) IN SCREEN
+                        int index = startSample + x * samplesPerPixel;
+                        if (index >= song.getSamples().length) break;
+                        double avg = 0;
+                        for (int k = 0; k < samplesPerPixel*widthPerBar && index + k < song.getSamples().length; k++) {//FOR EACH GROUPING OF Samples [k0,k1...kn]
+                            avg += song.getSamples()[index + k]; //SUM UP ALL SAMPLES(NORMALIZED) IN THIS GROUP
                         }
+                        avg = (double)(avg/(double)samplesPerPixel*widthPerBar);
+                        int y = (int) (avg * middle);
+                        System.out.println("y="+y);
+                        gc.fillRect(waveX+x, waveY+middle, widthPerBar, y);
+                        gc.setColor(Color.green);
+
+                        if(x <= waveW/2 && beatSuppressionBar==0){
+                            Optional<Beat> signalBeat = song.getBeats().stream().filter(beat-> beat.getFrameIndex()==index || Math.abs(beat.getFrameIndex() -index) <= samplesPerPixel*widthPerBar).findFirst();
+                            gc.setColor(Color.red);
+                            if(signalBeat.isPresent()){
+                                //gc.drawString(String.valueOf(signalBeat.get().getSingalStrength()) + ", frameIndex:" + signalBeat.get().getFrameIndex(), waveX+x, waveY);
+                                gc.drawOval(waveX+x, waveY, 10, 10);
+                                beatSuppressionBar = 10;
+                            }
+                        } else if(x > waveW/2 && beatSuppressionBar==0){
+                            Optional<Beat> signalBeat = song.getBeats().stream().filter(beat-> beat.getFrameIndex()==index || Math.abs(beat.getFrameIndex() -index) <= samplesPerPixel*widthPerBar).findFirst();
+                            gc.setColor(Color.GRAY);
+                            if(signalBeat.isPresent()){
+                                //gc.drawString(String.valueOf(signalBeat.get().getSingalStrength()) + ", frameIndex:" + signalBeat.get().getFrameIndex(), waveX+x, waveY);
+                                gc.drawOval(waveX+x, waveY, 10, 10);
+                            }
+                            beatSuppressionBar = 10;
+                        }
+                        beatSuppressionBar--;
+                        if(beatSuppressionBar<0) beatSuppressionBar=0;
+                    }
+
+//                    for (int x = 0; x < waveW; x++) { //FOR EACH POINT(BAR) IN SCREEN
+//                        int index = startSample + x * samplesPerPixel;
+//                        if (index >= song.getSamples().length) break;
+//                        double avg = 0;
+//                        for (int k = 0; k < samplesPerPixel && index + k < song.getSamples().length; k++) {//FOR EACH GROUPING OF Samples [k0,k1...kn]
+//                            avg += song.getSamples()[index + k]; //SUM UP ALL SAMPLES(NORMALIZED) IN THIS GROUP
+//                        }
+//                        avg = (double)(avg/(double)samplesPerPixel);
+//                        int y = (int) (avg * middle);
+//                        gc.drawLine(waveX+x, waveY+middle, waveX+x, waveY+middle - y);
+//                        gc.setColor(Color.green);
+//
+//                        if(x <= waveW/2 && beatSuppressionPixel==0){
+//                            Optional<Beat> signalBeat = song.getBeats().stream().filter(beat-> beat.getFrameIndex()==index || Math.abs(beat.getFrameIndex() -index) <= samplesPerPixel).findFirst();
+//                            gc.setColor(Color.red);
+//                            if(signalBeat.isPresent()){
+//                                //gc.drawString(String.valueOf(signalBeat.get().getSingalStrength()) + ", frameIndex:" + signalBeat.get().getFrameIndex(), waveX+x, waveY);
+//                                gc.drawOval(waveX+x, waveY, 10, 10);
+//                                beatSuppressionPixel = 50;
+//                            }
+//                        } else if(x > waveW/2 && beatSuppressionPixel==0){
+//                            Optional<Beat> signalBeat = song.getBeats().stream().filter(beat-> beat.getFrameIndex()==index || Math.abs(beat.getFrameIndex() -index) <= samplesPerPixel).findFirst();
+//                            gc.setColor(Color.GRAY);
+//                            if(signalBeat.isPresent()){
+//                                //gc.drawString(String.valueOf(signalBeat.get().getSingalStrength()) + ", frameIndex:" + signalBeat.get().getFrameIndex(), waveX+x, waveY);
+//                                gc.drawOval(waveX+x, waveY, 10, 10);
+//                            }
+//                            beatSuppressionPixel = 50;
+//                        }
+//                        beatSuppressionPixel--;
+//                        if(beatSuppressionPixel<0) beatSuppressionPixel=0;
+//                    }
+
+                    // Progress Bar Time Mark and its color 時間軸刻度
+                    gc.setColor(Color.gray);
+                    for (int i = 0; i <= DISPLAY_SECONDS; i++) {
+                        int x = (int) (i * waveW / (double) DISPLAY_SECONDS); //calculate x position of each second mark
+                        double timeMark = soundController.currentSecSourceDataLine + i - DISPLAY_SECONDS / 2.0;
+
+                        // check if it is (in the beginning before the current second reach 1/2 of DISPLAY_SECONDS
+                        if (soundController.currentSecSourceDataLine <= (double) DISPLAY_SECONDS/2){
+                            timeMark =  i;
+                            gc.drawLine(waveX + x, waveY+waveH - 15, waveX + x, waveY+waveH);
+                            gc.drawString(AFTimeFormat.format(timeMark) + "s", waveX +x + 2, waveY+waveH -2 );
+                        }else{
+                            timeMark = soundController.currentSecSourceDataLine + i - DISPLAY_SECONDS / 2.0;
+                        }
+
+                        //Draw the TimeMark (line and string) in under wave block.
+                        if (timeMark >= 0 && timeMark <= soundController.durationSec) {
+                            gc.drawLine(waveX + x, waveY+waveH - 15, waveX + x, waveY+waveH);
+                            gc.drawString(AFTimeFormat.format(timeMark) + "s", waveX +x + 2, waveY+waveH -2 );
+                        }
+                    }
+
+                    // Progress Bar Color
+                    gc.setColor(Color.red);
+                    // Play Progress Bar (in the beginning before the current second reach 1/2 of DISPLAY_SECONDS
+                    if(soundController.currentSecSourceDataLine <= (double) DISPLAY_SECONDS /2){
+                        int currentX = (int) (soundController.currentSecSourceDataLine * waveW / (double) DISPLAY_SECONDS);
+                        gc.drawLine(waveX+currentX, waveY, waveX+currentX, waveY+waveH);
+                        gc.drawString("" + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s / "    , currentX, waveY+waveH-30);
+
+                    }else{// Play Progress Bar (in the middle after the current second reached 1/2 of the DISPLAY_SECONDS
+                        //DRAW THE PROGRESS LINE in the middle of wave block
+                        int currentX = (int) (waveX + (waveW / 2.0));
+                        gc.drawLine(currentX, waveY, currentX, waveY+waveH);
+                        //gc.drawString("" + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s / "    , currentX, waveY+waveH-30);
                     }
 
                     /**
                      * audio frequency visualizer - BEGIN
                      */
-                    int AFWidth = width;
-                    int AFHeight = 150;
-                    int AFx = g_off_x;
-                    int AFy = g_off_y + height - AFHeight;
-                    gc.setColor(Color.green);
-                    for (int i = 0; i < soundController.BINS / 2; i++) {
-                        int barHeight = (int) (soundController.currentMagnitudes[i] * AFHeight);
-                        gc.fillRect(i * AFWidth / (soundController.BINS / 2), AFy+barHeight, AFWidth / (soundController.BINS / 2), AFy+AFHeight - barHeight);
-                    }
-
-                    gc.setColor(Color.red);
-                    int fluxBar = (int) (soundController.AFFluxBeatStrength * 20);
-                    gc.fillRect(AFWidth - 50, AFHeight - fluxBar, 40, fluxBar);
-                    gc.drawString("Flux: " + String.format("%.3f", soundController.AFFluxBeatStrength), AFWidth - 140, 20);
+//                    int AFWidth = width;
+//                    int AFHeight = 150;
+//                    int AFx = g_off_x;
+//                    int AFy = g_off_y + height - AFHeight;
+//                    gc.setColor(Color.green);
+//                    for (int i = 0; i < soundController.BINS / 2; i++) {
+//                        int barHeight = (int) (soundController.currentMagnitudes[i] * AFHeight);
+//                        gc.fillRect(i * AFWidth / (soundController.BINS / 2), AFy+barHeight, AFWidth / (soundController.BINS / 2), AFy+AFHeight - barHeight);
+//                    }
+//
+//                    gc.setColor(Color.red);
+//                    int fluxBar = (int) (soundController.AFFluxBeatStrength * 20);
+//                    gc.fillRect(AFWidth - 50, AFHeight - fluxBar, 40, fluxBar);
+//                    gc.drawString("Flux: " + String.format("%.3f", soundController.AFFluxBeatStrength), AFWidth - 140, 20);
 
                     /**
                      * audio frequency visualizer - END
                      */
+
+                    //生命顯示
+//                        gc.drawString("LIFE", g_off_x+life_x, g_off_y+life_y);
+//                        gc.setColor(Color.red);
+//                        gc.drawRect(g_off_x+life_x, g_off_y+life_y + 10, 300, 25);
+//                        gc.fillRect(g_off_x+life_x, g_off_y+life_y+10, conditionControl.getLife() * 3, 25);
+                    gc.drawString("LIFE", life_x, g_off_y+life_y);
+                    gc.setColor(Color.red);
+                    gc.drawRect(life_x, g_off_y+life_y + 10, 300, 25);
+                    gc.fillRect(life_x, g_off_y+life_y+10, conditionControl.getLife() * 3, 25);
+
 
                     g.drawImage(buffer, 0, 0, width, height, this);
 

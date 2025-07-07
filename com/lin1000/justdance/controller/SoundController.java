@@ -7,7 +7,6 @@ import com.lin1000.justdance.gamepanel.Dance;
 import java.io.File;
 import java.util.*;
 import java.util.Timer;
-import java.util.stream.Stream;
 import javax.sound.sampled.*;
 import javax.swing.*;
 
@@ -28,7 +27,7 @@ public class SoundController implements Runnable
     private int music;
 
     //SourceDataLine parameters
-    //frame rate refers to the number of audio frames processed per second, ypically measured in Hertz (Hz), indicating frames per second.
+    //frame rate refers to the number of audio frames processed per second, typically measured in Hertz (Hz), indicating frames per second.
     private float frameRate;
     //frame size refers to the number of samples within each frame
     private int frameSize;
@@ -36,8 +35,24 @@ public class SoundController implements Runnable
     private AudioFormat.Encoding soundEcoding;
     private float sampleRate;
     private int sampleSizeInBits;
-    private int audioChannelSize;
+    private int channels;
+    private byte[] audioBytes;
     private volatile long bufferedSample = 0;
+    public volatile int currentPlaybackSample = 0;
+
+    /**
+     * Audio Analysis Visualizer info
+     */
+    // 計算當前播放秒數
+    public double currentSec;
+    // 或改用取得當前秒數
+    public double currentSecSourceDataLine;
+    // 或改用取得當前LongFrameposition;
+    public long currentLongFramePositionSourceDataLine;
+    // 取得當前之avaiable(已在緩衝區的資料量)及buffer size
+    public long currentAvailableSourceDataLine ;
+    public int currentBufferSize;
+    public double durationSec;
 
     //Generic JWindow control the main game screen repainting process
     private Dance mainTargetWindow = null;
@@ -266,8 +281,9 @@ public class SoundController implements Runnable
             /**
              * Audio BPM Analysis by FFT
              */
-            BeatMapGenerator beatMapGenerator = new BeatMapGenerator();
-            beatMapGenerator.generateBeats(musicbox[music], BeatMapGenerator.Mode.FFT_BASS);
+            //already generated when choosing music in main menu
+            //BeatMapGenerator beatMapGenerator = new BeatMapGenerator();
+            //beatMapGenerator.generateBeats(musicbox[music], BeatMapGenerator.Mode.FFT_BASS);
 
 
             /**
@@ -319,7 +335,7 @@ public class SoundController implements Runnable
     }
 
     public void setStartTimeNanos(long startTimeNanos) {
-        this.startTimeNanos = startTimeNanos;
+        this.startTimeNanos = startTimeNanos;// high-resolution clock
     }
 
     public JWindow getMainTargetWindow() {
@@ -351,15 +367,20 @@ public class SoundController implements Runnable
             soundEcoding = format.getEncoding();
             sampleRate = format.getSampleRate();
             sampleSizeInBits = format.getSampleSizeInBits();
-            audioChannelSize = format.getChannels();
+            channels = format.getChannels();
+            audioBytes = audioIn.readAllBytes(); //strategy is to read all bytes at once
+            int sampleSize= sampleSizeInBits/8;
+            int totalSamples = audioBytes.length / (frameSize); //framesize = samplesize * channels
+            durationSec = totalSamples / frameRate;
 
             System.out.println("musicbox[music]: " + musicbox[music].getName());
             System.out.println("frameLength: " + frameLength);
             System.out.println("format.getFrameRate(): " + frameRate);
             System.out.println("format.getFrameSize(): " + frameSize);
+            System.out.println("format.getSampleRate(): " + sampleRate);
             System.out.println("format.getEncoding(): " + soundEcoding.toString());
             System.out.println("format.getSampleSizeInBits(): " + sampleSizeInBits);
-            System.out.println("format.getChannels(): " + audioChannelSize);
+            System.out.println("format.getChannels(): " + channels);
 
             //if(!isPreview){
             System.out.println("entering game play");
@@ -379,15 +400,19 @@ public class SoundController implements Runnable
             line.open(format);
             line.start();
 
-            byte[] buffer = new byte[4096];
+            int bufferSize = 4096;
+            byte[] buffer = new byte[bufferSize];
             int bytesRead;
-            while ((bytesRead = audioIn.read(buffer)) != -1) {
-                line.write(buffer, 0, bytesRead);
-                bufferedSample += bytesRead / frameSize;
-                //System.out.println("bufferedSample="+ bufferedSample);
+            int written = 0;
+            setStartTimeNanos(System.nanoTime());// high-resolution clock
+            while (written < audioBytes.length) {
+                int len = Math.min(bufferSize, audioBytes.length - written);
+                    line.write(audioBytes, written, len);
+                written += len;
+                currentPlaybackSample = written / frameSize;
 
                 //Real time chunk based Audio Analysis
-                fftFluxAudioAnalysis(bytesRead,buffer);
+                fftFluxAudioAnalysis(len,buffer);
                 /* *
                  * magic done by 1000 (ms/per second) / FrameRate(e.g. 16000, a.k.a 16Hz/per second) * sending-frame-byte-array(4096) / framesize(e.g. 4)
                  * result is number of milliseconds can take rest while sending enough (4096 bytes) to SourceDataLine Buffer Area.
@@ -399,12 +424,22 @@ public class SoundController implements Runnable
                  * the result should be 64
                  * if the frameate is increase to 32000, the result will be 32
                  * */
+
+                // 計算當前播放秒數
+                currentSec = currentPlaybackSample / sampleRate;
+                // 或改用取得當前秒數
+                currentSecSourceDataLine = line!=null?line.getMicrosecondPosition()/1000_000d:0;
+                // 或改用取得當前LongFrameposition
+                currentLongFramePositionSourceDataLine = line!=null?line.getLongFramePosition():0;
+                // 取得當前之avaiable(已在緩衝區的資料量)及buffer size
+                currentAvailableSourceDataLine = line!=null?line.available():0;
+                currentBufferSize = line.getBufferSize();
+
                 //Thread.sleep(16);
                 if(mainTargetWindow.conditionControl.getGameOver()){
                     break;
                 }
             }
-
             line.drain();
             line.close();
             audioIn.close();

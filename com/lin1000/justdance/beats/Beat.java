@@ -6,6 +6,9 @@ public class Beat extends Object {
     public int x;
     public int y;
     public boolean triggered = false;
+    public BeatMapGenerator.Mode signalMode;
+    public double singalStrength;
+    public int frameIndex;
 
     public Beat(double time, int x_position, int y_position) {
         this.time = time;
@@ -13,4 +16,27 @@ public class Beat extends Object {
         y = y_position;
     }
 
+    public double getSingalStrength() {
+        return singalStrength;
+    }
+
+    public void setSingalStrength(double singalStrength) {
+        this.singalStrength = singalStrength;
+    }
+
+    public int getFrameIndex() {
+        return frameIndex;
+    }
+
+    public void setFrameIndex(int frameIndex) {
+        this.frameIndex = frameIndex;
+    }
+
+    public BeatMapGenerator.Mode getSignalMode() {
+        return signalMode;
+    }
+
+    public void setSignalMode(BeatMapGenerator.Mode signalMode) {
+        this.signalMode = signalMode;
+    }
 }
