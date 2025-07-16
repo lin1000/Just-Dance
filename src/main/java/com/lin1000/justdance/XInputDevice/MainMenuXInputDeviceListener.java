@@ -8,7 +8,6 @@ import com.github.strikerx3.jxinput.enums.XInputButton;
 import com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener;
 import com.lin1000.justdance.gamepanel.MainMenu;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
-import com.lin1000.justdance.gamepanel.input.Input;
 import com.lin1000.justdance.gamepanel.input.XBoxControllerInput;
 
 public class MainMenuXInputDeviceListener extends SimpleXInputDeviceListener {
@@ -41,7 +40,7 @@ public class MainMenuXInputDeviceListener extends SimpleXInputDeviceListener {
     @Override
     public void buttonChanged(final XInputButton button, final boolean pressed) {
         // The given button was just pressed (if pressed == true) or released (pressed == false)
-        System.out.printf("���s %s �Q%s%n", button.name(), pressed ? "���U" : "��}");
+        System.out.printf("button :", button.name(), pressed ? " pressed" : "released");
 
         //Translate JXInputDevice Controller button into InputType
         XBoxControllerInput xBoxControllerInput = new XBoxControllerInput();

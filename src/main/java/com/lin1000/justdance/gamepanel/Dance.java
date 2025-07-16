@@ -2,17 +2,19 @@ package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.Optional;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.Transmitter;
 import javax.swing.*;
 
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
 import com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener;
+import com.lin1000.justdance.XInputDevice.DanceMidiDeviceListener;
 import com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener;
 import com.lin1000.justdance.beats.ArrowsProducer;
 import com.lin1000.justdance.beats.Arrow;
-import com.lin1000.justdance.beats.Beat;
 import com.lin1000.justdance.controller.ConditionController;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.effect.EffectManager;
@@ -25,14 +27,19 @@ public class Dance extends JWindow
     private boolean isSuperPaint = true;
     private Project project = null;
 
-    //�n�±���b�Y���L�ȡA�ϥΦbGui����
+    //control the gui display of the arrow
     public boolean direct[] = new boolean[4];
 
-    //Joystick Device passed into Main Menu
+    //Joystick Device passed into Dance
     private XInputDevice xInputDevice = null;
 
     //Joystick listener cache
     XInputDeviceListener xInputDeviceListener = null;
+
+    //Midi Device passed into Dance
+    private MidiDevice midiDevice = null;
+    //Midi listener cache
+    Receiver midiDeviceListener = null;
 
     //paint variables
     public Dimension dim;
@@ -103,7 +110,7 @@ public class Dance extends JWindow
     private DecimalFormat AFTimeFormat = new DecimalFormat("0.0");
 
     //constructor will passing in Project, Song, whichmusic, y_movement, BPM, XInputDevice, SoundController and GraphicsDevice
-    public Dance(Project project, Song song, int whichmusic, int y_movement, int BPM, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen) {
+    public Dance(Project project, Song song, int whichmusic, int y_movement, int BPM, XInputDevice xInputDevice, MidiDevice midiDevice, SoundController soundController, GraphicsDevice activeScreen) {
         super(project);
         this.project = project;
         //setting song master
@@ -190,8 +197,25 @@ public class Dance extends JWindow
             //add listener
             xInputDevice.addListener(xInputDeviceListener);
         } else {
-            System.err.println("System have no input devices, please use keyboard to play");
+            System.err.println("System has no input devices, please use computer keyboard to play");
            // throw new RuntimeException("JXInputDevice is null");
+        }
+
+        //Initialize and setup Midi Device
+        this.midiDevice = midiDevice;
+        try{
+        if(midiDevice != null) {
+            // The SimpleMidiDeviceListener allows us to implement only the methods we actually need
+            this.midiDeviceListener = new DanceMidiDeviceListener(this);
+            //midiDevice.addListener(midiDeviceListener);
+            Transmitter transmitter = midiDevice.getTransmitter();
+            transmitter.setReceiver(this.midiDeviceListener);
+        } else {
+            System.err.println("System has NO midi devices, please use computer keyboard to play");
+        }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("System has midi devices, but cannot correctly setup. Please use computer keyboard to play");
         }
 
         System.err.println(" this.BPM=" +this.BPM);
@@ -486,10 +510,6 @@ public class Dance extends JWindow
                     int waveY = getWaveY();
                     int waveW = getWaveW();
                     int waveH = getWaveH();
-//                    System.out.println("waveX=" + waveX);
-//                    System.out.println("waveY=" + waveY);
-//                    System.out.println("waveW=" + waveW);
-//                    System.out.println("waveH=" + waveH);
 
                     // 畫波形（避免跳動：預先平均 + 定點計算）
                     // Normal Wave Color
@@ -523,11 +543,11 @@ public class Dance extends JWindow
                         if(avg < minSampleBar) minSampleBar = avg;
                         double avgNormalized = 0;
                         avgNormalized = (avg>=0?Math.min(avg, minmaxThreshold):Math.max(avg,-minmaxThreshold))/minmaxThreshold;
-                        System.out.println("avg="+avg);
-                        System.out.println("avgNormalized="+avgNormalized);
+                        //System.out.println("avg="+avg);
+                        //System.out.println("avgNormalized="+avgNormalized);
                         //y is the height of the specific wave bar
                         int y = (int) (avgNormalized * middle);
-                        System.out.println("y="+y);
+                        //System.out.println("y="+y);
                         if(y>=0){//wave bar positive
                             gc.fillRect(waveX + x, waveY + middle - y, widthPerBar, y);
                             gc.setColor(Color.green);
@@ -549,7 +569,33 @@ public class Dance extends JWindow
                         gc.drawLine(waveX+x, waveY + middle - signalStrengthNormalizedY, waveX+x+widthPerBar, waveY + middle - signalStrengthNormalizedY);
                         gc.setColor(Color.green);
 
-                        //draw beats
+
+                        //draw beats (offline analysis result)
+                        boolean isBassBeat = false;
+                        for (int k = 0; k < samplesPerPixel*widthPerBar && index + k < song.getSamples().length; k++) {//FOR EACH GROUPING OF Samples [k0,k1...kn]
+                            isBassBeat = isBassBeat || song.getBassBeatsArray()[index + k]!=null; //Boolean Operation UP ALL frame's beat in THIS GROUP
+                            if(isBassBeat) {
+                                gc.setColor(Color.red);
+                                gc.drawOval(waveX+x, waveY, 10, 10);
+                                gc.setColor(Color.green);
+                                break;
+                            }
+                        }
+
+                        boolean isMiddleBeat = false;
+                        for (int k = 0; k < samplesPerPixel*widthPerBar && index + k < song.getSamples().length; k++) {//FOR EACH GROUPING OF Samples [k0,k1...kn]
+                            isMiddleBeat = isMiddleBeat || song.getMiddleBeatsArray()[index + k]!=null; //Boolean Operation UP ALL frame's beat in THIS GROUP
+                            if(isMiddleBeat) {
+                                gc.setColor(Color.darkGray);
+                                gc.drawOval(waveX+x, waveY-15, 10, 10);
+                                gc.setColor(Color.green);
+                                break;
+                            }
+                        }
+
+
+                        //draw beats (real-time analysis)
+                        /**
                         if(x <= waveW/2 && beatSuppressionBar==0){
                             Optional<Beat> signalBeat = song.getBeats().stream().filter(beat-> beat.getFrameIndex()==index || Math.abs(beat.getFrameIndex() -index) <= samplesPerPixel*widthPerBar).findFirst();
                             gc.setColor(Color.red);
@@ -569,6 +615,7 @@ public class Dance extends JWindow
                         }
                         beatSuppressionBar--;
                         if(beatSuppressionBar<0) beatSuppressionBar=0;
+                         **/
                     }
 
                     System.out.println("maxSampleBar=" + maxSampleBar);

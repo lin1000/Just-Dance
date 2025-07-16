@@ -1,15 +1,9 @@
 package com.lin1000.justdance.XInputDevice;
 
-import com.github.strikerx3.jxinput.XInputAxes;
-import com.github.strikerx3.jxinput.XInputComponents;
-import com.github.strikerx3.jxinput.XInputDevice;
-import com.github.strikerx3.jxinput.enums.XInputAxis;
-import com.github.strikerx3.jxinput.enums.XInputButton;
-import com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener;
+
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.gamepanel.action.DanceAction;
 import com.lin1000.justdance.gamepanel.input.KeyboardControllerInput;
-import com.lin1000.justdance.gamepanel.input.XBoxControllerInput;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;

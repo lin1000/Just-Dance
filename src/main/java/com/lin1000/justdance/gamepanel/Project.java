@@ -3,12 +3,13 @@ package com.lin1000.justdance.gamepanel;
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.controller.SoundController;
+import com.lin1000.justdance.XInputDevice.DanceMidiDeviceListener;
 
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Transmitter;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 
 import static java.awt.GraphicsDevice.WindowTranslucency.*;
 
@@ -18,6 +19,9 @@ public class Project extends JFrame implements Runnable
 
 	//JXInputDevice
 	XInputDevice device = null;
+
+	//MidiInputDevice
+	MidiDevice midiDevice = null;
 
 	//SoundController
 	SoundController soundController = null;
@@ -107,6 +111,8 @@ public class Project extends JFrame implements Runnable
 			device = initJXInputDevice();
 			soundController = new SoundController();
 
+			midiDevice = initMidiDevice();
+
 			//com.lin1000.justdance.gamepanel.MainMenu
 			System.out.println("****************(1)Step=MainMenu");
 			mainMenu=null;
@@ -127,7 +133,7 @@ public class Project extends JFrame implements Runnable
             this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");
-			dance=new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, device,soundController,activeScreen);//�ǤJ�ȬO����!
+			dance=new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, device, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
 			soundController.setMainTargetWindow(dance);
 			mainMenu.setVisible(false);
 			//Setting up and start counting the rhythm nanos
@@ -205,6 +211,35 @@ public class Project extends JFrame implements Runnable
 		System.out.println("using device="+device);
 
 		return device;
+	}
+
+	public MidiDevice initMidiDevice()
+	{
+		MidiDevice.Info[] infos = null;
+		MidiDevice device = null;
+		try {
+			infos = MidiSystem.getMidiDeviceInfo();
+			for (MidiDevice.Info info : infos) {
+				device = MidiSystem.getMidiDevice(info);
+				System.out.println("=========================");
+				System.out.println("info.getName()="+info.getName());
+				System.out.println("info.getVendor()="+info.getVendor());
+				System.out.println("info.getDescription()="+info.getDescription());
+				System.out.println("info.getVersion()="+info.getVersion());
+				System.out.println("device.getMaxTransmitters()="+device.getMaxTransmitters());
+				System.out.println("device.getMicrosecondPosition()="+device.getMicrosecondPosition());
+				System.out.println("device="+device);
+				if (info.getName().equals("USB-MIDI") && device.toString().contains("MidiInDevice")){
+					device.open();
+					System.out.println("Connected to Midi Device：" + info.getName());
+					return device;
+				}
+			}
+			System.err.println("Cannot find KAWAI CN201 Piano MIDI Device.");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public Object getMainThreadPauseLock() {

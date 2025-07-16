@@ -288,6 +288,7 @@ public class MainMenu extends JWindow
             gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), 255, 650);
             gc.drawString("Max Singal Strength: " + whichSong.getMaxSignalStrengthByWindow(), 255, 675);
             gc.drawString("Min Singal Strength: " + whichSong.getMinSignalStrengthByWindow(), 255, 700);
+            gc.drawString("FFT Bin (Bandwidth): " + String.format("%.2f",whichSong.getBinHzWidth()), 255, 725);
 
             repaint();
         }
