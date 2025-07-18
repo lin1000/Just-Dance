@@ -21,12 +21,13 @@ public class DanceMidiDeviceListener implements Receiver {
             int command = sm.getCommand();
             int note = sm.getData1();
             int velocity = sm.getData2();
-
             if (command == ShortMessage.NOTE_ON && velocity > 0) {
                 System.out.println("Note ON: " + note + " with velocity: " + velocity);
+                mainWindowTarget.pianoComponent.noteOn(note);
             } else if (command == ShortMessage.NOTE_OFF ||
                     (command == ShortMessage.NOTE_ON && velocity == 0)) {
                 System.out.println("Note OFF: " + note + " with velocity: " + velocity);
+                mainWindowTarget.pianoComponent.noteOff(note);
             }
         }
     }

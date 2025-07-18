@@ -69,14 +69,18 @@ public class BeatMapGenerator {
 
         //load window/imag form for FFT.
         List<Beat> beats = new ArrayList<>();
-        int windowSize = 2048;
+        int windowSize = 2048; //Bandwidth will be cut into 2048 pieces(bins)
         double[] window = new double[windowSize];
         double[] imag = new double[windowSize]; //imaginary number means
         int windowLength = frameCount / (windowSize/2);
+        double binHzWidth = frameRate / windowSize;
 
         //initialize signalStrengthByWindow array and later set analyze result by sample.
         double[] signalStrengthByWindow = new double[frameCount];
 
+        //initialized Beat[] bassBeatsArray that index of the beat (in bass, middle, treble) band
+        Beat[] bassBeatsArray = new Beat[frameCount];
+        Beat[] middleBeatsArray = new Beat[frameCount];
 
         for (int i = 0, windowCount=0; i <  frameCount - windowSize; i += windowSize / 2, windowCount++) {//FOR EACH WINDOW
             for (int j = 0; j < windowSize; j++) {//FOR EACH SAMPLE IN WINDOW
@@ -99,7 +103,8 @@ public class BeatMapGenerator {
                 imag[j] = 0;
             }
 
-            boolean isBeat = false;
+            boolean isBassBeat = false;
+            boolean isMiddleBeat = false;
             Mode signalMode = null;
             double signalStrength = 0;
             // analyze the energy pattern of each window (entire window,imag array is the result of FFT)
@@ -107,18 +112,33 @@ public class BeatMapGenerator {
                 double energy = 0;
                 for (double v : window) energy += Math.abs(v);
                 energy /= windowSize;
-                isBeat = energy > 0.1;
+                isBassBeat = energy > 0.1;
                 signalMode = Mode.ENERGY_PEAK;
                 signalStrength = energy;
-            } else if (mode == Mode.FFT_BASS) {
+            } else if (mode == Mode.FFT_BASS) {// FFT_BASS Frequency Analysis
                 FFT.fft(window, imag);
                 double bassEnergy = 0;
-                for (int b = 1; b <= 10; b++) {//FOR EACH BASS BAND
+                int bassBandMin = 60;
+                int bassBandMax = 150;
+                double middleEnergy = 0;
+                int middleBandMin = 261;
+                int middleBandMax = 1046;
+                for (int b = (int)(bassBandMin/binHzWidth); b*binHzWidth <= bassBandMax; b++) {//FOR EACH BASS BAND
                     bassEnergy += Math.sqrt(window[b] * window[b] + imag[b] * imag[b]); //計算低頻的幅度(振幅)
+                    //System.out.println("FFT["+b+"]="+Math.sqrt(window[b] * window[b] + imag[b] * imag[b]));
                 }
-                isBeat = bassEnergy > 500;
+                isBassBeat = bassEnergy > 500;
                 signalMode = Mode.FFT_BASS;
                 signalStrength = bassEnergy;
+                
+                for (int b = (int)(middleBandMin/binHzWidth); b*binHzWidth <= middleBandMax; b++) {//FOR EACH BASS BAND
+                    middleEnergy += Math.sqrt(window[b] * window[b] + imag[b] * imag[b]); //計算低頻的幅度(振幅)
+                    System.out.println("Middle Band FFT["+b+"]="+Math.sqrt(window[b] * window[b] + imag[b] * imag[b]));
+
+                }
+                isMiddleBeat = middleEnergy > 500;
+
+
             } else if (mode == Mode.FFT_FLUX) {
                 FFT.fft(window, imag);
                 double[] prevSpectrum = new double[windowSize / 2];
@@ -131,7 +151,7 @@ public class BeatMapGenerator {
                     prevSpectrum[b] = magnitude;
 
                     if (flux > threshold) {
-                        isBeat = true;
+                        isBassBeat = true;
                     }
                     signalMode = Mode.FFT_FLUX;
                     signalStrength = flux;
@@ -142,13 +162,31 @@ public class BeatMapGenerator {
             //populate signalStrengthByWindow
             signalStrengthByWindow[windowCount] = signalStrength;
 
-            if (isBeat) {
+            if (isBassBeat) {
                 double time = i / frameRate;
                 Beat beat = new Beat(time, 200, 730);
                 beat.setFrameIndex(i);
                 beat.setSignalMode(signalMode);
                 beat.setSingalStrength(signalStrength);
                 beats.add(beat);
+
+                //update the index
+                bassBeatsArray[i] = beat;
+            }else{
+                bassBeatsArray[i] = null;
+            }
+
+            if (isMiddleBeat) {
+                double time = i / frameRate;
+                Beat beat = new Beat(time, 200, 730);
+                beat.setFrameIndex(i);
+                beat.setSignalMode(signalMode);
+                beat.setSingalStrength(signalStrength);
+
+                //update the index
+                middleBeatsArray[i] = beat;
+            }else{
+                middleBeatsArray[i] = null;
             }
 
         }
@@ -187,6 +225,8 @@ public class BeatMapGenerator {
 
         song.setAudioAnalysisWindowLength(windowLength);
         song.setBeats(beats);
+        song.setBassBeatsArray(bassBeatsArray);
+        song.setMiddleBeatsArray(middleBeatsArray);
         song.setSamples(samples);
         // Find the beat with the highest signal strength
         Optional<Beat> maxStrengthBeat = beats.stream().max(Comparator.comparing(Beat::getSingalStrength));
@@ -216,6 +256,7 @@ public class BeatMapGenerator {
         } else {
             System.out.println("minStrengthBeat.isPresent() is empty.");
         }
+        song.setBinHzWidth(binHzWidth);
         return song;
 
     }
@@ -296,6 +337,7 @@ public class BeatMapGenerator {
                 double bassEnergy = 0;
                 for (int b = 1; b <= 10; b++) {
                     bassEnergy += Math.sqrt(window[b] * window[b] + imag[b] * imag[b]); //計算低頻的幅度(振幅)
+                    System.out.println("bassEnergy["+b+"]="+bassEnergy);
                 }
                 isBeat = bassEnergy > 5;
             }else if (mode == Mode.FFT_FLUX) {

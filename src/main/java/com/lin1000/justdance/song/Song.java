@@ -29,9 +29,13 @@ public class Song {
     public double maxBeatSignalStrength;
     public double minBeatSignalStrength;
     public double[] samples;
+    public Beat[] bassBeatsArray;
+    public Beat[] middleBeatsArray;
+    public Beat[] trebleBeatsArray;
     public double[] signalStrengthByWindow;
     public double maxSignalStrengthByWindow;
     public double minSignalStrengthByWindow;
+    public double binHzWidth; //bin Hz is counted by frameRate/FFT windowsize
 
 
     public Song(){}
@@ -240,6 +244,38 @@ public class Song {
 
     public void setMinSignalStrengthByWindow(double minSignalStrengthByWindow) {
         this.minSignalStrengthByWindow = minSignalStrengthByWindow;
+    }
+
+    public Beat[] getBassBeatsArray() {
+        return bassBeatsArray;
+    }
+
+    public void setBassBeatsArray(Beat[] bassBeatsArray) {
+        this.bassBeatsArray = bassBeatsArray;
+    }
+
+    public double getBinHzWidth() {
+        return binHzWidth;
+    }
+
+    public void setBinHzWidth(double binHzWidth) {
+        this.binHzWidth = binHzWidth;
+    }
+
+    public Beat[] getMiddleBeatsArray() {
+        return middleBeatsArray;
+    }
+
+    public void setMiddleBeatsArray(Beat[] middleBeatsArray) {
+        this.middleBeatsArray = middleBeatsArray;
+    }
+
+    public Beat[] getTrebleBeatsArray() {
+        return trebleBeatsArray;
+    }
+
+    public void setTrebleBeatsArray(Beat[] trebleBeatsArray) {
+        this.trebleBeatsArray = trebleBeatsArray;
     }
 
     public String toString() {

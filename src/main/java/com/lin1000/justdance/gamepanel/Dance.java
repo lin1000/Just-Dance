@@ -7,7 +7,6 @@ import javax.sound.midi.Receiver;
 import javax.sound.midi.Transmitter;
 import javax.swing.*;
 
-
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
 import com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener;
@@ -17,6 +16,8 @@ import com.lin1000.justdance.beats.ArrowsProducer;
 import com.lin1000.justdance.beats.Arrow;
 import com.lin1000.justdance.controller.ConditionController;
 import com.lin1000.justdance.controller.SoundController;
+import com.lin1000.justdance.gamepanel.componentpanel.PianoComponent;
+import com.lin1000.justdance.gamepanel.componentpanel.PianoStyle;
 import com.lin1000.justdance.gamepanel.effect.EffectManager;
 import com.lin1000.justdance.song.Song;
 
@@ -108,6 +109,12 @@ public class Dance extends JWindow
 //    public boolean isListening =  false;
 
     private DecimalFormat AFTimeFormat = new DecimalFormat("0.0");
+
+    //Piano Component
+    public PianoComponent pianoComponent = null;
+    //Piano Area Offset
+    public final int p_off_x = 350; // Game Area x offset in pixels
+    public final int p_off_y = 400; // Game Area y offset in pixels
 
     //constructor will passing in Project, Song, whichmusic, y_movement, BPM, XInputDevice, SoundController and GraphicsDevice
     public Dance(Project project, Song song, int whichmusic, int y_movement, int BPM, XInputDevice xInputDevice, MidiDevice midiDevice, SoundController soundController, GraphicsDevice activeScreen) {
@@ -207,7 +214,6 @@ public class Dance extends JWindow
         if(midiDevice != null) {
             // The SimpleMidiDeviceListener allows us to implement only the methods we actually need
             this.midiDeviceListener = new DanceMidiDeviceListener(this);
-            //midiDevice.addListener(midiDeviceListener);
             Transmitter transmitter = midiDevice.getTransmitter();
             transmitter.setReceiver(this.midiDeviceListener);
         } else {
@@ -233,6 +239,11 @@ public class Dance extends JWindow
 //        //Enable listening to audio input
 //        audioVisualizerThread = new Thread(this::startListening);
 //        audioVisualizerThread.start();
+
+        //Setup PianoComponent
+        if(midiDevice != null)
+            pianoComponent = new PianoComponent(new PianoStyle(),p_off_x, p_off_y );
+
     }
         
         
@@ -408,7 +419,11 @@ public class Dance extends JWindow
                     gc.fillRect(0, 0, width, height);
                     //-- clear background -->
 
-                    //-- Aarrow reactions control -->
+                    if(pianoComponent!=null) {
+                        pianoComponent.draw(gc);
+                    }
+
+                        //-- Aarrow reactions control -->
                     if (!this.direct[0]) gc.drawImage(image_left, g_off_x+30, g_off_y+arrow_y_position, this);
                     else gc.drawImage(image_leftfill, g_off_x+30, g_off_y+arrow_y_position, this);
                     if (!this.direct[1]) gc.drawImage(image_down, g_off_x+130, g_off_y+arrow_y_position, this);
@@ -519,13 +534,13 @@ public class Dance extends JWindow
                     int startSample = Math.max(0, soundController.currentPlaybackSample - totalVisibleSamples/2);
                     int samplesPerPixel = Math.max(1, totalVisibleSamples / waveW); //will calculate how many samples should be considered in 1 X pixel
                     int widthPerBar = 5;
-                    System.out.println("middle=" + middle);
-                    System.out.println("totalVisibleSamples=" + totalVisibleSamples);
-                    System.out.println("totalVisibleSamples/2=" + totalVisibleSamples/2);
-                    System.out.println("soundController.currentPlaybackSample=" + soundController.currentPlaybackSample);
-                    System.out.println("startSample=" + startSample);
-                    System.out.println("samplesPerPixel=" + samplesPerPixel);
-                    System.out.println("samplesPerPixel*widthPerBar=" + samplesPerPixel*widthPerBar);
+//                  System.out.println("middle=" + middle);
+//                  System.out.println("totalVisibleSamples=" + totalVisibleSamples);
+//                  System.out.println("totalVisibleSamples/2=" + totalVisibleSamples/2);
+//                  System.out.println("soundController.currentPlaybackSample=" + soundController.currentPlaybackSample);
+//                  System.out.println("startSample=" + startSample);
+//                  System.out.println("samplesPerPixel=" + samplesPerPixel);
+//                  System.out.println("samplesPerPixel*widthPerBar=" + samplesPerPixel*widthPerBar);
                     double minmaxThreshold = 5;
                     double maxSampleBar = 0;
                     double minSampleBar = 0;
@@ -618,8 +633,8 @@ public class Dance extends JWindow
                          **/
                     }
 
-                    System.out.println("maxSampleBar=" + maxSampleBar);
-                    System.out.println("minSampleBar=" + minSampleBar);
+                    //System.out.println("maxSampleBar=" + maxSampleBar);
+                    //System.out.println("minSampleBar=" + minSampleBar);
 
 //                    for (int x = 0; x < waveW; x++) { //FOR EACH POINT(BAR) IN SCREEN
 //                        int index = startSample + x * samplesPerPixel;
@@ -722,6 +737,7 @@ public class Dance extends JWindow
                     gc.setColor(Color.red);
                     gc.drawRect(life_x, g_off_y+life_y + 10, 300, 25);
                     gc.fillRect(life_x, g_off_y+life_y+10, conditionControl.getLife() * 3, 25);
+
 
 
                     g.drawImage(buffer, 0, 0, width, height, this);
