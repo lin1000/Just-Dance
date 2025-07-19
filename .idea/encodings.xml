@@ -12,8 +12,8 @@
     <file url="file://$PROJECT_DIR$/src/com/lin1000/justdance/gamepanel/MainMenu.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/com/lin1000/justdance/gamepanel/Project.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/java/com/lin1000/justdance/XInputDevice/DanceKeyboardDeviceListener.java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/java/com/lin1000/justdance/XInputDevice/DanceXInputDeviceListener.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/lin1000/justdance/device/DanceKeyboardDeviceListener.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/com/lin1000/justdance/device/DanceXInputDeviceListener.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/com/lin1000/justdance/gamepanel/Project.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
   </component>
