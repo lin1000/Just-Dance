@@ -9,9 +9,9 @@ import javax.swing.*;
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
-import com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener;
-import com.lin1000.justdance.XInputDevice.DanceMidiDeviceListener;
-import com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener;
+import com.lin1000.justdance.device.DanceKeyboardDeviceListener;
+import com.lin1000.justdance.device.DanceMidiDeviceListener;
+import com.lin1000.justdance.device.DanceXInputDeviceListener;
 import com.lin1000.justdance.beats.ArrowsProducer;
 import com.lin1000.justdance.beats.Arrow;
 import com.lin1000.justdance.controller.ConditionController;

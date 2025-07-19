@@ -1,4 +1,4 @@
-package com.lin1000.justdance.XInputDevice;
+package com.lin1000.justdance.device;
 
 import com.github.strikerx3.jxinput.XInputAxes;
 import com.github.strikerx3.jxinput.XInputComponents;

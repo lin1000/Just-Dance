@@ -3,11 +3,10 @@ package com.lin1000.justdance.gamepanel;
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.controller.SoundController;
-import com.lin1000.justdance.XInputDevice.DanceMidiDeviceListener;
+import com.lin1000.justdance.device.JXInputDeviceWatcher;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Transmitter;
 import javax.swing.*;
 import java.awt.*;
 
@@ -22,6 +21,9 @@ public class Project extends JFrame implements Runnable
 
 	//MidiInputDevice
 	MidiDevice midiDevice = null;
+
+	//Device Watcher Polling based
+	JXInputDeviceWatcher watcher = null;
 
 	//SoundController
 	SoundController soundController = null;
@@ -55,6 +57,10 @@ public class Project extends JFrame implements Runnable
 	
 	public void run()
 	{
+		//Device Watcher Polling based
+		this.watcher = new JXInputDeviceWatcher();
+		watcher.start();
+
 		// 取得所有螢幕裝置
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] screens = ge.getScreenDevices();
@@ -62,7 +68,8 @@ public class Project extends JFrame implements Runnable
 		// 如果有第二個螢幕，就使用它
 		if (screens.length > 1) {
 			activeScreen = screens[1];
-			System.out.println("activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSPARENT)="+activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSPARENT));
+			System.out.println("activeScreen.isWindowTranslucencySupported(PERPIXEL_" +
+					"TRANSPARENT)="+activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSPARENT));
 			System.out.println("activeScreen.isWindowTranslucencySupported(TRANSLUCENT)="+activeScreen.isWindowTranslucencySupported(TRANSLUCENT));
 			System.out.println("activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSLUCENT)="+activeScreen.isWindowTranslucencySupported(PERPIXEL_TRANSLUCENT));
 			System.out.println("activeScreen.isDisplayChangeSupported()="+activeScreen.isDisplayChangeSupported());
@@ -109,9 +116,8 @@ public class Project extends JFrame implements Runnable
 		while(true)
 		{
 			device = initJXInputDevice();
-			soundController = new SoundController();
-
 			midiDevice = initMidiDevice();
+			soundController = new SoundController();
 
 			//com.lin1000.justdance.gamepanel.MainMenu
 			System.out.println("****************(1)Step=MainMenu");
@@ -188,6 +194,8 @@ public class Project extends JFrame implements Runnable
 		if (!XInputDevice.isAvailable()) {
 			System.out.println("XInput 不可用，請確認系統支援並已載入 DLL。");
 			return null;
+		} else {
+			System.out.println("XInputDevice.getLibraryVersion()="+XInputDevice.getLibraryVersion());
 		}
 
 		// 取得玩家 1 的控制器（0~3 對應 4 個可能控制器）
@@ -197,7 +205,7 @@ public class Project extends JFrame implements Runnable
 			devices = XInputDevice.getAllDevices();
 			for(int i=0; i < devices.length ;i++){
 				device = devices[i];
-				System.out.println("devicce="+device + ", isConnected="+ device.isConnected());
+				System.out.println("device="+device + ", isConnected="+ device.isConnected());
 				if (device.isConnected()) {
 					System.out.println("device is Connected.");
 					break;
@@ -221,7 +229,7 @@ public class Project extends JFrame implements Runnable
 			infos = MidiSystem.getMidiDeviceInfo();
 			for (MidiDevice.Info info : infos) {
 				device = MidiSystem.getMidiDevice(info);
-				System.out.println("=========================");
+				System.out.println("===========MIDI DEVICE==============");
 				System.out.println("info.getName()="+info.getName());
 				System.out.println("info.getVendor()="+info.getVendor());
 				System.out.println("info.getDescription()="+info.getDescription());
@@ -258,5 +266,5 @@ public class Project extends JFrame implements Runnable
 		myproject.setSize(300,300);
 
 	}
-		
+
 }

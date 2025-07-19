@@ -1,7 +1,6 @@
-package com.lin1000.justdance.XInputDevice;
+package com.lin1000.justdance.device;
 
 import com.lin1000.justdance.gamepanel.MainMenu;
-import com.lin1000.justdance.gamepanel.action.DanceAction;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.input.KeyboardControllerInput;
 

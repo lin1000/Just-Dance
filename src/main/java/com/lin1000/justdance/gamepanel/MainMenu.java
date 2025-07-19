@@ -7,11 +7,13 @@ import javax.swing.*;
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
-import com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener;
-import com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener;
+import com.lin1000.justdance.device.MainMenuKeyboardDeviceListener;
+import com.lin1000.justdance.device.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
+import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
 import com.lin1000.justdance.gamepanel.input.Input;
+import com.lin1000.justdance.player.Player;
 import com.lin1000.justdance.song.Song;
 //import de.hardcode.jxinput.JXInputManager;
 //import de.hardcode.jxinput.JXInputDevice;
@@ -21,6 +23,9 @@ import com.lin1000.justdance.song.Song;
 
 public class MainMenu extends JWindow
 {
+        //Upstream project vairable
+        private Project project = null;
+
         //Windows variable
         private Window window = null;
 
@@ -32,7 +37,7 @@ public class MainMenu extends JWindow
         //paint
         private Dimension dim;
         private Image buffer;
-        private Graphics gc;
+        private Graphics2D gc;
         //
         Image mark;
         Image menutitle;
@@ -70,6 +75,7 @@ public class MainMenu extends JWindow
         public MainMenu(Project project, boolean isFirstRound, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen)
         {
             super(project);
+            this.project = project;
             window = this;
             if (activeScreen != null) {
                 Rectangle bounds = activeScreen.getDefaultConfiguration().getBounds();
@@ -99,7 +105,17 @@ public class MainMenu extends JWindow
             //double buffering
             dim = getSize();
             buffer = createImage(dim.width, dim.height);
-            gc = buffer.getGraphics();
+            gc = (Graphics2D) buffer.getGraphics();
+
+            gc.setRenderingHint(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // You can also enable antialiasing for text:
+
+            gc.setRenderingHint(
+                    RenderingHints.KEY_TEXT_ANTIALIASING,
+                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             //loading image
             loadImage();
@@ -201,7 +217,7 @@ public class MainMenu extends JWindow
                 mark=kit.getImage("img/mark.jpg");
                 background=kit.getImage("img/background.jpg");
                 menutitle=kit.getImage("img/menutitle.jpg");
-                
+
                 option[0]=kit.getImage("img/option1.jpg");
                 option[1]=kit.getImage("img/option2.jpg");
                 option[2]=kit.getImage("img/option3.jpg");
@@ -216,15 +232,22 @@ public class MainMenu extends JWindow
         public void paintInitial(int paintIndex)
         {
                 //-- clear background -->
-                        gc.setColor( Color.black );
-                        gc.fillRect( 0, 0, dim.width, dim.height );
+                gc.setColor( Color.black );
+                gc.fillRect( 0, 0, dim.width, dim.height );
                 //-- clear background -->
         	                        
-                        gc.drawImage(mark,112,60,800,600,this);
-                                              
-                        gc.setColor(Color.white);
-                        gc.setFont(new Font("verdana",Font.PLAIN,20));
-                        if(paintIndex > 5)  {gc.drawString("Press Start Button",440,600);}
+                gc.drawImage(mark,112,60,800,600,this);
+
+
+                gc.setColor(Color.white);
+                gc.setFont(new Font("verdana",Font.PLAIN,20));
+                if(paintIndex > 5)  {gc.drawString("Press Start Button",440,600);}
+
+                Player p1 = project.watcher.getPlayer(0);
+                if(p1!=null) {
+                    XBoxControllerComponent xBoxControllerComponent = new XBoxControllerComponent(30,450);
+                    xBoxControllerComponent.draw(gc);
+                }
 
                 repaint();
                         
