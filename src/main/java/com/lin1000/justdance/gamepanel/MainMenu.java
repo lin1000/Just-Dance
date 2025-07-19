@@ -1,12 +1,15 @@
 package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import javax.swing.*;
-
-
+import java.awt.image.BufferedImage;
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
+import com.lin1000.justdance.device.JXInputDeviceWatcher;
 import com.lin1000.justdance.device.MainMenuKeyboardDeviceListener;
 import com.lin1000.justdance.device.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.controller.SoundController;
@@ -15,6 +18,12 @@ import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
 import com.lin1000.justdance.gamepanel.input.Input;
 import com.lin1000.justdance.player.Player;
 import com.lin1000.justdance.song.Song;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.api.JCodecException;
+import org.jcodec.common.io.FileChannelWrapper;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.model.Picture;
+import org.jcodec.scale.AWTUtil;
 //import de.hardcode.jxinput.JXInputManager;
 //import de.hardcode.jxinput.JXInputDevice;
 //import de.hardcode.jxinput.test.ButtonListener;
@@ -117,13 +126,14 @@ public class MainMenu extends JWindow
                     RenderingHints.KEY_TEXT_ANTIALIASING,
                     RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            //loading image
+            //loading image resource
             loadImage();
 
             //Sound Controller
             this.soundController = soundController;
             //setup joystick and register joystic event listener
             this.xInputDevice = xInputDevice;
+            /**
             if (xInputDevice != null) {
                 // The SimpleXInputDeviceListener allows us to implement only the methods we actually need
                 this.xInputDeviceListener = new MainMenuXInputDeviceListener(this);
@@ -133,18 +143,38 @@ public class MainMenu extends JWindow
             } else {
                 System.err.println("System have no input devices, please use keyboard to play");
                 //throw new RuntimeException("JXInputDevice is null");
-            }
+            }**/
+
+            try {
+                soundController.playMainMenuSound(0);
+                while (true) {
+                    Picture picture = null;
+                    picture = project.frameGrab.getNativeFrame();
+                    if (picture == null) break;
+                    BufferedImage currentFrame = AWTUtil.toBufferedImage(picture);
+                    gc.drawImage(currentFrame, 0, 0, getWidth(), getHeight(), null);
+                    repaint();
+                    //Thread.sleep(20); // 約 30 FPS
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                //skip the intro vide and continue
+             }
 
             if (isFirstRound)//show game landing screen for the first time
             {
                 //soundControl.play_beginSound(2);
                 paintInitial(0);//
                 try {
-                    Thread.sleep(2500);
+                    //Device Watcher Polling based
+                    project.watcher = new JXInputDeviceWatcher();
+                    Thread.sleep(500);
                 } catch (java.lang.InterruptedException e) {
+                    e.printStackTrace();
                 }
-                soundController.playMainMenuSound(0);
 
+                project.watcher.setMainTargetWindow(this);
+                project.watcher.start();
                 int paintIndex = 0;
                 while (controlFlow == 1) {
                     try {
@@ -157,6 +187,7 @@ public class MainMenu extends JWindow
                     } catch (java.lang.InterruptedException e) {
                         e.printStackTrace();
                     }
+
 
                     if (controlFlow == 4) // leave game directly
                         System.exit(0);
@@ -190,13 +221,14 @@ public class MainMenu extends JWindow
                 }
             }
 
+            /**
             if(this.xInputDeviceListener!=null) {
                 this.xInputDevice.removeListener(this.xInputDeviceListener);
-            }
+            }**/
         }
 
-        
-        public void update(Graphics g)
+
+    public void update(Graphics g)
         {
                 paint(g);
         }
@@ -232,21 +264,22 @@ public class MainMenu extends JWindow
         public void paintInitial(int paintIndex)
         {
                 //-- clear background -->
-                gc.setColor( Color.black );
-                gc.fillRect( 0, 0, dim.width, dim.height );
+                //gc.setColor( Color.black );
+                //gc.fillRect( 0, 0, dim.width, dim.height );
                 //-- clear background -->
         	                        
                 gc.drawImage(mark,0,0,getWidth(), getHeight(),this);
-
 
                 gc.setColor(Color.white);
                 gc.setFont(new Font("verdana",Font.PLAIN,20));
                 if(paintIndex > 5)  {gc.drawString("Press Start Button",550,600);}
 
-                Player p1 = project.watcher.getPlayer(0);
-                if(p1!=null) {
-                    XBoxControllerComponent xBoxControllerComponent = new XBoxControllerComponent(30,450);
-                    xBoxControllerComponent.draw(gc);
+                if(project.watcher != null){
+                    Player p1 = project.watcher.getPlayer(0);
+                    if(p1!=null) {
+                        XBoxControllerComponent xBoxControllerComponent = new XBoxControllerComponent(30,450);
+                        xBoxControllerComponent.draw(gc);
+                    }
                 }
 
                 repaint();

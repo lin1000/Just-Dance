@@ -102,5 +102,19 @@
             <version>${lwjgl.version}</version>
             <classifier>natives-windows</classifier>
         </dependency>
+        <dependency>
+            <groupId>org.jcodec</groupId>
+            <artifactId>jcodec</artifactId>
+            <version>0.2.5</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/resources/packages/jcodec-0.2.5.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jcodec</groupId>
+            <artifactId>jcodec-javase</artifactId>
+            <version>0.2.5</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/src/main/resources/packages/jcodec-javase-0.2.5.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>

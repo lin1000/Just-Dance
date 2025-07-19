@@ -4,11 +4,18 @@ import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.device.JXInputDeviceWatcher;
+import org.jcodec.api.FrameGrab;
+import org.jcodec.api.JCodecException;
+import org.jcodec.common.io.FileChannelWrapper;
+import org.jcodec.common.io.NIOUtils;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 import static java.awt.GraphicsDevice.WindowTranslucency.*;
 
@@ -17,7 +24,7 @@ public class Project extends JFrame implements Runnable
 	private Thread projectThread;
 
 	//JXInputDevice
-	XInputDevice device = null;
+	public XInputDevice xInputDevice = null;
 
 	//MidiInputDevice
 	MidiDevice midiDevice = null;
@@ -45,10 +52,24 @@ public class Project extends JFrame implements Runnable
 	//lock
 	private final Object mainThreadPauseLock = new Object();
 
+	//Video playing variables
+	public BufferedImage currentVideoFrame;
+	public FrameGrab frameGrab;
+	public String videoPath = "img/intro.mp4";
+
 	public Project()
 	{
 		super("Just Dance");
 		//setting up keystroke
+
+		//loading video resource
+		try {
+			loadVideo();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (JCodecException e) {
+			throw new RuntimeException(e);
+		}
 
 		//temp
 		projectThread=new Thread(this);
@@ -57,10 +78,6 @@ public class Project extends JFrame implements Runnable
 	
 	public void run()
 	{
-		//Device Watcher Polling based
-		this.watcher = new JXInputDeviceWatcher();
-		watcher.start();
-
 		// 取得所有螢幕裝置
 		GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		GraphicsDevice[] screens = ge.getScreenDevices();
@@ -115,7 +132,7 @@ public class Project extends JFrame implements Runnable
 		Dance dance = null;
 		while(true)
 		{
-			device = initJXInputDevice();
+			xInputDevice = initJXInputDevice();
 			midiDevice = initMidiDevice();
 			soundController = new SoundController();
 
@@ -123,7 +140,7 @@ public class Project extends JFrame implements Runnable
 			System.out.println("****************(1)Step=MainMenu");
 			mainMenu=null;
 			if(mainMenu==null) {
-				mainMenu = new MainMenu(this, isFirstRound, device, soundController, activeScreen);
+				mainMenu = new MainMenu(this, isFirstRound, xInputDevice, soundController, activeScreen);
 			}
 
 			//Window mainwindow=new Window(main);
@@ -139,7 +156,7 @@ public class Project extends JFrame implements Runnable
             this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");
-			dance=new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, device, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
+			dance=new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, xInputDevice, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
 			soundController.setMainTargetWindow(dance);
 			mainMenu.setVisible(false);
 			//Setting up and start counting the rhythm nanos
@@ -248,6 +265,11 @@ public class Project extends JFrame implements Runnable
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private void loadVideo() throws IOException, JCodecException {
+		FileChannelWrapper ch = NIOUtils.readableChannel(new File(videoPath));
+		frameGrab = FrameGrab.createFrameGrab(ch);
 	}
 
 	public Object getMainThreadPauseLock() {

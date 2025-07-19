@@ -2,7 +2,10 @@ package com.lin1000.justdance.device;
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
+import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
+import com.lin1000.justdance.gamepanel.MainMenu;
 import com.lin1000.justdance.player.Player;
+import com.sun.tools.javac.Main;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -10,33 +13,49 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class JXInputDeviceWatcher {
-    private int knownDeviceCount = -1;
+
+    private MainMenu mainTargetWindow = null;
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private HashMap<String,Player> xInputDeviceHash = null;
 
     public interface JXDeviceListener {
-        void onDeviceConnected();
-        void onDeviceDisconnected();
+        void onDeviceDiscovered(XInputDevice device);
+        void onDeviceConnected(XInputDevice device);
+        void onDeviceDisconnected(XInputDevice device);
     }
 
     private JXDeviceListener listener;
 
     public JXInputDeviceWatcher(){
         this.listener = new JXInputDeviceWatcher.JXDeviceListener() {
+
             @Override
-            public void onDeviceConnected() {
-                System.out.println("🎮 JXInput Device Connected");
+            public void onDeviceDiscovered(XInputDevice device) {
+                System.out.println("🎮 JXInput Device ["+ device+ "] is Connected.");
             }
 
             @Override
-            public void onDeviceDisconnected() {
-                System.out.println("🎮 JXInput Device Disconnected");
+            public void onDeviceConnected(XInputDevice device) {
+                System.out.println("🎮 JXInput Device ["+ device+ "] is Connected");
+            }
+
+            @Override
+            public void onDeviceDisconnected(XInputDevice device) {
+                System.out.println("🎮 JXInput Device [\"+ device+ \"] is Disconnected");
             }
         };
     }
 
     public JXInputDeviceWatcher(JXDeviceListener listener) {
         this.listener = listener;
+    }
+
+    public MainMenu getMainTargetWindow() {
+        return mainTargetWindow;
+    }
+
+    public void setMainTargetWindow(MainMenu mainTargetWindow) {
+        this.mainTargetWindow = mainTargetWindow;
     }
 
     private Player extractDeviceIntoPlayer(XInputDevice device){
@@ -72,11 +91,10 @@ public class JXInputDeviceWatcher {
                 }
                 Player p = extractDeviceIntoPlayer(device);
                 xInputDeviceHash.put(device.toString(),p);
-                device = null;
             }
 
             //then schedule the pooling at Fixed Rate
-            scheduler.scheduleAtFixedRate(this::scanDevices, 3000, 1000, TimeUnit.MICROSECONDS);
+            scheduler.scheduleAtFixedRate(this::scanDevices, 0, 2, TimeUnit.SECONDS);
 
         } catch (XInputNotLoadedException e) {
             throw new RuntimeException(e);
@@ -85,12 +103,12 @@ public class JXInputDeviceWatcher {
     }
 
     private void scanDevices() {
-        System.out.println("Scanning Device...");
+        //System.out.println("Scanning Device...");
         if (!XInputDevice.isAvailable()) {
             System.out.println("XInput 不可用，請確認系統支援並已載入 DLL。");
             return;
         }
-        System.out.println("Scanning Device...XInputDevice Driver is available..scanning.");
+        //System.out.println("Scanning Device...XInputDevice Driver is available..scanning.");
 
         // 取得玩家 1 的控制器（0~3 對應 4 個可能控制器）
         XInputDevice[] devices = null;
@@ -102,27 +120,39 @@ public class JXInputDeviceWatcher {
             int connectedCount = 0;
             for(int i=0; i < devices.length ;i++){
                 device = devices[i];
+                device.poll(); //Critical Step to update the controller state include isConnected.
                 Player p = xInputDeviceHash.get(device.toString());
                 if(p==null){//New Device Join
                     p = extractDeviceIntoPlayer(device);
                     xInputDeviceHash.put(device.toString(),p);
-                    listener.onDeviceConnected();
+                    listener.onDeviceDiscovered(device);
                 }else if(p!=null && p.isConnected() && !device.isConnected()){//Device become offline
                     p.setConnected(device.isConnected());
-                    listener.onDeviceDisconnected();
+                    MainMenuXInputDeviceListener mainMenuXInputDeviceListener = p.getMainMenuXInputDeviceListener();
+                    device.removeListener(mainMenuXInputDeviceListener);
+                    p.setMainMenuXInputDeviceListener(null);
+                    listener.onDeviceDisconnected(device);
                 } else if(p!=null && p.isConnected() &&  device.isConnected()){
                     //nothing changed
                 }else if(p!=null && !p.isConnected() && !device.isConnected()) {
                     //nothing changed
                 }else if(p!=null && !p.isConnected() && device.isConnected()){//Device come online again
+                    System.out.println("JXInput Device ["+device+"] come online");
                     p.setConnected(device.isConnected());
-                    listener.onDeviceConnected();
+                    MainMenuXInputDeviceListener mainMenuXInputDeviceListener = new MainMenuXInputDeviceListener(mainTargetWindow);
+                    p.setMainMenuXInputDeviceListener(mainMenuXInputDeviceListener);
+                    // The SimpleXInputDeviceListener allows us to implement only the methods we actually need
+                    //add listener to enable game interactive by JXInputDevice
+                    device.addListener(mainMenuXInputDeviceListener);
+                    listener.onDeviceConnected(device);
                 }
 
             }
             System.out.println("Scanning Device...XInputDevice Driver is available..scanning..."+xInputDeviceHash.size()+" devices.." );
+            xInputDeviceHash.values().stream().forEach(player->{ System.out.println(player.getControllerID() + "=" + player.isConnected());});
 
         } catch (XInputNotLoadedException e) {
+            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -141,5 +171,38 @@ public class JXInputDeviceWatcher {
 
     public void stop() {
         scheduler.shutdownNow();
+    }
+
+
+    public XInputDevice initJXInputDevice()
+    {
+        if (!XInputDevice.isAvailable()) {
+            System.out.println("XInput 不可用，請確認系統支援並已載入 DLL。");
+            return null;
+        } else {
+            System.out.println("XInputDevice.getLibraryVersion()="+XInputDevice.getLibraryVersion());
+        }
+
+        // 取得玩家 1 的控制器（0~3 對應 4 個可能控制器）
+        XInputDevice[] devices = null;
+        XInputDevice device = null;
+        try {
+            devices = XInputDevice.getAllDevices();
+            for(int i=0; i < devices.length ;i++){
+                device = devices[i];
+                System.out.println("device="+device + ", isConnected="+ device.isConnected());
+                if (device.isConnected()) {
+                    System.out.println("device is Connected.");
+                    break;
+                }
+                device=null;
+            }
+        } catch (XInputNotLoadedException e) {
+            throw new RuntimeException(e);
+        }
+
+        System.out.println("using device="+device);
+
+        return device;
     }
 }
