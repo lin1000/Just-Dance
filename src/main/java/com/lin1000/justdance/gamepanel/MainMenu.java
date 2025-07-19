@@ -214,7 +214,7 @@ public class MainMenu extends JWindow
         public void loadImage()
         {                
                 Toolkit kit=Toolkit.getDefaultToolkit();
-                mark=kit.getImage("img/mark.jpg");
+                mark=kit.getImage("img/mark.png");
                 background=kit.getImage("img/background.jpg");
                 menutitle=kit.getImage("img/menutitle.jpg");
 
@@ -236,12 +236,12 @@ public class MainMenu extends JWindow
                 gc.fillRect( 0, 0, dim.width, dim.height );
                 //-- clear background -->
         	                        
-                gc.drawImage(mark,112,60,800,600,this);
+                gc.drawImage(mark,0,0,getWidth(), getHeight(),this);
 
 
                 gc.setColor(Color.white);
                 gc.setFont(new Font("verdana",Font.PLAIN,20));
-                if(paintIndex > 5)  {gc.drawString("Press Start Button",440,600);}
+                if(paintIndex > 5)  {gc.drawString("Press Start Button",550,600);}
 
                 Player p1 = project.watcher.getPlayer(0);
                 if(p1!=null) {
@@ -256,62 +256,70 @@ public class MainMenu extends JWindow
         //?e?X?D???
         public void menuscreen(int musicOptionIndex)
         {
+            int menuInfoX = 350;
+            int menuInfoY = 80;
+            int menuInfoXSelect = 313;
+
             this.musicOptionIndex = musicOptionIndex;
-            gc.drawImage(background, 0, 0, 1024, 768, this);
-            gc.drawImage(menutitle, 255, 80, 555, 60, this);
+            //gc.drawImage(background, 0, 0, 1024, 768, this);
+            gc.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+            gc.drawImage(menutitle, menuInfoX, menuInfoY, 555, 60, this);
 
             switch (musicOptionIndex) {
                 case 0:
                     this.whichmusic = 0;//whichmusic represent which muisc has been chosen
                     this.y_movement = 15;//y_movement represent the speed of the Aarrow
                     this.BPM = 400; //BPM represent the beats per minutes of the music
-                    gc.drawImage(option[1], 255, 260, 555, 60, this);
-                    gc.drawImage(option[2], 255, 320, 555, 60, this);
-                    gc.drawImage(option[3], 255, 380, 555, 60, this);
-                    gc.drawImage(optionSelected[0], 213, 195, 640, 69, this);
+                    gc.drawImage(option[1], menuInfoX, 260, 555, 60, this);
+                    gc.drawImage(option[2], menuInfoX, 320, 555, 60, this);
+                    gc.drawImage(option[3], menuInfoX, 380, 555, 60, this);
+                    gc.drawImage(optionSelected[0], menuInfoXSelect, 195, 640, 69, this);
                     break;
                 case 1:
                     this.whichmusic = 1;//whichmusic represent which muisc has been chosen
                     this.y_movement = 7;//y_movement represent the speed of the Aarrow
                     this.BPM = 120;//BPM represent the beats per minutes of the music
-                    gc.drawImage(option[0], 255, 200, 555, 60, this);
-                    gc.drawImage(option[2], 255, 320, 555, 60, this);
-                    gc.drawImage(option[3], 255, 380, 555, 60, this);
-                    gc.drawImage(optionSelected[1], 213, 255, 640, 69, this);
+                    gc.drawImage(option[0], menuInfoX, 200, 555, 60, this);
+                    gc.drawImage(option[2], menuInfoX, 320, 555, 60, this);
+                    gc.drawImage(option[3], menuInfoX, 380, 555, 60, this);
+                    gc.drawImage(optionSelected[1], menuInfoXSelect, 255, 640, 69, this);
                     break;
                 case 2:
                     this.whichmusic = 2;//whichmusic represent which muisc has been chosen
                     this.y_movement = 5;//y_movement represent the speed of the Aarrow
                     this.BPM = 180;//BPM represent the beats per minutes of the music
-                    gc.drawImage(option[0], 255, 200, 555, 60, this);
-                    gc.drawImage(option[1], 255, 260, 555, 60, this);
-                    gc.drawImage(option[3], 255, 380, 555, 60, this);
-                    gc.drawImage(optionSelected[2], 213, 315, 640, 69, this);
+                    gc.drawImage(option[0], menuInfoX, 200, 555, 60, this);
+                    gc.drawImage(option[1], menuInfoX, 260, 555, 60, this);
+                    gc.drawImage(option[3], menuInfoX, 380, 555, 60, this);
+                    gc.drawImage(optionSelected[2], menuInfoXSelect, 315, 640, 69, this);
                     break;
                 case 3:
                     this.whichmusic = 3;//whichmusic represent which muisc has been chosen
                     this.y_movement = 12;//y_movement represent the speed of the Aarrow
                     this.BPM = 300;//BPM represent the beats per minutes of the music
-                    gc.drawImage(option[0], 255, 200, 555, 60, this);
-                    gc.drawImage(option[1], 255, 260, 555, 60, this);
-                    gc.drawImage(option[2], 255, 320, 555, 60, this);
-                    gc.drawImage(optionSelected[3], 213, 375, 640, 69, this);
+                    gc.drawImage(option[0], menuInfoX, 200, 555, 60, this);
+                    gc.drawImage(option[1], menuInfoX, 260, 555, 60, this);
+                    gc.drawImage(option[2], menuInfoX, 320, 555, 60, this);
+                    gc.drawImage(optionSelected[3], menuInfoXSelect, 375, 640, 69, this);
                     break;
             }
 
             //draw song information
+            int songInfoX = 400;
+            int songInfoY = 500;
+            int songIntoLineHeight = 23;
             gc.setColor(Color.black);
             gc.setFont(new Font("verdana", Font.ITALIC, 25));
-            gc.drawString("Song Name: " + whichSong.getName(), 255, 500);
-            gc.drawString("Song Duration: " + String.format("%02d",whichSong.getSongLengthInMinutesAndSeconds()[0]) + ":" + String.format("%02d", whichSong.getSongLengthInMinutesAndSeconds()[1]), 255, 525);
-            gc.drawString("Song Feature: " + whichSong.getSongFeature(), 255, 550);
-            gc.drawString("Total Beats: " + whichSong.getSongNumOfBeats(), 255, 575);
-            gc.drawString("BPM: " + whichSong.getSongBPM(), 255, 600);
-            gc.drawString("Frame Rate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz", 255, 625);
-            gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), 255, 650);
-            gc.drawString("Max Signal Strength: " + whichSong.getMaxSignalStrengthByWindow(), 255, 675);
-            gc.drawString("Min Signal Strength: " + whichSong.getMinSignalStrengthByWindow(), 255, 700);
-            gc.drawString("FFT Bin (Bandwidth): " + String.format("%.2f",whichSong.getBinHzWidth()), 255, 725);
+            gc.drawString("Song Name: " + whichSong.getName(), songInfoX, songInfoY);
+            gc.drawString("Song Duration: " + String.format("%02d",whichSong.getSongLengthInMinutesAndSeconds()[0]) + ":" + String.format("%02d", whichSong.getSongLengthInMinutesAndSeconds()[1]), songInfoX, songInfoY + songIntoLineHeight);
+            gc.drawString("Song Feature: " + whichSong.getSongFeature(), songInfoX, songInfoY + songIntoLineHeight*2);
+            gc.drawString("Total Beats: " + whichSong.getSongNumOfBeats(), songInfoX, songInfoY + songIntoLineHeight*3);
+            gc.drawString("BPM: " + whichSong.getSongBPM(), songInfoX, songInfoY + songIntoLineHeight*4);
+            gc.drawString("Frame Rate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz", songInfoX, songInfoY + songIntoLineHeight*5);
+            gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), songInfoX, songInfoY + songIntoLineHeight*6);
+            gc.drawString("Max Signal Strength: " + whichSong.getMaxSignalStrengthByWindow(), songInfoX, songInfoY + songIntoLineHeight*7);
+            gc.drawString("Min Signal Strength: " + whichSong.getMinSignalStrengthByWindow(), songInfoX, songInfoY + songIntoLineHeight*8);
+            gc.drawString("FFT Bin (Bandwidth): " + String.format("%.2f",whichSong.getBinHzWidth()), songInfoX, songInfoY + songIntoLineHeight*9);
 
             repaint();
         }

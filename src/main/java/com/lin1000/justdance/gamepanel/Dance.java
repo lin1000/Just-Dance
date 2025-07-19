@@ -91,7 +91,7 @@ public class Dance extends JWindow
 
     //LIFE BLOCK - Life Bar position
     public int life_x = 20;
-    public int life_y = 690;
+    public int life_y = 850;
 
     //Game Special Effects
     public final EffectManager effectManager = new EffectManager(g_off_x,g_off_y);
@@ -148,7 +148,7 @@ public class Dance extends JWindow
             System.out.println("height="+height);
             System.out.println("bounds.getHeight()="+bounds.getHeight());
             System.out.println("life_y="+life_y);
-            life_y = Math.min(life_y,height - 98);
+            life_y = Math.min(life_y,height - 50);
             gameover_left = 0;
             gameover_right = width;
             System.out.println("bounds.width="+ bounds.width);
@@ -506,13 +506,14 @@ public class Dance extends JWindow
                      * audio analysis visualizer - INFO
                      */
                     // 顯示時間與樣本數資訊
+                    int SystemInfoX = width - 250;
                     gc.setColor(Color.black);
-                    gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSec) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", 10, 20);
-                    gc.drawString("Sample: " + soundController.currentPlaybackSample + " / " + song.getSamples().length, 10, 40);
-                    gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", 10, 60);
-                    gc.drawString("Sample: " + soundController.currentLongFramePositionSourceDataLine + " / " + song.getSamples().length, 10, 80);
-                    gc.drawString("available: " + soundController.currentAvailableSourceDataLine  , 10, 100);
-                    gc.drawString("currentBufferSize: " + soundController.currentBufferSize  , 10, 120);
+                    gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSec) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", SystemInfoX, 20);
+                    gc.drawString("Sample: " + soundController.currentPlaybackSample + " / " + song.getSamples().length, SystemInfoX, 40);
+                    gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", SystemInfoX, 60);
+                    gc.drawString("Sample: " + soundController.currentLongFramePositionSourceDataLine + " / " + song.getSamples().length, SystemInfoX, 80);
+                    gc.drawString("available: " + soundController.currentAvailableSourceDataLine  , SystemInfoX, 100);
+                    gc.drawString("currentBufferSize: " + soundController.currentBufferSize  , SystemInfoX, 120);
 
                     /**
                      * Audio analysis visualizer - v2 (paint in wave block defined by waveX,Y,W,H)
@@ -679,7 +680,6 @@ public class Dance extends JWindow
                         if (soundController.currentSecSourceDataLine <= (double) DISPLAY_SECONDS/2){
                             timeMark =  i;
                             gc.drawLine(waveX + x, waveY+waveH - 15, waveX + x, waveY+waveH);
-                            gc.drawString(AFTimeFormat.format(timeMark) + "s", waveX +x + 2, waveY+waveH -2 );
                         }else{
                             timeMark = soundController.currentSecSourceDataLine + i - DISPLAY_SECONDS / 2.0;
                         }
@@ -697,7 +697,7 @@ public class Dance extends JWindow
                     if(soundController.currentSecSourceDataLine <= (double) DISPLAY_SECONDS /2){
                         int currentX = (int) (soundController.currentSecSourceDataLine * waveW / (double) DISPLAY_SECONDS);
                         gc.drawLine(waveX+currentX, waveY, waveX+currentX, waveY+waveH);
-                        gc.drawString("" + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s / "    , currentX, waveY+waveH-30);
+                        gc.drawString("" + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s "    , waveX + currentX, waveY+waveH-20);
 
                     }else{// Play Progress Bar (in the middle after the current second reached 1/2 of the DISPLAY_SECONDS
                         //DRAW THE PROGRESS LINE in the middle of wave block
