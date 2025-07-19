@@ -1,7 +1,5 @@
-com\lin1000\justdance\XInputDevice\MainMenuKeyboardDeviceListener.class
 com\lin1000\justdance\gamepanel\action\DanceAction$1.class
 com\lin1000\justdance\gamepanel\effect\LifeParticleExtreme.class
-com\lin1000\justdance\XInputDevice\MainMenuXInputDeviceListener.class
 com\lin1000\justdance\controller\ConditionController.class
 com\lin1000\justdance\gamepanel\input\Input.class
 com\lin1000\justdance\gamepanel\WaveformVisualizer.class
@@ -36,8 +34,6 @@ com\lin1000\justdance\gamepanel\MainMenu.class
 com\lin1000\justdance\controller\FPSTimerTask.class
 com\lin1000\justdance\gamepanel\effect\ParticleRendererLibGDX.class
 com\lin1000\justdance\JustDanceLauncher.class
-com\lin1000\justdance\XInputDevice\DanceXInputDeviceListener.class
 com\lin1000\justdance\controller\SoundController.class
 com\lin1000\justdance\gamepanel\effect\ParticleRendererLibGDX$1.class
 com\lin1000\justdance\gamepanel\input\KeyboardControllerInput$KeyboardControllerInputType.class
-com\lin1000\justdance\XInputDevice\DanceKeyboardDeviceListener.class
