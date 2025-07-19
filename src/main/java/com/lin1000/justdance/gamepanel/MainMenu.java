@@ -309,8 +309,8 @@ public class MainMenu extends JWindow
             gc.drawString("BPM: " + whichSong.getSongBPM(), 255, 600);
             gc.drawString("Frame Rate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz", 255, 625);
             gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), 255, 650);
-            gc.drawString("Max Singal Strength: " + whichSong.getMaxSignalStrengthByWindow(), 255, 675);
-            gc.drawString("Min Singal Strength: " + whichSong.getMinSignalStrengthByWindow(), 255, 700);
+            gc.drawString("Max Signal Strength: " + whichSong.getMaxSignalStrengthByWindow(), 255, 675);
+            gc.drawString("Min Signal Strength: " + whichSong.getMinSignalStrengthByWindow(), 255, 700);
             gc.drawString("FFT Bin (Bandwidth): " + String.format("%.2f",whichSong.getBinHzWidth()), 255, 725);
 
             repaint();

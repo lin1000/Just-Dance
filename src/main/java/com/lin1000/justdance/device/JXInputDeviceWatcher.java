@@ -76,7 +76,7 @@ public class JXInputDeviceWatcher {
             }
 
             //then schedule the pooling at Fixed Rate
-            scheduler.scheduleAtFixedRate(this::scanDevices, 0, 1000, TimeUnit.MICROSECONDS);
+            scheduler.scheduleAtFixedRate(this::scanDevices, 3000, 1000, TimeUnit.MICROSECONDS);
 
         } catch (XInputNotLoadedException e) {
             throw new RuntimeException(e);
