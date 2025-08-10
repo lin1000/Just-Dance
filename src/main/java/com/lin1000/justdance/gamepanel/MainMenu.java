@@ -14,6 +14,7 @@ import com.lin1000.justdance.device.MainMenuKeyboardDeviceListener;
 import com.lin1000.justdance.device.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
+import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
 import com.lin1000.justdance.gamepanel.input.Input;
 import com.lin1000.justdance.player.Player;
@@ -54,7 +55,10 @@ public class MainMenu extends JWindow
         Image option[]=new Image[4];
         Image optionSelected[]=new Image[4];
         public static int musicOptionIndex =0; // 0,1,2,3
-        
+
+        //Webcam variable
+        public WebCamComponent webCamComponent = null;
+
         //Sound Controller
         public SoundController soundController;
                        
@@ -147,16 +151,18 @@ public class MainMenu extends JWindow
 
             try {
                 soundController.playMainMenuSound(0);
+                /**
+                //after loading video
                 while (true) {
                     Picture picture = null;
-                    picture = project.frameGrab.getNativeFrame();
+                    picture = project.frameGrab!=null?project.frameGrab.getNativeFrame():null;
                     if (picture == null) break;
                     BufferedImage currentFrame = AWTUtil.toBufferedImage(picture);
                     gc.drawImage(currentFrame, 0, 0, getWidth(), getHeight(), null);
                     repaint();
                     //Thread.sleep(20); // 約 30 FPS
-                }
-            } catch (IOException e) {
+                }**/
+            } catch (Exception e) {
                 e.printStackTrace();
                 //skip the intro vide and continue
              }
@@ -165,10 +171,11 @@ public class MainMenu extends JWindow
             {
                 //soundControl.play_beginSound(2);
                 paintInitial(0);//
+
                 try {
                     //Device Watcher Polling based
                     project.watcher = new JXInputDeviceWatcher();
-                    Thread.sleep(500);
+                    Thread.sleep(0);
                 } catch (java.lang.InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -182,8 +189,14 @@ public class MainMenu extends JWindow
                             //輪詢控制器狀態，觸發事件
                             MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
                         }
-                        Thread.sleep(50);
                         paintInitial(paintIndex++);
+                        Thread.sleep(200);
+
+                        //showing camera component
+                        if(webCamComponent==null) {
+                            webCamComponent= new WebCamComponent(this);
+                        }
+
                     } catch (java.lang.InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -264,11 +277,13 @@ public class MainMenu extends JWindow
         public void paintInitial(int paintIndex)
         {
                 //-- clear background -->
-                //gc.setColor( Color.black );
-                //gc.fillRect( 0, 0, dim.width, dim.height );
+                gc.setColor( Color.black );
+                gc.fillRect( 0, 0, dim.width, dim.height );
                 //-- clear background -->
-        	                        
+                gc.setFont(new Font("verdana",Font.PLAIN,10));
                 gc.drawImage(mark,0,0,getWidth(), getHeight(),this);
+                gc.setColor(Color.white);
+                gc.drawString("resolution : "+getWidth()+ "x" + getHeight(), 10, 15);
 
                 gc.setColor(Color.white);
                 gc.setFont(new Font("verdana",Font.PLAIN,20));
@@ -281,6 +296,8 @@ public class MainMenu extends JWindow
                         xBoxControllerComponent.draw(gc);
                     }
                 }
+
+                if(webCamComponent!= null) webCamComponent.runCameraLoop(gc);
 
                 repaint();
                         

@@ -63,13 +63,14 @@ public class Project extends JFrame implements Runnable
 		//setting up keystroke
 
 		//loading video resource
+		/**
 		try {
 			loadVideo();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (JCodecException e) {
 			throw new RuntimeException(e);
-		}
+		}**/
 
 		//temp
 		projectThread=new Thread(this);

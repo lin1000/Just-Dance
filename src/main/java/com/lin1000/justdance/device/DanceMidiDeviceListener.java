@@ -19,8 +19,10 @@ public class DanceMidiDeviceListener implements Receiver {
     public void send(MidiMessage msg, long timeStamp) {
         if (msg instanceof ShortMessage sm) {
             int command = sm.getCommand();
+            int ch  = sm.getChannel();
             int note = sm.getData1();
             int velocity = sm.getData2();
+            mainWindowTarget.pianoComponent.setInput(command, ch,note,velocity);
             if (command == ShortMessage.NOTE_ON && velocity > 0) {
                 System.out.println("Note ON: " + note + " with velocity: " + velocity);
                 mainWindowTarget.pianoComponent.noteOn(note);
@@ -28,7 +30,19 @@ public class DanceMidiDeviceListener implements Receiver {
                     (command == ShortMessage.NOTE_ON && velocity == 0)) {
                 System.out.println("Note OFF: " + note + " with velocity: " + velocity);
                 mainWindowTarget.pianoComponent.noteOff(note);
+            } else if (command == ShortMessage.CONTROL_CHANGE) {
+                System.out.printf("ch=%d note=%d velocity=%d",ch, note, velocity);
+                if (note == 64) { // 64=Damper(延音踏板)
+                    boolean pedalDown = note >= 64;
+                    System.out.printf("Sustain %s%n", pedalDown ? "DOWN" : "UP");
+                }
+            } else if (command == ShortMessage.PITCH_BEND){
+                int bend = ((sm.getData2() << 7) | sm.getData1()) - 8192;
+                System.out.printf("PitchBend %d%n", bend);
+            } else {
+                System.out.printf("ch=%d note=%d velocity=%d",ch, note, velocity);
             }
+
         }
     }
 

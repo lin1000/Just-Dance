@@ -116,5 +116,23 @@
             <scope>system</scope>
             <systemPath>${basedir}/src/main/resources/packages/jcodec-javase-0.2.5.jar</systemPath>
         </dependency>
+        <!-- Webcam Capture API -->
+        <dependency>
+            <groupId>com.github.sarxos</groupId>
+            <artifactId>webcam-capture</artifactId>
+            <version>0.3.12</version>
+        </dependency>
+        <!-- JavaCV OpenCV -->
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.10</version>
+        </dependency>
+        <!-- hid4java for cross-platform HID USB -->
+        <dependency>
+            <groupId>org.hid4java</groupId>
+            <artifactId>hid4java</artifactId>
+            <version>0.8.0</version>
+        </dependency>
     </dependencies>
 </project>

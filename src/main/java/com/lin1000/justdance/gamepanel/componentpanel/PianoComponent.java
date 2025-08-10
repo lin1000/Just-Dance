@@ -10,7 +10,10 @@ public class PianoComponent {
     private int p_off_x,p_off_y = 0;
     private final Set<Integer> pressedNotes = new HashSet<>();
     private static final int[] BLACK_KEYS = {1, 3, -1, 6, 8, 10, -1}; // C~B中黑鍵相對位置
-
+    private int command;
+    private int ch;
+    private int note;
+    private int velocity;
 
     public PianoComponent(PianoStyle style, int p_off_x, int p_off_y) {
         this.style = style;
@@ -42,6 +45,13 @@ public class PianoComponent {
             case 1, 3, 6, 8, 10 -> true;
             default -> false;
         };
+    }
+
+    public void setInput(int command, int ch, int note, int velocity) {
+        this.command=command;
+        this.ch = ch;
+        this.note = note;
+        this.velocity = velocity;
     }
 
     public void draw(Graphics g) {
@@ -78,6 +88,9 @@ public class PianoComponent {
                 g2.fillRoundRect(x, p_off_y, style.blackKeyWidth, style.blackKeyHeight, style.keyArc, style.keyArc);
             }
         }
+
+        // 畫裝置輸入提示
+        g2.drawString(String.format("command=%d ch=%d note=%d velocity=%d%n",command, ch, note, velocity), p_off_x+10, p_off_y+ style.whiteKeyHeight+10);
 
         g2.dispose();
     }
