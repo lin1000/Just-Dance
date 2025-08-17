@@ -385,9 +385,9 @@ public class SoundController implements Runnable
             System.out.println("entering game play");
             setStartTimeNanos(System.nanoTime());
             // Schedule task to run every 16 milliseconds after an initial 0 second delay
-            //fpsTimer = new java.util.Timer("FPSTimer");
-            //FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
-            //fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
+            fpsTimer = new java.util.Timer("FPSTimer");
+            FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
+            fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
             //}
 
             SourceDataLine line = AudioSystem.getSourceDataLine(format);
@@ -444,9 +444,9 @@ public class SoundController implements Runnable
                 currentAvailableSourceDataLine = line!=null?line.available():0;
                 currentBufferSize = line.getBufferSize();
 
-                Thread.sleep(16);
-                mainTargetWindow.setDeltaTime(dt);
-                mainTargetWindow.repaint();
+                //Thread.sleep(16);
+                //mainTargetWindow.setDeltaTime(dt);
+                //mainTargetWindow.repaint();
                 if(mainTargetWindow.conditionControl.getGameOver()){
                     break;
                 }

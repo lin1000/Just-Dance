@@ -214,12 +214,12 @@ public class DDDCanvasComponent {
     // --- Input ---
     public void keyPressed(Input input) {
         switch (input.getInputType()) {
-            case W -> fwd = true;
-            case S -> back = true;
-            case A -> left = true;
-            case D -> right = true;
-            //case Input.InputType.A-> turnL = true;
-            //case KeyEvent.VK_RIGHT -> turnR = true;
+            case W,LEFT_THUMBSTICK_MOVE_FORWARD -> fwd = true;
+            case S,LEFT_THUMBSTICK_MOVE_BACKWARD -> back = true;
+            case A, LEFT_THUMBSTICK_MOVE_LEFT -> left = true;
+            case D, LEFT_THUMBSTICK_MOVE_RIGHT -> right = true;
+            case LEFT_SHOULDER -> turnL = true;
+            case RIGHT_SHOULDER -> turnR = true;
             //case KeyEvent.VK_SHIFT -> sprint = true;
             //case KeyEvent.VK_ESCAPE -> running = false;
         }
@@ -228,10 +228,12 @@ public class DDDCanvasComponent {
 
     public void keyReleased(Input input) {
         switch (input.getInputType()) {
-            case W -> fwd = false;
-            case S -> back = false;
-            case A -> left = false;
-            case D -> right = false;
+            case W,LEFT_THUMBSTICK_MOVE_FORWARD -> fwd = false;
+            case S,LEFT_THUMBSTICK_MOVE_BACKWARD-> back = false;
+            case A,LEFT_THUMBSTICK_MOVE_LEFT -> left = false;
+            case D,LEFT_THUMBSTICK_MOVE_RIGHT -> right = false;
+            case LEFT_SHOULDER -> turnL = false;
+            case RIGHT_SHOULDER -> turnR = false;
 //            case KeyEvent.VK_D -> right = false;
 //            case KeyEvent.VK_LEFT -> turnL = false;
 //            case KeyEvent.VK_RIGHT -> turnR = false;

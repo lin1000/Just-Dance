@@ -32,6 +32,7 @@ public class MainMenuKeyboardDeviceListener extends KeyAdapter {
     public void keyPressed(KeyEvent e) {
         System.out.println("MainMenu Key keyPressed: " + e.getKeyCode());
         //Translate Keyboard Event into InputType
+        mainWindowTarget.keyboardControllerComponent.setRactScale();
         KeyboardControllerInput keybnoardControllerInput = new KeyboardControllerInput();
         keybnoardControllerInput.setKeyEvent(e);
         keybnoardControllerInput.setPressed(true);

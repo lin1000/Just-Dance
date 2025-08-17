@@ -13,7 +13,7 @@ import com.lin1000.justdance.input.XBoxControllerInput;
 public class MainMenuXInputDeviceListener extends SimpleXInputDeviceListener {
 
     //Binding Main Window Target
-    MainMenu mainWindowTarget = null;
+    static MainMenu mainWindowTarget = null;
 
     //JXInputDevice
     // ��l��
@@ -40,8 +40,8 @@ public class MainMenuXInputDeviceListener extends SimpleXInputDeviceListener {
     @Override
     public void buttonChanged(final XInputButton button, final boolean pressed) {
         // The given button was just pressed (if pressed == true) or released (pressed == false)
-        System.out.printf("button :", button.name(), pressed ? " pressed" : "released");
-
+        System.out.printf("button : %s %s/n", button.name(), pressed ? " pressed" : "released");
+        if(mainWindowTarget!=null) mainWindowTarget.xBoxControllerComponent.setRactScale();
         //Translate JXInputDevice Controller button into InputType
         XBoxControllerInput xBoxControllerInput = new XBoxControllerInput();
         xBoxControllerInput.setXInputButton(button);
@@ -70,5 +70,6 @@ public class MainMenuXInputDeviceListener extends SimpleXInputDeviceListener {
 
     private static void onAxisChanged(String axisName, float oldValue, float newValue) {
         System.out.printf("[軸變化] %s：%.2f → %.2f\n", axisName, oldValue, newValue);
+        if(mainWindowTarget!=null) mainWindowTarget.xBoxControllerComponent.setRactScale();
     }
 }

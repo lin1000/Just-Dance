@@ -17,6 +17,7 @@ public class FPSTimerTask extends TimerTask {
         // Code to be executed by the timer
         //System.out.println("Timer task running on thread: " + Thread.currentThread().getName());
         // Add your specific task logic here
+        mainTargetWindow.setDeltaTime(0.1);
         mainTargetWindow.repaint();
     }
 }

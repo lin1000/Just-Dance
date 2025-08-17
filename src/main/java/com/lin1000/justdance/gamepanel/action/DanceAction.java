@@ -29,10 +29,10 @@ public class DanceAction {
             switch(pressedInt){
                 case 1: //pressed
                     switch (input.getInputType()){
-                        case A: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
-                        case S: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
-                        case D: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
-                        case W: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case A: if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case S: if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case D: if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case W: if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
                         case B:
                             break;
                         case X:
@@ -43,11 +43,8 @@ public class DanceAction {
                             break;
                         case START:
                             break;
-                        case LEFT_SHOULDER:
-                            //mainWindowTarget.isListening=false;
-                            break;
-                        case RIGHT_SHOULDER:
-                            break;
+                        case LEFT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case RIGHT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
                         case UP:
                             mainWindowTarget.direct[2]=true;//讓gui反應出有按到
                             try
@@ -163,10 +160,8 @@ public class DanceAction {
 
                             }catch(java.lang.ArrayIndexOutOfBoundsException e){}
                             break;
-                        case LEFT_THUMBSTICK:
-                            break;
-                        case RIGHT_THUMBSTICK:
-                            break;
+                        case LEFT_THUMBSTICK_MOVE_LEFT:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case LEFT_THUMBSTICK_MOVE_RIGHT:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
                         case GUIDE_BUTTON:
                             break;
                         case UNKNOWN:
@@ -195,10 +190,8 @@ public class DanceAction {
                             break;
                         case START:
                             break;
-                        case LEFT_SHOULDER:
-                            break;
-                        case RIGHT_SHOULDER:
-                            break;
+                        case LEFT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
+                        case RIGHT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
                         case UP:
                             mainWindowTarget.direct[2]=false;//讓gui反應出有按到
                             break;
@@ -211,10 +204,8 @@ public class DanceAction {
                         case RIGHT:
                             mainWindowTarget.direct[3]=false;//讓gui反應出有按到
                             break;
-                        case LEFT_THUMBSTICK:
-                            break;
-                        case RIGHT_THUMBSTICK:
-                            break;
+                        case LEFT_THUMBSTICK_MOVE_LEFT: mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
+                        case LEFT_THUMBSTICK_MOVE_RIGHT:mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
                         case GUIDE_BUTTON:
                             break;
                         case UNKNOWN:

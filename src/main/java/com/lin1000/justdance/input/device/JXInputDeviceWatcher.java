@@ -125,6 +125,7 @@ public class JXInputDeviceWatcher {
                     p = extractDeviceIntoPlayer(device);
                     xInputDeviceHash.put(device.toString(),p);
                     listener.onDeviceDiscovered(device);
+                    System.out.println("New JXInputDevice Join="+device);
                 }else if(p!=null && p.isConnected() && !device.isConnected()){//Device become offline
                     p.setConnected(device.isConnected());
                     MainMenuXInputDeviceListener mainMenuXInputDeviceListener = p.getMainMenuXInputDeviceListener();
@@ -133,8 +134,10 @@ public class JXInputDeviceWatcher {
                     listener.onDeviceDisconnected(device);
                 } else if(p!=null && p.isConnected() &&  device.isConnected()){
                     //nothing changed
+                    System.out.println("JXInputDevice keep online ="+device);
                 }else if(p!=null && !p.isConnected() && !device.isConnected()) {
                     //nothing changed
+                    System.out.println("JXInputDevice keep offline ="+device);
                 }else if(p!=null && !p.isConnected() && device.isConnected()){//Device come online again
                     System.out.println("JXInput Device ["+device+"] come online");
                     p.setConnected(device.isConnected());
@@ -147,8 +150,9 @@ public class JXInputDeviceWatcher {
                 }
 
             }
-            System.out.println("Scanning Device...XInputDevice Driver is available..scanning..."+xInputDeviceHash.size()+" devices.." );
-            xInputDeviceHash.values().stream().forEach(player->{ System.out.println(player.getControllerID() + "=" + player.isConnected());});
+            //print out scanning and device is connected.
+            //System.out.println("Scanning Device...XInputDevice Driver is available..scanning..."+xInputDeviceHash.size()+" devices.." );
+            //xInputDeviceHash.values().stream().forEach(player->{ System.out.println(player.getControllerID() + "=" + player.isConnected());});
 
         } catch (XInputNotLoadedException e) {
             e.printStackTrace();

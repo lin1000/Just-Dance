@@ -32,7 +32,7 @@ public class Project extends JFrame implements Runnable
 	MidiDevice midiDevice = null;
 
 	//Device Watcher Polling based
-	public JXInputDeviceWatcher watcher = null;
+	public JXInputDeviceWatcher jXInputDeviceWatcher = null;
 
 	//SoundController
 	SoundController soundController = null;
@@ -116,7 +116,12 @@ public class Project extends JFrame implements Runnable
 //			this.setSize(desiredMode.getWidth(), desiredMode.getHeight()); // Set the size
 //			this.setUndecorated(true); // Remove window decorations
 //			}
-			activeScreen.setFullScreenWindow(this);
+			/**
+			 * Set full screen mode
+			 * activeScreen.setFullScreenWindow(this);
+			 */
+			/**/
+			//activeScreen.setFullScreenWindow(this);
 			this.setVisible(true);
 			Rectangle bounds = activeScreen.getDefaultConfiguration().getBounds();
 			int x = bounds.x + (bounds.width - this.getWidth()) / 2;

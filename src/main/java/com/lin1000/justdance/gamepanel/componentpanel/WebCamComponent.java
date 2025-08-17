@@ -82,7 +82,7 @@ public class WebCamComponent{
             sb.append("frame.type="+frame.type+"\r\n");
 //            cameraLabel.setText(sb.toString());
 //            cameraLabel.setForeground(Color.black);
-            System.out.println(sb.toString());
+            //System.out.println(sb.toString());
 
 
 //            try {

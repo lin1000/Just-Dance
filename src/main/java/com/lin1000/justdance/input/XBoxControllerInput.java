@@ -19,8 +19,10 @@ public class XBoxControllerInput extends Input{
         DPAD_DOWN,
         DPAD_LEFT,
         DPAD_RIGHT,
-        LEFT_THUBMSTICK,
-        RIGHT_THUMBSTICK,
+        LEFT_THUBMSTICK_MOVE_LEFT,
+        LEFT_THUBMSTICK_MOVE_RIGHT,
+        RIGHT_THUMBSTICK_MOVE_FORWARD,
+        RIGHT_THUMBSTICK_MOVE_BACKWARD,
         GUIDE_BUTTON,
         UNKNOWN,
     }
@@ -59,10 +61,10 @@ public class XBoxControllerInput extends Input{
                 setXBoxControllerInputType(XBoxControllerInputType.RIGHT_SHOULDER);
                 break;
             case LEFT_THUMBSTICK:
-                setXBoxControllerInputType(XBoxControllerInputType.LEFT_THUBMSTICK);
+                //setXBoxControllerInputType(XBoxControllerInputType.LEFT_THUBMSTICK);
                 break;
             case RIGHT_THUMBSTICK:
-                setXBoxControllerInputType(XBoxControllerInputType.RIGHT_THUMBSTICK);
+                //setXBoxControllerInputType(XBoxControllerInputType.RIGHT_THUMBSTICK);
                 break;
             case DPAD_UP:
                 setXBoxControllerInputType(XBoxControllerInputType.DPAD_UP);
@@ -126,6 +128,13 @@ public class XBoxControllerInput extends Input{
                 break;
             case GUIDE_BUTTON:
                 super.setInputType(InputType.GUIDE_BUTTON);
+                break;
+            case LEFT_THUBMSTICK_MOVE_LEFT:
+                super.setInputType(InputType.LEFT_THUMBSTICK_MOVE_LEFT);
+                break;
+            case LEFT_THUBMSTICK_MOVE_RIGHT:
+                super.setInputType(InputType.LEFT_THUMBSTICK_MOVE_RIGHT);
+                break;
         }
     }
 }

@@ -7,6 +7,7 @@ import javax.swing.*;
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
 import com.lin1000.justdance.Project;
+import com.lin1000.justdance.gamepanel.componentpanel.KeyboardControllerComponent;
 import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener;
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
@@ -47,6 +48,12 @@ public class MainMenu extends JWindow
         Image option[]=new Image[4];
         Image optionSelected[]=new Image[4];
         public static int musicOptionIndex =0; // 0,1,2,3
+
+        //XBox Controller Component
+        public XBoxControllerComponent xBoxControllerComponent = new XBoxControllerComponent(30,380);
+
+        //Keyboard Controller Component
+        public KeyboardControllerComponent keyboardControllerComponent = new KeyboardControllerComponent(30, 560);
 
         //Webcam variable
         public WebCamComponent webCamComponent = null;
@@ -127,9 +134,8 @@ public class MainMenu extends JWindow
 
             //Sound Controller
             this.soundController = soundController;
-            //setup joystick and register joystic event listener
+            //setup joystick and register joystick event listener
             this.xInputDevice = xInputDevice;
-            /**
             if (xInputDevice != null) {
                 // The SimpleXInputDeviceListener allows us to implement only the methods we actually need
                 this.xInputDeviceListener = new MainMenuXInputDeviceListener(this);
@@ -139,7 +145,8 @@ public class MainMenu extends JWindow
             } else {
                 System.err.println("System have no input devices, please use keyboard to play");
                 //throw new RuntimeException("JXInputDevice is null");
-            }**/
+            }
+
 
             try {
                 soundController.playMainMenuSound(0);
@@ -166,14 +173,14 @@ public class MainMenu extends JWindow
 
                 try {
                     //Device Watcher Polling based
-                    project.watcher = new JXInputDeviceWatcher();
+                    project.jXInputDeviceWatcher = new JXInputDeviceWatcher();
                     Thread.sleep(0);
                 } catch (java.lang.InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                project.watcher.setMainTargetWindow(this);
-                project.watcher.start();
+                project.jXInputDeviceWatcher.setMainTargetWindow(this);
+                project.jXInputDeviceWatcher.start();
                 int paintIndex = 0;
                 while (controlFlow == 1) {
                     try {
@@ -182,7 +189,7 @@ public class MainMenu extends JWindow
                             MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
                         }
                         paintInitial(paintIndex++);
-                        Thread.sleep(200);
+                        Thread.sleep(16);
 
                         //showing camera component
                         if(webCamComponent==null) {
@@ -281,12 +288,15 @@ public class MainMenu extends JWindow
                 gc.setFont(new Font("verdana",Font.PLAIN,20));
                 if(paintIndex > 5)  {gc.drawString("Press Start Button",550,600);}
 
-                if(project.watcher != null){
-                    Player p1 = project.watcher.getPlayer(0);
+                if(project.jXInputDeviceWatcher != null){
+                    Player p1 = project.jXInputDeviceWatcher.getPlayer(0);
                     if(p1!=null) {
-                        XBoxControllerComponent xBoxControllerComponent = new XBoxControllerComponent(30,450);
                         xBoxControllerComponent.draw(gc);
                     }
+                }
+
+                if(keyboardControllerComponent != null){
+                    keyboardControllerComponent.draw(gc);
                 }
 
                 if(webCamComponent!= null) webCamComponent.runCameraLoop(gc);

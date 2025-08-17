@@ -21,8 +21,10 @@ public class Input {
         DOWN,
         LEFT,
         RIGHT,
-        LEFT_THUMBSTICK,
-        RIGHT_THUMBSTICK,
+        LEFT_THUMBSTICK_MOVE_LEFT,
+        LEFT_THUMBSTICK_MOVE_RIGHT,
+        LEFT_THUMBSTICK_MOVE_FORWARD,
+        LEFT_THUMBSTICK_MOVE_BACKWARD,
         GUIDE_BUTTON,
         UNKNOWN
     }

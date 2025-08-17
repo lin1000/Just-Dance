@@ -29,22 +29,29 @@ public class MainMenuAction {
     public void inputAction(Input input, MainMenu mainWindowTarget) {
         switch (mainWindowTarget.getcontrolFlow()) {
             case 1: //1 means in game landing screen
-                if (input.getInputType() == Input.InputType.DOWN && input.isPressed()) {
-                    //do nothing
-                } else if (input.getInputType() == Input.InputType.UP && input.isPressed()) {
-                    //do nothing
-                } else if (input.getInputType() == Input.InputType.A && input.isPressed()) {
-                    //do nothing
-                } else if (input.getInputType() == Input.InputType.START && input.isPressed()) {
-                    mainWindowTarget.controlFlow = 2;//2 means chose music
-                } else if (input.getInputType() == Input.InputType.BACK && input.isPressed()) {
-                    mainWindowTarget.controlFlow = 4;//4 means exit
-                } else if (input.getInputType() == Input.InputType.LEFT_SHOULDER && input.isPressed()) {
-                    //do nothing
-                } else if (input.getInputType() == Input.InputType.RIGHT_SHOULDER && input.isPressed()) {
-                    //do nothing
+                switch(input.getInputType()){
+                    case DOWN->{}
+                    case UP->{}
+                    case A->{}
+                    case S ->{}
+                    case D ->{}
+                    case W ->{}
+                    case B ->{}
+                    case X ->{}
+                    case Y ->{}
+                    case START-> mainWindowTarget.controlFlow = 2;//2 means chose music;
+                    case BACK->mainWindowTarget.controlFlow = 4;//4 means exit
+                    case LEFT_SHOULDER->{}
+                    case RIGHT_SHOULDER->{}
+                    case LEFT ->{}
+                    case RIGHT ->{}
+                    case LEFT_THUMBSTICK_MOVE_LEFT ->{}
+                    case LEFT_THUMBSTICK_MOVE_RIGHT ->{}
+                    case LEFT_THUMBSTICK_MOVE_FORWARD ->{}
+                    case LEFT_THUMBSTICK_MOVE_BACKWARD ->{}
+                    case GUIDE_BUTTON ->{}
+                    case UNKNOWN ->{}
                 }
-
                 break;
             case 2://2 means in chose music (main menu screen)
                 if (input.getInputType() == Input.InputType.DOWN && input.isPressed()) {
