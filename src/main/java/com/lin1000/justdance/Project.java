@@ -1,9 +1,11 @@
-package com.lin1000.justdance.gamepanel;
+package com.lin1000.justdance;
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.controller.SoundController;
-import com.lin1000.justdance.device.JXInputDeviceWatcher;
+import com.lin1000.justdance.gamepanel.Dance;
+import com.lin1000.justdance.gamepanel.MainMenu;
+import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.api.JCodecException;
 import org.jcodec.common.io.FileChannelWrapper;
@@ -30,7 +32,7 @@ public class Project extends JFrame implements Runnable
 	MidiDevice midiDevice = null;
 
 	//Device Watcher Polling based
-	JXInputDeviceWatcher watcher = null;
+	public JXInputDeviceWatcher watcher = null;
 
 	//SoundController
 	SoundController soundController = null;
@@ -157,7 +159,7 @@ public class Project extends JFrame implements Runnable
             this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");
-			dance=new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, xInputDevice, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
+			dance = new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, xInputDevice, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
 			soundController.setMainTargetWindow(dance);
 			mainMenu.setVisible(false);
 			//Setting up and start counting the rhythm nanos

@@ -1,11 +1,10 @@
-package com.lin1000.justdance.device;
+package com.lin1000.justdance.input.device;
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
-import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
+import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.gamepanel.MainMenu;
 import com.lin1000.justdance.player.Player;
-import com.sun.tools.javac.Main;
 
 import java.util.*;
 import java.util.concurrent.*;

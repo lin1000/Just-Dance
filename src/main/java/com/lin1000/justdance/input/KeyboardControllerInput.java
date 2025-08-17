@@ -1,4 +1,4 @@
-package com.lin1000.justdance.gamepanel.input;
+package com.lin1000.justdance.input;
 
 import java.awt.event.KeyEvent;
 
@@ -9,6 +9,9 @@ public class KeyboardControllerInput extends Input{
     public enum KeyboardControllerInputType{
         ENTER,
         A,
+        S,
+        D,
+        W,
         X,
         Y,
         B,
@@ -31,6 +34,15 @@ public class KeyboardControllerInput extends Input{
             case KeyEvent.VK_ENTER:
             case KeyEvent.VK_A:
                 setKeyboardControllerInputType(KeyboardControllerInputType.A);
+                break;
+            case KeyEvent.VK_S:
+                setKeyboardControllerInputType(KeyboardControllerInputType.S);
+                break;
+            case KeyEvent.VK_D:
+                setKeyboardControllerInputType(KeyboardControllerInputType.D);
+                break;
+            case KeyEvent.VK_W:
+                setKeyboardControllerInputType(KeyboardControllerInputType.W);
                 break;
             case KeyEvent.VK_X:
                 super.setInputType(InputType.X);
@@ -79,6 +91,15 @@ public class KeyboardControllerInput extends Input{
                 break;
             case A:
                 super.setInputType(InputType.A);
+                break;
+            case S:
+                super.setInputType(InputType.S);
+                break;
+            case D:
+                super.setInputType(InputType.D);
+                break;
+            case W:
+                super.setInputType(InputType.W);
                 break;
             case X:
                 super.setInputType(InputType.X);

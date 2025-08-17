@@ -1,9 +1,9 @@
-package com.lin1000.justdance.device;
+package com.lin1000.justdance.gamepanel.inputdevice;
 
 
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.gamepanel.action.DanceAction;
-import com.lin1000.justdance.gamepanel.input.KeyboardControllerInput;
+import com.lin1000.justdance.input.KeyboardControllerInput;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;

@@ -1,4 +1,4 @@
-package com.lin1000.justdance.gamepanel.input;
+package com.lin1000.justdance.input;
 
 
 public class Input {
@@ -7,6 +7,9 @@ public class Input {
 
     public enum InputType{
         A,
+        S,
+        D,
+        W,
         B,
         X,
         Y,

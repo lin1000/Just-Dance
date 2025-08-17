@@ -1,6 +1,6 @@
 package com.lin1000.justdance.player;
 
-import com.lin1000.justdance.device.MainMenuXInputDeviceListener;
+import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
 
 public class Player {
     String name;

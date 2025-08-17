@@ -1,30 +1,22 @@
 package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.text.DecimalFormat;
 import javax.swing.*;
-import java.awt.image.BufferedImage;
+
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
-import com.lin1000.justdance.device.JXInputDeviceWatcher;
-import com.lin1000.justdance.device.MainMenuKeyboardDeviceListener;
-import com.lin1000.justdance.device.MainMenuXInputDeviceListener;
+import com.lin1000.justdance.Project;
+import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
+import com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener;
+import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
-import com.lin1000.justdance.gamepanel.input.Input;
+import com.lin1000.justdance.input.Input;
 import com.lin1000.justdance.player.Player;
 import com.lin1000.justdance.song.Song;
-import org.jcodec.api.FrameGrab;
-import org.jcodec.api.JCodecException;
-import org.jcodec.common.io.FileChannelWrapper;
-import org.jcodec.common.io.NIOUtils;
-import org.jcodec.common.model.Picture;
-import org.jcodec.scale.AWTUtil;
 //import de.hardcode.jxinput.JXInputManager;
 //import de.hardcode.jxinput.JXInputDevice;
 //import de.hardcode.jxinput.test.ButtonListener;

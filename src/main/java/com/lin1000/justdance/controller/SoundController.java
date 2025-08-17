@@ -356,7 +356,6 @@ public class SoundController implements Runnable
 
     @Override
     public void run() {
-
         // 載入並開啟音效檔 Steaming Mode
         try {
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(musicbox[music]);
@@ -386,9 +385,9 @@ public class SoundController implements Runnable
             System.out.println("entering game play");
             setStartTimeNanos(System.nanoTime());
             // Schedule task to run every 16 milliseconds after an initial 0 second delay
-            fpsTimer = new java.util.Timer("FPSTimer");
-            FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
-            fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
+            //fpsTimer = new java.util.Timer("FPSTimer");
+            //FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
+            //fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
             //}
 
             SourceDataLine line = AudioSystem.getSourceDataLine(format);
@@ -404,15 +403,25 @@ public class SoundController implements Runnable
             byte[] buffer = new byte[bufferSize];
             int bytesRead;
             int written = 0;
+            //ddd experimental
+            long last = System.nanoTime();
+            //-------------
             setStartTimeNanos(System.nanoTime());// high-resolution clock
             while (written < audioBytes.length) {
+                //ddd experimental
+                long now = System.nanoTime();
+                double dt = (now - last) / 1_000_000_000.0;
+                last = now;
+                //------------
+
                 int len = Math.min(bufferSize, audioBytes.length - written);
                     line.write(audioBytes, written, len);
                 written += len;
                 currentPlaybackSample = written / frameSize;
 
                 //Real time chunk based Audio Analysis
-                fftFluxAudioAnalysis(len,buffer);
+                //
+                //    fftFluxAudioAnalysis(len,buffer);
                 /* *
                  * magic done by 1000 (ms/per second) / FrameRate(e.g. 16000, a.k.a 16Hz/per second) * sending-frame-byte-array(4096) / framesize(e.g. 4)
                  * result is number of milliseconds can take rest while sending enough (4096 bytes) to SourceDataLine Buffer Area.
@@ -435,11 +444,13 @@ public class SoundController implements Runnable
                 currentAvailableSourceDataLine = line!=null?line.available():0;
                 currentBufferSize = line.getBufferSize();
 
-                //Thread.sleep(16);
+                Thread.sleep(16);
+                mainTargetWindow.setDeltaTime(dt);
+                mainTargetWindow.repaint();
                 if(mainTargetWindow.conditionControl.getGameOver()){
                     break;
                 }
-            }
+            } // end of audio main loop
             line.drain();
             line.close();
             audioIn.close();

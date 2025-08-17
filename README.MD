@@ -13,6 +13,7 @@ It's a music game developed by Java. Features include:
 10. MP4 frame capture (jcodec)
 11.Auto Beats Generation (to do)
 12. [HID(Human Interface Devices) Usage Tables 1.6](https://usb.org/document-library/hid-usage-tables-16) as of 2025/01/03 
+13. 3D Room Support (with walks).
 
 ## Screenshots
 2025, July

@@ -2,9 +2,8 @@ package com.lin1000.justdance.gamepanel.action;
 
 import com.lin1000.justdance.beats.Beat;
 import com.lin1000.justdance.beats.BeatMapGenerator;
-import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.MainMenu;
-import com.lin1000.justdance.gamepanel.input.Input;
+import com.lin1000.justdance.input.Input;
 import com.lin1000.justdance.song.Song;
 
 import java.io.File;

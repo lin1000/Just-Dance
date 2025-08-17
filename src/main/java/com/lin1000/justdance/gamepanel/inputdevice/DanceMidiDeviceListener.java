@@ -1,4 +1,4 @@
-package com.lin1000.justdance.device;
+package com.lin1000.justdance.gamepanel.inputdevice;
 
 import com.lin1000.justdance.gamepanel.Dance;
 

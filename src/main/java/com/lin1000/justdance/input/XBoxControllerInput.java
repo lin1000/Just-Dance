@@ -1,4 +1,4 @@
-package com.lin1000.justdance.gamepanel.input;
+package com.lin1000.justdance.input;
 
 import com.github.strikerx3.jxinput.enums.XInputButton;
 

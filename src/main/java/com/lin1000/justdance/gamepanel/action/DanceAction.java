@@ -2,7 +2,7 @@ package com.lin1000.justdance.gamepanel.action;
 
 import com.lin1000.justdance.beats.Arrow;
 import com.lin1000.justdance.gamepanel.Dance;
-import com.lin1000.justdance.gamepanel.input.Input;
+import com.lin1000.justdance.input.Input;
 
 public class DanceAction {
 
@@ -29,8 +29,10 @@ public class DanceAction {
             switch(pressedInt){
                 case 1: //pressed
                     switch (input.getInputType()){
-                        case A:
-                            break;
+                        case A: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case S: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case D: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
+                        case W: mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
                         case B:
                             break;
                         case X:
@@ -175,10 +177,10 @@ public class DanceAction {
 
                 case 0: //released
                     switch (input.getInputType()){
-                        case A:
-                            break;
-                        case B:
-                            break;
+                        case A : mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
+                        case S : mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
+                        case D : mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
+                        case W : mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
                         case X:
                             break;
                         case Y:
@@ -221,7 +223,7 @@ public class DanceAction {
 
                     break;
             }
-        } else {
+        } else { //mainWindowTarget.conditionControl.getGameOver()==true
             switch (pressedInt) {
                 case 1: //pressed
                     switch (input.getInputType()) {

@@ -1,13 +1,8 @@
 package com.lin1000.justdance;
 
-import com.lin1000.justdance.device.HidGamepad;
-import com.lin1000.justdance.gamepanel.Project;
-import org.hid4java.HidDevice;
-import org.hid4java.HidManager;
-import org.hid4java.HidServices;
-
 import java.net.URL;
 import java.net.URLClassLoader;
+import com.lin1000.justdance.Project;
 
 public class JustDanceLauncher {
 

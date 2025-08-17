@@ -9,17 +9,20 @@ import javax.swing.*;
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
-import com.lin1000.justdance.device.DanceKeyboardDeviceListener;
-import com.lin1000.justdance.device.DanceMidiDeviceListener;
-import com.lin1000.justdance.device.DanceXInputDeviceListener;
+import com.lin1000.justdance.Project;
+import com.lin1000.justdance.gamepanel.inputdevice.DanceKeyboardDeviceListener;
+import com.lin1000.justdance.gamepanel.inputdevice.DanceMidiDeviceListener;
+import com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener;
 import com.lin1000.justdance.beats.ArrowsProducer;
 import com.lin1000.justdance.beats.Arrow;
 import com.lin1000.justdance.controller.ConditionController;
 import com.lin1000.justdance.controller.SoundController;
+import com.lin1000.justdance.gamepanel.componentpanel.DDDCanvasComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.PianoComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.PianoStyle;
 import com.lin1000.justdance.gamepanel.effect.EffectManager;
 import com.lin1000.justdance.song.Song;
+
 
 public class Dance extends JWindow
 {
@@ -107,6 +110,12 @@ public class Dance extends JWindow
 //    private double[] currentMagnitudes = new double[BINS / 2];
 //    private double AFFlux = 0;
 //    public boolean isListening =  false;
+
+    // time delta calculated from last update
+    double deltaTime ;
+
+    //DDDCanvasComponent
+    public DDDCanvasComponent dddCanvasComponent = null;
 
     private DecimalFormat AFTimeFormat = new DecimalFormat("0.0");
 
@@ -240,6 +249,9 @@ public class Dance extends JWindow
 //        audioVisualizerThread = new Thread(this::startListening);
 //        audioVisualizerThread.start();
 
+        //Setup DDDCanvasComponent
+        dddCanvasComponent = new DDDCanvasComponent(0, 0, width, height);
+
         //Setup PianoComponent
         if(midiDevice != null)
             pianoComponent = new PianoComponent(new PianoStyle(),p_off_x, p_off_y );
@@ -332,12 +344,18 @@ public class Dance extends JWindow
         return 150;
     }
 
+    public double getDeltaTime() {
+        return deltaTime;
+    }
 
-    public void update(Graphics g)
-        {
-                System.out.println("update before paint");
-                paint(g);
-        }
+    public void setDeltaTime(double deltaTime) {
+        this.deltaTime = deltaTime;
+    }
+
+    public void update(Graphics g) {
+        System.out.println("update before paint");
+        paint(g);
+    }
 
         public void paint(Graphics g) 
         {
@@ -419,6 +437,13 @@ public class Dance extends JWindow
                     gc.fillRect(0, 0, width, height);
                     //-- clear background -->
 
+                    //Render DDDCanvasComponent
+                    if(dddCanvasComponent!=null) {
+                        dddCanvasComponent.update(getDeltaTime());//update the physics
+                        dddCanvasComponent.draw(gc);
+                    }
+
+                    //Render PianoComponent
                     if(pianoComponent!=null) {
                         pianoComponent.draw(gc);
                     }
@@ -477,8 +502,7 @@ public class Dance extends JWindow
                         gc.drawString(String.format("%.2f s", elapsedSeconds) , fps_x+80, fps_y);
                         gc.setColor(Color.BLACK);
                         gc.drawRect(1,1,width-2, height-2);
-                        //�e���䪺�H
-                        gc.drawImage(image_leftman, 0, 0, 360, 669, null);
+                        //gc.drawImage(image_leftman, 0, 0, 360, 669, null);
                         //Special Effects
                         effectManager.drawAll((Graphics2D) gc);
 

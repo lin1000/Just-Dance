@@ -1,4 +1,15 @@
 @startuml
+class com.badlogic.gdx.ApplicationAdapter
+class com.badlogic.gdx.Gdx
+class com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
+class com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
+class com.badlogic.gdx.graphics.GL20
+class com.badlogic.gdx.graphics.Pixmap
+class com.badlogic.gdx.graphics.g2d.ParticleEffect
+class com.badlogic.gdx.graphics.g2d.SpriteBatch
+class com.badlogic.gdx.graphics.glutils.FrameBuffer
+class com.badlogic.gdx.utils.ScreenUtils
+class com.github.sarxos.webcam.Webcam
 class com.github.strikerx3.jxinput.XInputAxes
 class com.github.strikerx3.jxinput.XInputComponents
 class com.github.strikerx3.jxinput.XInputDevice
@@ -7,10 +18,11 @@ class com.github.strikerx3.jxinput.enums.XInputButton
 class com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException
 class com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
 class com.github.strikerx3.jxinput.listener.XInputDeviceListener
-class com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener
-class com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener
-class com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener
-class com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener
+class com.lin1000.justdance.DoomLike_A1_Minimal_Raycaster
+class com.lin1000.justdance.JFrame
+class com.lin1000.justdance.JPanel
+class com.lin1000.justdance.JustDanceLauncher
+class com.lin1000.justdance.Project
 class com.lin1000.justdance.audio.FFT
 class com.lin1000.justdance.beats.Arrow
 class com.lin1000.justdance.beats.ArrowsProducer
@@ -20,97 +32,170 @@ class com.lin1000.justdance.controller.ConditionController
 class com.lin1000.justdance.controller.FPSTimerTask
 class com.lin1000.justdance.controller.SoundController
 class com.lin1000.justdance.controller.SourceDataLineEventListener
+class com.lin1000.justdance.gamepanel.CombFilterOnsetDetection
 class com.lin1000.justdance.gamepanel.Dance
-class com.lin1000.justdance.gamepanel.JFrame
+class com.lin1000.justdance.gamepanel.JPanel
 class com.lin1000.justdance.gamepanel.JWindow
+class com.lin1000.justdance.gamepanel.LiveFluxVisualizer
 class com.lin1000.justdance.gamepanel.MainMenu
-class com.lin1000.justdance.gamepanel.Project
+class com.lin1000.justdance.gamepanel.WaveformVisualizer
 class com.lin1000.justdance.gamepanel.action.DanceAction
 class com.lin1000.justdance.gamepanel.action.MainMenuAction
+class com.lin1000.justdance.gamepanel.componentpanel.DDDCanvasComponent
+class com.lin1000.justdance.gamepanel.componentpanel.PianoComponent
+class com.lin1000.justdance.gamepanel.componentpanel.PianoStyle
+class com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent
+class com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent
 class com.lin1000.justdance.gamepanel.effect.Effect
 class com.lin1000.justdance.gamepanel.effect.EffectManager
 class com.lin1000.justdance.gamepanel.effect.FlashEffect
 class com.lin1000.justdance.gamepanel.effect.LifeParticle
 class com.lin1000.justdance.gamepanel.effect.LifeParticleExtreme
 class com.lin1000.justdance.gamepanel.effect.Particle
+class com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX
 class com.lin1000.justdance.gamepanel.effect.TextFlashEffect
-class com.lin1000.justdance.gamepanel.input.Input
-class com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
-class com.lin1000.justdance.gamepanel.input.XBoxControllerInput
+class com.lin1000.justdance.gamepanel.inputdevice.DanceKeyboardDeviceListener
+class com.lin1000.justdance.gamepanel.inputdevice.DanceMidiDeviceListener
+class com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener
+class com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener
+class com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener
+class com.lin1000.justdance.input.Input
+class com.lin1000.justdance.input.KeyboardControllerInput
+class com.lin1000.justdance.input.XBoxControllerInput
+class com.lin1000.justdance.input.device.HidGamepad
+class com.lin1000.justdance.input.device.JXInputDeviceWatcher
+class com.lin1000.justdance.player.Player
 class com.lin1000.justdance.song.Song
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.github.strikerx3.jxinput.XInputAxes
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.github.strikerx3.jxinput.XInputComponents
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.github.strikerx3.jxinput.XInputDevice
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputAxis
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputButton
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.Dance
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.action.DanceAction
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
-com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.input.XBoxControllerInput
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputAxes
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputComponents
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputDevice
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputAxis
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputButton
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener --|> com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.Dance
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.action.DanceAction
-com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.input.XBoxControllerInput
-com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.MainMenu
-com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.action.DanceAction
-com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
-com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.input.KeyboardControllerInput
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputAxes
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputComponents
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputDevice
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputAxis
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputButton
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener --|> com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.MainMenu
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.input.Input
-com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.input.XBoxControllerInput
+class org.bytedeco.javacv.Frame
+class org.bytedeco.javacv.Java2DFrameConverter
+class org.bytedeco.javacv.OpenCVFrameConverter
+class org.bytedeco.opencv.opencv_core.Mat
+class org.bytedeco.opencv.opencv_core.Scalar
+class org.hid4java.event.HidServicesEvent
+class org.jcodec.api.FrameGrab
+class org.jcodec.api.JCodecException
+class org.jcodec.common.io.FileChannelWrapper
+class org.jcodec.common.io.NIOUtils
+interface com.lin1000.justdance.KeyListener
+interface com.lin1000.justdance.input.device.HidServicesListener
+com.lin1000.justdance.DoomLike_A1_Minimal_Raycaster --|> com.lin1000.justdance.JPanel
+com.lin1000.justdance.DoomLike_A1_Minimal_Raycaster --|> com.lin1000.justdance.KeyListener
+com.lin1000.justdance.JustDanceLauncher ..> com.lin1000.justdance.Project
+com.lin1000.justdance.Project ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.Project ..> com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException
+com.lin1000.justdance.Project --|> com.lin1000.justdance.JFrame
+com.lin1000.justdance.Project ..> com.lin1000.justdance.controller.SoundController
+com.lin1000.justdance.Project ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.Project ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.Project ..> com.lin1000.justdance.input.device.JXInputDeviceWatcher
+com.lin1000.justdance.Project ..> org.jcodec.api.FrameGrab
+com.lin1000.justdance.Project ..> org.jcodec.api.JCodecException
+com.lin1000.justdance.Project ..> org.jcodec.common.io.FileChannelWrapper
+com.lin1000.justdance.Project ..> org.jcodec.common.io.NIOUtils
 com.lin1000.justdance.beats.ArrowsProducer ..> com.lin1000.justdance.controller.ConditionController
 com.lin1000.justdance.beats.BeatMapGenerator ..> com.lin1000.justdance.audio.FFT
 com.lin1000.justdance.beats.BeatMapGenerator ..> com.lin1000.justdance.song.Song
 com.lin1000.justdance.controller.ConditionController ..> com.lin1000.justdance.gamepanel.Dance
 com.lin1000.justdance.controller.FPSTimerTask ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.controller.SoundController ..> com.lin1000.justdance.audio.FFT
 com.lin1000.justdance.controller.SoundController ..> com.lin1000.justdance.beats.BeatMapGenerator
 com.lin1000.justdance.controller.SoundController ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.gamepanel.CombFilterOnsetDetection --|> com.lin1000.justdance.gamepanel.JPanel
 com.lin1000.justdance.gamepanel.Dance ..> com.github.strikerx3.jxinput.XInputDevice
 com.lin1000.justdance.gamepanel.Dance ..> com.github.strikerx3.jxinput.listener.XInputDeviceListener
-com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.XInputDevice.DanceKeyboardDeviceListener
-com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.XInputDevice.DanceXInputDeviceListener
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.Project
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.beats.Arrow
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.beats.ArrowsProducer
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.controller.ConditionController
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.controller.SoundController
 com.lin1000.justdance.gamepanel.Dance --|> com.lin1000.justdance.gamepanel.JWindow
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.componentpanel.DDDCanvasComponent
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.componentpanel.PianoComponent
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.componentpanel.PianoStyle
 com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.effect.EffectManager
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.inputdevice.DanceKeyboardDeviceListener
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.inputdevice.DanceMidiDeviceListener
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener
+com.lin1000.justdance.gamepanel.Dance ..> com.lin1000.justdance.song.Song
+com.lin1000.justdance.gamepanel.LiveFluxVisualizer ..> com.lin1000.justdance.audio.FFT
+com.lin1000.justdance.gamepanel.LiveFluxVisualizer --|> com.lin1000.justdance.gamepanel.JPanel
 com.lin1000.justdance.gamepanel.MainMenu ..> com.github.strikerx3.jxinput.XInputDevice
 com.lin1000.justdance.gamepanel.MainMenu ..> com.github.strikerx3.jxinput.listener.XInputDeviceListener
-com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.XInputDevice.MainMenuKeyboardDeviceListener
-com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.XInputDevice.MainMenuXInputDeviceListener
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.Project
 com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.controller.SoundController
 com.lin1000.justdance.gamepanel.MainMenu --|> com.lin1000.justdance.gamepanel.JWindow
 com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
-com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.input.Input
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.input.device.JXInputDeviceWatcher
+com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.player.Player
 com.lin1000.justdance.gamepanel.MainMenu ..> com.lin1000.justdance.song.Song
-com.lin1000.justdance.gamepanel.Project ..> com.github.strikerx3.jxinput.XInputDevice
-com.lin1000.justdance.gamepanel.Project ..> com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException
-com.lin1000.justdance.gamepanel.Project ..> com.lin1000.justdance.controller.SoundController
-com.lin1000.justdance.gamepanel.Project --|> com.lin1000.justdance.gamepanel.JFrame
+com.lin1000.justdance.gamepanel.WaveformVisualizer ..> com.lin1000.justdance.audio.FFT
+com.lin1000.justdance.gamepanel.WaveformVisualizer --|> com.lin1000.justdance.gamepanel.JPanel
 com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.beats.Arrow
 com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.Dance
-com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.action.DanceAction ..> com.lin1000.justdance.input.Input
 com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.beats.Beat
 com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.beats.BeatMapGenerator
-com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.controller.SoundController
 com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.gamepanel.MainMenu
-com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.input.Input
 com.lin1000.justdance.gamepanel.action.MainMenuAction ..> com.lin1000.justdance.song.Song
-com.lin1000.justdance.gamepanel.input.KeyboardControllerInput --|> com.lin1000.justdance.gamepanel.input.Input
-com.lin1000.justdance.gamepanel.input.XBoxControllerInput ..> com.github.strikerx3.jxinput.enums.XInputButton
-com.lin1000.justdance.gamepanel.input.XBoxControllerInput --|> com.lin1000.justdance.gamepanel.input.Input
+com.lin1000.justdance.gamepanel.componentpanel.DDDCanvasComponent ..> com.lin1000.justdance.input.Input
+com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent ..> com.github.sarxos.webcam.Webcam
+com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent ..> org.bytedeco.javacv.Frame
+com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent ..> org.bytedeco.javacv.Java2DFrameConverter
+com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent ..> org.bytedeco.javacv.OpenCVFrameConverter
+com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent ..> org.bytedeco.opencv.opencv_core.Mat
+com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent ..> org.bytedeco.opencv.opencv_core.Scalar
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.ApplicationAdapter
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.Gdx
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.graphics.GL20
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.graphics.Pixmap
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.graphics.g2d.ParticleEffect
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.graphics.g2d.SpriteBatch
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.graphics.glutils.FrameBuffer
+com.lin1000.justdance.gamepanel.effect.ParticleRendererLibGDX ..> com.badlogic.gdx.utils.ScreenUtils
+com.lin1000.justdance.gamepanel.inputdevice.DanceKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.gamepanel.inputdevice.DanceKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.action.DanceAction
+com.lin1000.justdance.gamepanel.inputdevice.DanceKeyboardDeviceListener ..> com.lin1000.justdance.input.KeyboardControllerInput
+com.lin1000.justdance.gamepanel.inputdevice.DanceMidiDeviceListener ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputAxes
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputComponents
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputAxis
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputButton
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener --|> com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.Dance
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.lin1000.justdance.gamepanel.action.DanceAction
+com.lin1000.justdance.gamepanel.inputdevice.DanceXInputDeviceListener ..> com.lin1000.justdance.input.XBoxControllerInput
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener ..> com.lin1000.justdance.input.KeyboardControllerInput
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputAxes
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputComponents
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputAxis
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.github.strikerx3.jxinput.enums.XInputButton
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener --|> com.github.strikerx3.jxinput.listener.SimpleXInputDeviceListener
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.gamepanel.action.MainMenuAction
+com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener ..> com.lin1000.justdance.input.XBoxControllerInput
+com.lin1000.justdance.input.KeyboardControllerInput --|> com.lin1000.justdance.input.Input
+com.lin1000.justdance.input.XBoxControllerInput ..> com.github.strikerx3.jxinput.enums.XInputButton
+com.lin1000.justdance.input.XBoxControllerInput --|> com.lin1000.justdance.input.Input
+com.lin1000.justdance.input.device.HidGamepad ..> org.hid4java.event.HidServicesEvent
+com.lin1000.justdance.input.device.HidGamepad --|> com.lin1000.justdance.input.device.HidServicesListener
+com.lin1000.justdance.input.device.JXInputDeviceWatcher ..> com.github.strikerx3.jxinput.XInputDevice
+com.lin1000.justdance.input.device.JXInputDeviceWatcher ..> com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException
+com.lin1000.justdance.input.device.JXInputDeviceWatcher ..> com.lin1000.justdance.gamepanel.MainMenu
+com.lin1000.justdance.input.device.JXInputDeviceWatcher ..> com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener
+com.lin1000.justdance.input.device.JXInputDeviceWatcher ..> com.lin1000.justdance.player.Player
+com.lin1000.justdance.player.Player ..> com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener
+com.lin1000.justdance.song.Song ..> com.lin1000.justdance.beats.Beat
 @enduml
