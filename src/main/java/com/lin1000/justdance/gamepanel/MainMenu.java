@@ -1,13 +1,19 @@
 package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import javax.swing.*;
 
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
 import com.lin1000.justdance.Project;
 import com.lin1000.justdance.gamepanel.componentpanel.KeyboardControllerComponent;
+import com.lin1000.justdance.gamepanel.componentpanel.MidiControllerComponent;
 import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener;
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
@@ -23,6 +29,7 @@ import com.lin1000.justdance.song.Song;
 //import de.hardcode.jxinput.test.ButtonListener;
 //import de.hardcode.jxinput.event.JXInputButtonEvent;
 //import de.hardcode.jxinput.event.JXInputEventManager;
+import com.lin1000.justdance.ddd.*;
 
 public class MainMenu extends JWindow
 {
@@ -55,6 +62,9 @@ public class MainMenu extends JWindow
         //Keyboard Controller Component
         public KeyboardControllerComponent keyboardControllerComponent = new KeyboardControllerComponent(30, 560);
 
+        //Midi Controller Component
+        public MidiControllerComponent midiControllerComponent = new MidiControllerComponent(200,470);
+
         //Webcam variable
         public WebCamComponent webCamComponent = null;
 
@@ -84,6 +94,31 @@ public class MainMenu extends JWindow
         DecimalFormat optional2Decimalformatter = new DecimalFormat("0.##");
         DecimalFormat optional3Decimalformatter = new DecimalFormat("0.###");
 
+        //3D Experimental
+        public static ArrayList<Triangle> tris;
+        public int[] dddx = new int[1];
+        public int[] dddy = new int[1];
+        static{
+            //3D Experimental
+            tris = new ArrayList<Triangle>();
+            tris.add(new Triangle(new Vertex(100, 100, 100),
+                    new Vertex(-100, -100, 100),
+                    new Vertex(-100, 100, -100),
+                    Color.WHITE));
+            tris.add(new Triangle(new Vertex(100, 100, 100),
+                    new Vertex(-100, -100, 100),
+                    new Vertex(100, -100, -100),
+                    Color.RED));
+            tris.add(new Triangle(new Vertex(-100, 100, -100),
+                    new Vertex(100, -100, -100),
+                    new Vertex(100, 100, 100),
+                    Color.GREEN));
+            tris.add(new Triangle(new Vertex(-100, 100, -100),
+                    new Vertex(100, -100, -100),
+                    new Vertex(-100, -100, 100),
+                    Color.BLUE));
+        }
+
         public MainMenu(Project project, boolean isFirstRound, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen)
         {
             super(project);
@@ -106,6 +141,25 @@ public class MainMenu extends JWindow
             // 加上 KeyListener（需設定 focusable）
             this.setFocusable(true);
             this.addKeyListener(new MainMenuKeyboardDeviceListener(this));
+            this.addMouseMotionListener(new MouseMotionListener() {
+                @Override
+                public void mouseDragged(MouseEvent e) {
+                    double yi = 180.0 / MainMenu.this.getHeight();
+                    double xi = 180.0 / MainMenu.this.getWidth();
+                    dddx[0] = (int) (e.getX() * xi);
+                    dddy[0] = -(int) (e.getY() * yi);
+                    MainMenu.this.repaint();
+                }
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    double yi = 180.0 / MainMenu.this.getHeight();
+                    double xi = 180.0 / MainMenu.this.getWidth();
+                    dddx[0] = (int) (e.getX() * xi);
+                    dddy[0] = -(int) (e.getY() * yi);
+                    MainMenu.this.repaint();
+
+                }
+            });
             // 設定視窗屬性
             window.setVisible(true);
             window.requestFocusInWindow();
@@ -240,19 +294,18 @@ public class MainMenu extends JWindow
         }
 
 
-    public void update(Graphics g)
-        {
-                paint(g);
+    public void update(Graphics g) {
+        paint(g);
+    }
+
+    public void paint(Graphics g) {
+        try {
+            Graphics2D gc = (Graphics2D) g;
+            gc.drawImage(buffer, 0, 0, dim.width, dim.height, this);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        public void paint(Graphics g) 
-        {
-                try{
-
-                    g.drawImage(buffer,0,0,dim.width,dim.height,this);
-
-                }catch(java.lang.NullPointerException f){}
-        }
+    }
         
         //loadImage what paint need
         public void loadImage()
@@ -299,10 +352,47 @@ public class MainMenu extends JWindow
                     keyboardControllerComponent.draw(gc);
                 }
 
+                if(midiControllerComponent != null){
+                    midiControllerComponent.draw(gc);
+                }
+
                 if(webCamComponent!= null) webCamComponent.runCameraLoop(gc);
 
+
+                //3D Experimental
+                // 生成的形状以原点 (0, 0, 0) 为中心，稍后我们将围绕该点进行旋转。
+                double heading = Math.toRadians(dddx[0]);
+                Matrix3 headingTransform = new Matrix3(new double[]{
+                        Math.cos(heading), 0, -Math.sin(heading),
+                        0, 1, 0,
+                        Math.sin(heading), 0, Math.cos(heading)
+                });
+                double pitch = Math.toRadians(dddy[0]);
+                Matrix3 pitchTransform = new Matrix3(new double[]{
+                        1, 0, 0,
+                        0, Math.cos(pitch), Math.sin(pitch),
+                        0, -Math.sin(pitch), Math.cos(pitch)
+                });
+                //提前进行矩阵合并
+                Matrix3 transform = headingTransform.multiply(pitchTransform);
+
+                AffineTransform originalTransform = gc.getTransform();
+                gc.translate(getWidth() / 2, getHeight() / 2);
+                gc.setColor(Color.WHITE);
+                for (Triangle t : tris) {
+                    gc.setColor(t.color);
+                    Vertex v1 = transform.transform(t.v1);
+                    Vertex v2 = transform.transform(t.v2);
+                    Vertex v3 = transform.transform(t.v3);
+                    Path2D path = new Path2D.Double();
+                    path.moveTo(v1.x, v1.y);
+                    path.lineTo(v2.x, v2.y);
+                    path.lineTo(v3.x, v3.y);
+                    path.closePath();
+                    gc.draw(path);
+                }
+                gc.setTransform(originalTransform);
                 repaint();
-                        
         }
         
         //?e?X?D???
