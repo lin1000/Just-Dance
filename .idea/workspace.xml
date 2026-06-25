@@ -4,8 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="77e75819-f76a-4117-960a-99e8b94f604d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="77e75819-f76a-4117-960a-99e8b94f604d" name="Changes" comment="add workspace.xml into repo to facilitate repo transfer to different execution environment.">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,6 +38,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_MARK_IGNORED_FILES_AS_EXCLUDED": "true",
     "Application.JustDanceLauncher.executor": "Run",
     "Maven.just-dance [compile].executor": "Run",
     "Maven.just-dance [org.codehaus.mojo:exec-maven-plugin:3.5.1:java].executor": "Run",
@@ -96,8 +98,17 @@
       <option name="presentableId" value="Default" />
       <updated>1752424931529</updated>
       <workItem from="1752424933054" duration="2290000" />
-      <workItem from="1782363430502" duration="1424000" />
+      <workItem from="1782363430502" duration="1768000" />
     </task>
+    <task id="LOCAL-00001" summary="add workspace.xml into repo to facilitate repo transfer to different execution environment.">
+      <option name="closed" value="true" />
+      <created>1782365432156</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1782365432156</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -138,5 +149,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="add workspace.xml into repo to facilitate repo transfer to different execution environment." />
+    <option name="LAST_COMMIT_MESSAGE" value="add workspace.xml into repo to facilitate repo transfer to different execution environment." />
   </component>
 </project>

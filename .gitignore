@@ -25,3 +25,13 @@ replay_pid*
 
 #executable folder
 out/production/justdance
+/core/
+/target/
+/sound/
+/img/
+/desktop/
+/.vscode/
+/foot/
+src/main/resources/default-font.fnt
+src/main/resources/default-font.png
+
