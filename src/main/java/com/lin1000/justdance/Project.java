@@ -6,6 +6,7 @@ import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.gamepanel.MainMenu;
 import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
+import com.lin1000.justdance.input.device.MidiDeviceWatcher;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.api.JCodecException;
 import org.jcodec.common.io.FileChannelWrapper;
@@ -33,6 +34,8 @@ public class Project extends JFrame implements Runnable
 
 	//Device Watcher Polling based
 	public JXInputDeviceWatcher jXInputDeviceWatcher = null;
+	public MidiDeviceWatcher midiDeviceWatcher = null;
+
 
 	//SoundController
 	SoundController soundController = null;
@@ -148,7 +151,7 @@ public class Project extends JFrame implements Runnable
 			System.out.println("****************(1)Step=MainMenu");
 			mainMenu=null;
 			if(mainMenu==null) {
-				mainMenu = new MainMenu(this, isFirstRound, xInputDevice, soundController, activeScreen);
+				mainMenu = new MainMenu(this, isFirstRound, xInputDevice,midiDevice, soundController, activeScreen);
 			}
 
 			//Window mainwindow=new Window(main);

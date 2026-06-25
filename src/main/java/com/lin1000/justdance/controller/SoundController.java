@@ -387,7 +387,7 @@ public class SoundController implements Runnable
             // Schedule task to run every 16 milliseconds after an initial 0 second delay
             fpsTimer = new java.util.Timer("FPSTimer");
             FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
-            fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
+            fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 300);
             //}
 
             SourceDataLine line = AudioSystem.getSourceDataLine(format);
@@ -445,7 +445,7 @@ public class SoundController implements Runnable
                 currentBufferSize = line.getBufferSize();
 
                 //Thread.sleep(16);
-                //mainTargetWindow.setDeltaTime(dt);
+                mainTargetWindow.setDeltaTime(dt);
                 //mainTargetWindow.repaint();
                 if(mainTargetWindow.conditionControl.getGameOver()){
                     break;

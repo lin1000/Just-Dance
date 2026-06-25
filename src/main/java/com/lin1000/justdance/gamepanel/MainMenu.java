@@ -7,6 +7,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.Transmitter;
 import javax.swing.*;
 
 import com.github.strikerx3.jxinput.XInputDevice;
@@ -14,6 +17,7 @@ import com.github.strikerx3.jxinput.listener.XInputDeviceListener;
 import com.lin1000.justdance.Project;
 import com.lin1000.justdance.gamepanel.componentpanel.KeyboardControllerComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.MidiControllerComponent;
+import com.lin1000.justdance.gamepanel.inputdevice.MainMenuMidiDeviceListener;
 import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListener;
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
@@ -22,13 +26,10 @@ import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
 import com.lin1000.justdance.input.Input;
-import com.lin1000.justdance.player.Player;
+import com.lin1000.justdance.input.device.MidiDeviceWatcher;
+import com.lin1000.justdance.player.JXInputPlayer;
+import com.lin1000.justdance.player.MidiPlayer;
 import com.lin1000.justdance.song.Song;
-//import de.hardcode.jxinput.JXInputManager;
-//import de.hardcode.jxinput.JXInputDevice;
-//import de.hardcode.jxinput.test.ButtonListener;
-//import de.hardcode.jxinput.event.JXInputButtonEvent;
-//import de.hardcode.jxinput.event.JXInputEventManager;
 import com.lin1000.justdance.ddd.*;
 
 public class MainMenu extends JWindow
@@ -44,6 +45,12 @@ public class MainMenu extends JWindow
 
         //Joystick listener cache
         XInputDeviceListener xInputDeviceListener = null;
+
+        //Midi Device passed into Dance
+        private MidiDevice midiDevice = null;
+        //Midi listener cache
+        Receiver midiDeviceListener = null;
+
         //paint
         private Dimension dim;
         private Image buffer;
@@ -119,7 +126,7 @@ public class MainMenu extends JWindow
                     Color.BLUE));
         }
 
-        public MainMenu(Project project, boolean isFirstRound, XInputDevice xInputDevice, SoundController soundController, GraphicsDevice activeScreen)
+        public MainMenu(Project project, boolean isFirstRound, XInputDevice xInputDevice, MidiDevice midiDevice, SoundController soundController, GraphicsDevice activeScreen)
         {
             super(project);
             this.project = project;
@@ -138,26 +145,27 @@ public class MainMenu extends JWindow
                 activeScreen.setFullScreenWindow(this);
             }
 
-            // 加上 KeyListener（需設定 focusable）
+            // Setup KeyListener（set focusable beforehand is required）
             this.setFocusable(true);
             this.addKeyListener(new MainMenuKeyboardDeviceListener(this));
             this.addMouseMotionListener(new MouseMotionListener() {
                 @Override
                 public void mouseDragged(MouseEvent e) {
-                    double yi = 180.0 / MainMenu.this.getHeight();
                     double xi = 180.0 / MainMenu.this.getWidth();
+                    double yi = 180.0 / MainMenu.this.getHeight();
                     dddx[0] = (int) (e.getX() * xi);
                     dddy[0] = -(int) (e.getY() * yi);
-                    MainMenu.this.repaint();
+                    System.out.println("xi="+xi+",yi="+yi);
                 }
                 @Override
                 public void mouseMoved(MouseEvent e) {
-                    double yi = 180.0 / MainMenu.this.getHeight();
                     double xi = 180.0 / MainMenu.this.getWidth();
+                    double yi = 180.0 / MainMenu.this.getHeight();
                     dddx[0] = (int) (e.getX() * xi);
                     dddy[0] = -(int) (e.getY() * yi);
-                    MainMenu.this.repaint();
-
+                    System.out.println("xi="+xi+",yi="+yi);
+                    System.out.println("e.getX()="+e.getX()+",e.getY()="+e.getY());
+                    System.out.println("dddx[0]="+dddx[0]+",dddy[0]="+dddy[0]);
                 }
             });
             // 設定視窗屬性
@@ -201,6 +209,22 @@ public class MainMenu extends JWindow
                 //throw new RuntimeException("JXInputDevice is null");
             }
 
+            //Initialize and setup Midi Device
+            this.midiDevice = midiDevice;
+            try{
+                if(midiDevice != null) {
+                    // The SimpleMidiDeviceListener allows us to implement only the methods we actually need
+                    this.midiDeviceListener = new MainMenuMidiDeviceListener(this);
+                    Transmitter transmitter = midiDevice.getTransmitter();
+                    transmitter.setReceiver(this.midiDeviceListener);
+                } else {
+                    System.err.println("System has NO midi devices, please use computer keyboard to play");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("System has midi devices, but cannot correctly setup. Please use computer keyboard to play");
+            }
+
 
             try {
                 soundController.playMainMenuSound(0);
@@ -225,6 +249,7 @@ public class MainMenu extends JWindow
                 //soundControl.play_beginSound(2);
                 paintInitial(0);//
 
+                //JXInputDeviceWatcher Setup and Start
                 try {
                     //Device Watcher Polling based
                     project.jXInputDeviceWatcher = new JXInputDeviceWatcher();
@@ -232,9 +257,20 @@ public class MainMenu extends JWindow
                 } catch (java.lang.InterruptedException e) {
                     e.printStackTrace();
                 }
-
                 project.jXInputDeviceWatcher.setMainTargetWindow(this);
                 project.jXInputDeviceWatcher.start();
+
+                //MidiDeviceWatcher Setup and Start
+                try {
+                    //Device Watcher Polling based
+                    project.midiDeviceWatcher = new MidiDeviceWatcher();
+                    Thread.sleep(0);
+                } catch (java.lang.InterruptedException e) {
+                    e.printStackTrace();
+                }
+                project.midiDeviceWatcher.setMainTargetWindow(this);
+                project.midiDeviceWatcher.start();
+
                 int paintIndex = 0;
                 while (controlFlow == 1) {
                     try {
@@ -342,7 +378,7 @@ public class MainMenu extends JWindow
                 if(paintIndex > 5)  {gc.drawString("Press Start Button",550,600);}
 
                 if(project.jXInputDeviceWatcher != null){
-                    Player p1 = project.jXInputDeviceWatcher.getPlayer(0);
+                    JXInputPlayer p1 = project.jXInputDeviceWatcher.getPlayer(0);
                     if(p1!=null) {
                         xBoxControllerComponent.draw(gc);
                     }
@@ -352,8 +388,11 @@ public class MainMenu extends JWindow
                     keyboardControllerComponent.draw(gc);
                 }
 
-                if(midiControllerComponent != null){
-                    midiControllerComponent.draw(gc);
+                if(project.midiDeviceWatcher != null) {
+                    MidiPlayer midiPlayer = project.midiDeviceWatcher.getMidiPlayer(0);
+                    if (midiPlayer != null || true) {
+                        midiControllerComponent.draw(gc);
+                    }
                 }
 
                 if(webCamComponent!= null) webCamComponent.runCameraLoop(gc);

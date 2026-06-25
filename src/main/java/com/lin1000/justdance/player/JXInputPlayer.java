@@ -2,7 +2,7 @@ package com.lin1000.justdance.player;
 
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
 
-public class Player {
+public class JXInputPlayer {
     String name;
     int playerNum;
     int age;

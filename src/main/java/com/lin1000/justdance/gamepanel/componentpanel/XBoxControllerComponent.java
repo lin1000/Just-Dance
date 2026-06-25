@@ -19,7 +19,6 @@ public class XBoxControllerComponent {
     double deltaReactScale = 0.01;
     private double angle = 0; // 動畫用角度值（radian）
 
-
     static{
         //loadImage
             Toolkit kit=Toolkit.getDefaultToolkit();
@@ -71,7 +70,7 @@ public class XBoxControllerComponent {
         gc.setColor(circleBackgroundColor);
         gc.fillOval(p_off_x+30,p_off_y-5,circleWidth-circleBorder/2,circleHeight-circleBorder/2);
         gc.drawImage(iconXBoxController, x,y,newWidth,newHeight,  null);
-        gc.drawString("Payer 1 Connected!", p_off_x, p_off_y+140);
+        gc.drawString("Joystick Payer Cwswsqwsdaswwssdddwawsaonnected!", p_off_x, p_off_y+140);
 
         gc.dispose();
     }

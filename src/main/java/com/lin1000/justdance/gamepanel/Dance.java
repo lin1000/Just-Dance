@@ -113,11 +113,13 @@ public class Dance extends JWindow
 
     // time delta calculated from last update
     double deltaTime ;
+    long deltaFrame;
 
     //DDDCanvasComponent
     public DDDCanvasComponent dddCanvasComponent = null;
 
     private DecimalFormat AFTimeFormat = new DecimalFormat("0.0");
+    private DecimalFormat AFTimeFormat3 = new DecimalFormat("0.000");
 
     //Piano Component
     public PianoComponent pianoComponent = null;
@@ -145,11 +147,11 @@ public class Dance extends JWindow
         //JWindow
         window = this;
         if (activeScreen != null) {
-            activeScreen.setFullScreenWindow(this);
+            //activeScreen.setFullScreenWindow(this);
             Rectangle bounds = activeScreen.getDefaultConfiguration().getBounds();
             int x = bounds.x + (bounds.width - this.getWidth()) / 2;
             int y = bounds.y + (bounds.height - this.getHeight()) / 2;
-            bounds.setLocation(x,y);
+            bounds.setLocation(0,0);
             this.setBounds(bounds);
             width =  this.getWidth();
             height = this.getHeight();
@@ -175,7 +177,7 @@ public class Dance extends JWindow
             height = 768;
             life_x = 20;
             life_y = 670;
-            activeScreen.setFullScreenWindow(this);
+            //activeScreen.setFullScreenWindow(this);
         }
 
         // To add KeyListener SET Focusable first !
@@ -220,14 +222,14 @@ public class Dance extends JWindow
         //Initialize and setup Midi Device
         this.midiDevice = midiDevice;
         try{
-        if(midiDevice != null) {
-            // The SimpleMidiDeviceListener allows us to implement only the methods we actually need
-            this.midiDeviceListener = new DanceMidiDeviceListener(this);
-            Transmitter transmitter = midiDevice.getTransmitter();
-            transmitter.setReceiver(this.midiDeviceListener);
-        } else {
-            System.err.println("System has NO midi devices, please use computer keyboard to play");
-        }
+            if(midiDevice != null) {
+                // The SimpleMidiDeviceListener allows us to implement only the methods we actually need
+                this.midiDeviceListener = new DanceMidiDeviceListener(this);
+                Transmitter transmitter = midiDevice.getTransmitter();
+                transmitter.setReceiver(this.midiDeviceListener);
+            } else {
+                System.err.println("System has NO midi devices, please use computer keyboard to play");
+            }
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("System has midi devices, but cannot correctly setup. Please use computer keyboard to play");
@@ -350,6 +352,14 @@ public class Dance extends JWindow
 
     public void setDeltaTime(double deltaTime) {
         this.deltaTime = deltaTime;
+    }
+
+    public long getDeltaFrame() {
+        return deltaFrame;
+    }
+
+    public void setDeltaFrame(long deltaFrame) {
+        this.deltaFrame = deltaFrame;
     }
 
     public void update(Graphics g) {
@@ -497,7 +507,7 @@ public class Dance extends JWindow
                         int fps_h = 20;
                         gc.setColor(Color.white);
                         gc.fillRect(fps_x,fps_y,fps_w,fps_h);
-                        gc.setColor(Color.blue);
+                        gc.setColor(Color.green);
                         gc.drawString(" Time:", fps_x, fps_y);
                         gc.drawString(String.format("%.2f s", elapsedSeconds) , fps_x+80, fps_y);
                         gc.setColor(Color.BLACK);
@@ -530,15 +540,16 @@ public class Dance extends JWindow
                      * audio analysis visualizer - INFO
                      */
                     // 顯示時間與樣本數資訊
-                    int SystemInfoX = width - 250;
+                    int SystemInfoX = width - 350;
                     gc.setColor(Color.black);
                     gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSec) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", SystemInfoX, 20);
-                    gc.drawString("Sample: " + soundController.currentPlaybackSample + " / " + song.getSamples().length, SystemInfoX, 40);
+                    gc.drawString("Written Sample: " + soundController.currentPlaybackSample + " / " + song.getSamples().length, SystemInfoX, 40);
                     gc.drawString("Time: " + AFTimeFormat.format(soundController.currentSecSourceDataLine) + "s / " + AFTimeFormat.format(soundController.durationSec) + "s", SystemInfoX, 60);
-                    gc.drawString("Sample: " + soundController.currentLongFramePositionSourceDataLine + " / " + song.getSamples().length, SystemInfoX, 80);
+                    gc.drawString("Current Sample: " + soundController.currentLongFramePositionSourceDataLine + " / " + song.getSamples().length, SystemInfoX, 80);
                     gc.drawString("available: " + soundController.currentAvailableSourceDataLine  , SystemInfoX, 100);
                     gc.drawString("currentBufferSize: " + soundController.currentBufferSize  , SystemInfoX, 120);
-
+                    gc.drawString("DeltaTime: " + AFTimeFormat3.format(this.getDeltaTime()) + "s", SystemInfoX, 140);
+                    gc.drawString("DeltaFrame: " + AFTimeFormat.format(this.getDeltaFrame()) + "", SystemInfoX, 160);
                     /**
                      * Audio analysis visualizer - v2 (paint in wave block defined by waveX,Y,W,H)
                      * int waveX = x of wave form

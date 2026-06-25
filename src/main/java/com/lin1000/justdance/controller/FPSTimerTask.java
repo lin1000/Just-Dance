@@ -6,6 +6,9 @@ import java.util.TimerTask;
 
 public class FPSTimerTask extends TimerTask {
 
+    private long last;
+    private long lastLongFramePositionSourceDataLine;
+
     private Dance mainTargetWindow;
 
     public FPSTimerTask(Dance MainTargetWindow) {
@@ -15,9 +18,20 @@ public class FPSTimerTask extends TimerTask {
     @Override
     public void run() {
         // Code to be executed by the timer
-        //System.out.println("Timer task running on thread: " + Thread.currentThread().getName());
+        // System.out.println("Timer task running on thread: " + Thread.currentThread().getName());
         // Add your specific task logic here
-        mainTargetWindow.setDeltaTime(0.1);
+        // Calculating the delta time
+        long now = System.nanoTime();
+        double dt = (now - last) / 1_000_000_000.0;
+        last = now;
+        mainTargetWindow.setDeltaTime(dt);
+
+        // Calculating the delta Frame
+        long nowLongFramePositionSourceDataLine = mainTargetWindow.soundController.currentLongFramePositionSourceDataLine;
+        long deltaFrame = (nowLongFramePositionSourceDataLine - lastLongFramePositionSourceDataLine);
+        lastLongFramePositionSourceDataLine = nowLongFramePositionSourceDataLine;
+        mainTargetWindow.setDeltaFrame(deltaFrame);
+
         mainTargetWindow.repaint();
     }
 }

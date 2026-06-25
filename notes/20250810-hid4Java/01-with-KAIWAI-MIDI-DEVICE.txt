@@ -1,0 +1,34 @@
+services.getAttachedHidDevices().size()=33
+Product=GPIO Button Driver  VID=0000 PID=0000  usagePage=0x0c usage=0x01  path=\\?\HID#INT33D2&Col02#6&1061fb50&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=GPIO Button Driver  VID=0000 PID=0000  usagePage=0x01 usage=0x80  path=\\?\HID#INT33D2&Col03#6&1061fb50&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=045e PID=0000  usagePage=0x0c usage=0x01  path=\\?\HID#ConvertedDevice&Col02#5&13060e3c&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=045e PID=0000  usagePage=0x01 usage=0x80  path=\\?\HID#ConvertedDevice&Col03#5&13060e3c&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=06cb PID=ce1a  usagePage=0x01 usage=0x02  path=\\?\HID#SYNA30B8&Col01#5&168318d0&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x01 usage=0x0c  path=\\?\HID#INTC816&Col02#3&207f9b7f&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0x0d usage=0x04  path=\\?\HID#WACF4233&Col01#5&39db2c6e&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=06cb PID=ce1a  usagePage=0x0d usage=0x05  path=\\?\HID#SYNA30B8&Col02#5&168318d0&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x01 usage=0x80  path=\\?\HID#INTC816&Col03#3&207f9b7f&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0xffffff11 usage=0x11  path=\\?\HID#WACF4233&Col02#5&39db2c6e&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=06cb PID=ce1a  usagePage=0x0d usage=0x0e  path=\\?\HID#SYNA30B8&Col03#5&168318d0&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x0c usage=0x01  path=\\?\HID#INTC816&Col04#3&207f9b7f&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0x0d usage=0x0e  path=\\?\HID#WACF4233&Col03#5&39db2c6e&0&0002#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=06cb PID=ce1a  usagePage=0xffffff00 usage=0x01  path=\\?\HID#SYNA30B8&Col04#5&168318d0&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x0c usage=0x01  path=\\?\HID#INTC816&Col05#3&207f9b7f&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=045e PID=0000  usagePage=0x01 usage=0x06  path=\\?\HID#ConvertedDevice&Col01#5&13060e3c&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}\KBD
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0xffffff14 usage=0x0e  path=\\?\HID#WACF4233&Col04#5&39db2c6e&0&0003#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x0c usage=0x01  path=\\?\HID#INTC816&Col06#3&207f9b7f&0&0005#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0x0d usage=0x02  path=\\?\HID#WACF4233&Col05#5&39db2c6e&0&0004#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x01 usage=0x06  path=\\?\HID#INTC816&Col01#3&207f9b7f&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}\KBD
+Product=  VID=8087 PID=0a1e  usagePage=0x0c usage=0x01  path=\\?\HID#INTC816&Col0A#3&207f9b7f&0&0009#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x0c usage=0x01  path=\\?\HID#INTC816&Col07#3&207f9b7f&0&0006#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0xffffff11 usage=0x02  path=\\?\HID#WACF4233&Col06#5&39db2c6e&0&0005#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x0c usage=0x01  path=\\?\HID#INTC816&Col08#3&207f9b7f&0&0007#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0xff usage=0x02  path=\\?\HID#WACF4233&Col07#5&39db2c6e&0&0006#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=8087 PID=0a1e  usagePage=0x0c usage=0x01  path=\\?\HID#INTC816&Col09#3&207f9b7f&0&0008#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=  VID=0001 PID=0001  usagePage=0x01 usage=0x0c  path=\\?\HID#HPQ6001#3&9489f59&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=Wireless Receiver  VID=046d PID=c542  usagePage=0x01 usage=0x02  path=\\?\HID#VID_046D&PID_C542&Col01#6&18e6b5b5&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0x01 usage=0x01  path=\\?\HID#WACF4233&Col09#5&39db2c6e&0&0008#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=Wireless Receiver  VID=046d PID=c542  usagePage=0x01 usage=0x00  path=\\?\HID#VID_046D&PID_C542&Col02#6&18e6b5b5&0&0001#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=GPIO Button Driver  VID=0000 PID=0000  usagePage=0x01 usage=0x06  path=\\?\HID#INT33D2&Col01#6&1061fb50&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}\KBD
+Product=  VID=8087 PID=0a1e  usagePage=0x01 usage=0x0d  path=\\?\HID#INTC816&Col0B#3&207f9b7f&0&000a#{4d1e55b2-f16f-11cf-88cb-001111000030}
+Product=HIDI2C Device  VID=056a PID=4991  usagePage=0x01 usage=0x06  path=\\?\HID#WACF4233&Col08#5&39db2c6e&0&0007#{4d1e55b2-f16f-11cf-88cb-001111000030}\KBD

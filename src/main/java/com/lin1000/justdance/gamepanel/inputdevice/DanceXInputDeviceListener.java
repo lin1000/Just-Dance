@@ -58,12 +58,19 @@ public class DanceXInputDeviceListener extends SimpleXInputDeviceListener {
         float currentLX = axes.get(XInputAxis.LEFT_THUMBSTICK_X);
         float currentLY = axes.get(XInputAxis.LEFT_THUMBSTICK_Y);
 
-        if (Math.abs(currentLX - lastLX) > 0.01f) {
+        // Detect stable in the center position (not moving)
+        if(Math.abs(currentLX - 0) < 0.02f && Math.abs(currentLY - 0) < 0.02f){
+            return;
+        }
+
+        // Detect significant changes in the left thumbstick position : X Direction
+        if (Math.abs(currentLX - lastLX) > 0.02f) {
             onAxisChanged(XInputAxis.LEFT_THUMBSTICK_X, lastLX, currentLX);
             lastLX = currentLX;
         }
 
-        if (Math.abs(currentLY - lastLY) > 0.01f) {
+        // Detect significant changes in the left thumbstick position : Y Direction
+        if (Math.abs(currentLY - lastLY) > 0.02f) {
             onAxisChanged(XInputAxis.LEFT_THUMBSTICK_Y, lastLY, currentLY);
             lastLY = currentLY;
         }
@@ -74,6 +81,8 @@ public class DanceXInputDeviceListener extends SimpleXInputDeviceListener {
         XBoxControllerInput xBoxControllerInput = new XBoxControllerInput();
 
         /**
+         *
+         */
         switch(xInputAxis){
             case LEFT_THUMBSTICK_X -> {
                 if(oldValue <=0.01f && newValue <=0.0f){ //move left
@@ -92,7 +101,7 @@ public class DanceXInputDeviceListener extends SimpleXInputDeviceListener {
                 oldValue=1;
             }
 
-        }**/
+        }
 
 //        //Translate JXInputDevice Controller button into InputType
 //        XBoxControllerInput xBoxControllerInput = new XBoxControllerInput();

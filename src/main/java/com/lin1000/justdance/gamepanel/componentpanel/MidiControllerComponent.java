@@ -70,7 +70,7 @@ public class MidiControllerComponent {
         gc.setColor(circleBackgroundColor);
         gc.fillOval(p_off_x+30,p_off_y-5,circleWidth-circleBorder/2,circleHeight-circleBorder/2);
         gc.drawImage(iconXBoxController, x,y,newWidth,newHeight,  null);
-        gc.drawString("Payer 1 Connected!", p_off_x, p_off_y+140);
+        gc.drawString("Midi Payer Connected!", p_off_x, p_off_y+140);
 
         gc.dispose();
     }

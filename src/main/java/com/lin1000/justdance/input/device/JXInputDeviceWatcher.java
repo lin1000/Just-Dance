@@ -4,7 +4,7 @@ import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.gamepanel.MainMenu;
-import com.lin1000.justdance.player.Player;
+import com.lin1000.justdance.player.JXInputPlayer;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -15,7 +15,7 @@ public class JXInputDeviceWatcher {
 
     private MainMenu mainTargetWindow = null;
     private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private HashMap<String,Player> xInputDeviceHash = null;
+    private HashMap<String, JXInputPlayer> xInputDeviceHash = null;
 
     public interface JXDeviceListener {
         void onDeviceDiscovered(XInputDevice device);
@@ -57,8 +57,8 @@ public class JXInputDeviceWatcher {
         this.mainTargetWindow = mainTargetWindow;
     }
 
-    private Player extractDeviceIntoPlayer(XInputDevice device){
-        Player p = new Player();
+    private JXInputPlayer extractDeviceIntoPlayer(XInputDevice device){
+        JXInputPlayer p = new JXInputPlayer();
         p.setName("Player");
         p.setPlayerNum(device.getPlayerNum());
         p.setAge((int)(Math.random()*18));
@@ -88,7 +88,7 @@ public class JXInputDeviceWatcher {
                 if (device.isConnected()) {
                     connectedCount++;
                 }
-                Player p = extractDeviceIntoPlayer(device);
+                JXInputPlayer p = extractDeviceIntoPlayer(device);
                 xInputDeviceHash.put(device.toString(),p);
             }
 
@@ -120,7 +120,7 @@ public class JXInputDeviceWatcher {
             for(int i=0; i < devices.length ;i++){
                 device = devices[i];
                 device.poll(); //Critical Step to update the controller state include isConnected.
-                Player p = xInputDeviceHash.get(device.toString());
+                JXInputPlayer p = xInputDeviceHash.get(device.toString());
                 if(p==null){//New Device Join
                     p = extractDeviceIntoPlayer(device);
                     xInputDeviceHash.put(device.toString(),p);
@@ -134,10 +134,10 @@ public class JXInputDeviceWatcher {
                     listener.onDeviceDisconnected(device);
                 } else if(p!=null && p.isConnected() &&  device.isConnected()){
                     //nothing changed
-                    System.out.println("JXInputDevice keep online ="+device);
+                    //System.out.println("JXInputDevice keep online ="+device);
                 }else if(p!=null && !p.isConnected() && !device.isConnected()) {
                     //nothing changed
-                    System.out.println("JXInputDevice keep offline ="+device);
+                    //System.out.println("JXInputDevice keep offline ="+device);
                 }else if(p!=null && !p.isConnected() && device.isConnected()){//Device come online again
                     System.out.println("JXInput Device ["+device+"] come online");
                     p.setConnected(device.isConnected());
@@ -160,15 +160,15 @@ public class JXInputDeviceWatcher {
         }
     }
 
-    public HashMap<String, Player> getxInputDeviceHash() {
+    public HashMap<String, JXInputPlayer> getxInputDeviceHash() {
         return xInputDeviceHash;
     }
 
-    public Player getPlayer(int playerNum){
-        Stream<Map.Entry<String, Player>> entryStream = xInputDeviceHash.entrySet().stream();
+    public JXInputPlayer getPlayer(int playerNum){
+        Stream<Map.Entry<String, JXInputPlayer>> entryStream = xInputDeviceHash.entrySet().stream();
         //Stream<Player> valueStream = xInputDeviceHash.values().stream();
-        Stream<Map.Entry<String, Player>> playerStream = entryStream.filter(entry -> entry.getValue().getPlayerNum() == playerNum);
-        List<Map.Entry<String, Player>> playerCollection = playerStream.collect(Collectors.toList());
+        Stream<Map.Entry<String, JXInputPlayer>> playerStream = entryStream.filter(entry -> entry.getValue().getPlayerNum() == playerNum);
+        List<Map.Entry<String, JXInputPlayer>> playerCollection = playerStream.collect(Collectors.toList());
         return playerCollection.get(0).getValue().isConnected()?playerCollection.get(0).getValue():null;
     }
 

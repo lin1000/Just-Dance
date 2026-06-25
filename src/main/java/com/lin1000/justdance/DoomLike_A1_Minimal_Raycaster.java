@@ -1,22 +1,23 @@
-package com.lin1000.justdance.gamepanel.componentpanel;
+package com.lin1000.justdance;
 
-import com.lin1000.justdance.input.Input;
-
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 
-public class DDDCanvasComponent {
-
-    //DDDCanvasComponent Outside In Variable
-    int x;
-    int y;
-    int width;
-    int height;
-
-    //DDDCanvasComponent Inside Style Variable
-
+/**
+ * A1 Minimal Raycaster in pure Java (Swing)
+ * - 320x180 internal framebuffer, scaled to window
+ * - WASD move, Arrow Left/Right rotate, Shift sprint, Esc quit
+ * - DDA grid raycasting with distance shading
+ *
+ * Next steps (A2):
+ * - Add textures (wall atlas, per-column texture sampling)
+ * - Add floor/ceiling casting (or visplane-like spans)
+ * - Add sprites (billboard) using zBuffer
+ */
+public class DoomLike_A1_Minimal_Raycaster extends JPanel implements KeyListener, Runnable {
     // --- Window / framebuffer ---
     private final int renderW = 1920;   // internal render width
     private final int renderH = 1080;   // internal render height (16:9)
@@ -68,15 +69,76 @@ public class DDDCanvasComponent {
     // --- zBuffer for future sprites ---
     private final double[] zBuffer = new double[renderW];
 
-    public DDDCanvasComponent(int x, int y, int width, int height){
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        // initialize the frame buffer
+    public DoomLike_A1_Minimal_Raycaster() {
+        setFocusable(true);
+        setPreferredSize(new Dimension(1920, 1080)); // window size (scaled)
+        addKeyListener(this);
     }
+
+    // --- Game loop ---
+    @Override public void run() {
+        long last = System.nanoTime();
+        while (running) {
+            long now = System.nanoTime();
+            double dt = (now - last) / 1_000_000_000.0;
+            last = now;
+
+            update(dt);
+            renderFrame();
+            repaint();
+
+            // FPS calc
+            fps = 1.0 / Math.max(dt, 1e-9);
+
+            // simple sleep to avoid 100% CPU
+            try { Thread.sleep(1); } catch (InterruptedException ignored) {}
+        }
+    }
+
+    // --- Update player and physics ---
+    private void update(double dt) {
+        double moveSpeed = (sprint ? 5.0 : 3.0) * dt; // units per second
+        double rotSpeed  = 2.2 * dt;                  // radians per second
+
+        // rotation
+        if (turnL) rotate(-rotSpeed);
+        if (turnR) rotate(+rotSpeed);
+
+        // movement: forward/back
+        if (fwd) move(dirX, dirY, moveSpeed);
+        if (back) move(-dirX, -dirY, moveSpeed);
+
+        // strafe: left/right (perpendicular to dir)
+        if (left) move(+dirY, -dirX, moveSpeed);
+        if (right) move(-dirY, +dirX, moveSpeed);
+    }
+
+    private void rotate(double angle) {
+        double oldDirX = dirX;
+        dirX = dirX * Math.cos(angle) - dirY * Math.sin(angle);
+        dirY = oldDirX * Math.sin(angle) + dirY * Math.cos(angle);
+        double oldPlaneX = planeX;
+        planeX = planeX * Math.cos(angle) - planeY * Math.sin(angle);
+        planeY = oldPlaneX * Math.sin(angle) + planeY * Math.cos(angle);
+    }
+
+    private void move(double mx, double my, double amt) {
+        double nx = posX + mx * amt;
+        double ny = posY + my * amt;
+        // slide-friendly collision
+        if (isWalkable(nx, posY)) posX = nx;
+        if (isWalkable(posX, ny)) posY = ny;
+    }
+
+    private boolean isWalkable(double x, double y) {
+        int ix = (int) x;
+        int iy = (int) y;
+        if (ix < 0 || iy < 0 || ix >= mapW || iy >= mapH) return false;
+        return map[iy][ix] == 0; // 0 = empty
+    }
+
     // --- Render ---
-    public void renderFrame() {
+    private void renderFrame() {
         // clear sky/floor
         int sky = 0x2a3357;   // dark blue-ish
         int floor = 0x2b2b2b; // dark grey
@@ -151,17 +213,6 @@ public class DDDCanvasComponent {
         }
     }
 
-    public void draw(Graphics g) {
-        renderFrame();
-        Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-        g2.drawImage(frame, x, y, width, height, null);
-        g2.setColor(Color.WHITE);
-        g2.drawString(String.format("FPS: %.1f  Pos:(%.2f,%.2f)", fps, posX, posY), 10, 20);
-        g2.drawString("W/S=前後  A/D=平移  ←/→=旋轉  Shift=加速  Esc=退出", 10, 36);
-
-    }
-
     private static int shadeColor(int rgb, double s) {
         int r = (int) Math.max(0, Math.min(255, ((rgb >> 16) & 0xff) * s));
         int g = (int) Math.max(0, Math.min(255, ((rgb >> 8) & 0xff) * s));
@@ -169,76 +220,57 @@ public class DDDCanvasComponent {
         return (r << 16) | (g << 8) | b;
     }
 
-    // --- Update player and physics ---
-    public void update(double dt) {
-        double moveSpeed = (sprint ? 5.0 : 3.0) * dt; // units per second
-        double rotSpeed  = 2.2 * dt;                  // radians per second
-
-        // rotation
-        if (turnL) rotate(-rotSpeed);
-        if (turnR) rotate(+rotSpeed);
-
-        // movement: forward/back
-        if (fwd) move(dirX, dirY, moveSpeed);
-        if (back) move(-dirX, -dirY, moveSpeed);
-
-        // strafe: left/right (perpendicular to dir)
-        if (left) move(+dirY, -dirX, moveSpeed);
-        if (right) move(-dirY, +dirX, moveSpeed);
-    }
-
-    private void rotate(double angle) {
-        double oldDirX = dirX;
-        dirX = dirX * Math.cos(angle) - dirY * Math.sin(angle);
-        dirY = oldDirX * Math.sin(angle) + dirY * Math.cos(angle);
-        double oldPlaneX = planeX;
-        planeX = planeX * Math.cos(angle) - planeY * Math.sin(angle);
-        planeY = oldPlaneX * Math.sin(angle) + planeY * Math.cos(angle);
-    }
-
-    private void move(double mx, double my, double amt) {
-        double nx = posX + mx * amt;
-        double ny = posY + my * amt;
-        // slide-friendly collision
-        if (isWalkable(nx, posY)) posX = nx;
-        if (isWalkable(posX, ny)) posY = ny;
-    }
-
-    private boolean isWalkable(double x, double y) {
-        int ix = (int) x;
-        int iy = (int) y;
-        if (ix < 0 || iy < 0 || ix >= mapW || iy >= mapH) return false;
-        return map[iy][ix] == 0; // 0 = empty
+    // --- Swing paint ---
+    @Override protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        int w = getWidth(), h = getHeight();
+        g2.drawImage(frame, 0, 0, w, h, null);
+        g2.setColor(Color.WHITE);
+        g2.drawString(String.format("FPS: %.1f  Pos:(%.2f,%.2f)", fps, posX, posY), 10, 20);
+        g2.drawString("W/S=前後  A/D=平移  ←/→=旋轉  Shift=加速  Esc=退出", 10, 36);
     }
 
     // --- Input ---
-    public void keyPressed(Input input) {
-        switch (input.getInputType()) {
-            case W,LEFT_THUMBSTICK_MOVE_FORWARD -> fwd = true;
-            case S,LEFT_THUMBSTICK_MOVE_BACKWARD -> back = true;
-            case A,LEFT_THUMBSTICK_MOVE_LEFT -> left = true;
-            case D,LEFT_THUMBSTICK_MOVE_RIGHT -> right = true;
-            case LEFT_SHOULDER -> turnL = true;
-            case RIGHT_SHOULDER -> turnR = true;
-            //case KeyEvent.VK_SHIFT -> sprint = true;
-            //case KeyEvent.VK_ESCAPE -> running = false;
+    @Override public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_W -> fwd = true;
+            case KeyEvent.VK_S -> back = true;
+            case KeyEvent.VK_A -> left = true;
+            case KeyEvent.VK_D -> right = true;
+            case KeyEvent.VK_LEFT -> turnL = true;
+            case KeyEvent.VK_RIGHT -> turnR = true;
+            case KeyEvent.VK_SHIFT -> sprint = true;
+            case KeyEvent.VK_ESCAPE -> running = false;
         }
     }
 
 
-    public void keyReleased(Input input) {
-        switch (input.getInputType()) {
-            case W,LEFT_THUMBSTICK_MOVE_FORWARD -> fwd = false;
-            case S,LEFT_THUMBSTICK_MOVE_BACKWARD-> back = false;
-            case A,LEFT_THUMBSTICK_MOVE_LEFT -> left = false;
-            case D,LEFT_THUMBSTICK_MOVE_RIGHT -> right = false;
-            case LEFT_SHOULDER -> turnL = false;
-            case RIGHT_SHOULDER -> turnR = false;
-//            case KeyEvent.VK_D -> right = false;
-//            case KeyEvent.VK_LEFT -> turnL = false;
-//            case KeyEvent.VK_RIGHT -> turnR = false;
-//            case KeyEvent.VK_SHIFT -> sprint = false;
+    @Override public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_W -> fwd = false;
+            case KeyEvent.VK_S -> back = false;
+            case KeyEvent.VK_A -> left = false;
+            case KeyEvent.VK_D -> right = false;
+            case KeyEvent.VK_LEFT -> turnL = false;
+            case KeyEvent.VK_RIGHT -> turnR = false;
+            case KeyEvent.VK_SHIFT -> sprint = false;
         }
     }
-    public void keyTyped(KeyEvent e) {}
+    @Override public void keyTyped(KeyEvent e) {}
+
+    // --- Boot ---
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame f = new JFrame("DOOM-like A1: Minimal Raycaster");
+            DoomLike_A1_Minimal_Raycaster panel = new DoomLike_A1_Minimal_Raycaster();
+            f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            f.setContentPane(panel);
+            f.pack();
+            f.setLocationRelativeTo(null);
+            f.setVisible(true);
+            new Thread(panel, "game-loop").start();
+        });
+    }
 }
