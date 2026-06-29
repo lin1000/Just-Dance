@@ -2,6 +2,7 @@ package com.lin1000.justdance.gamepanel;
 
 import java.awt.*;
 import java.text.DecimalFormat;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Transmitter;
@@ -31,8 +32,11 @@ public class Dance extends JWindow
     private boolean isSuperPaint = true;
     private Project project = null;
 
-    //control the gui display of the arrow
-    public boolean direct[] = new boolean[4];
+    //control the gui display of the arrow — AtomicBoolean[] for safe cross-thread read/write
+    public AtomicBoolean[] direct = new AtomicBoolean[]{
+        new AtomicBoolean(false), new AtomicBoolean(false),
+        new AtomicBoolean(false), new AtomicBoolean(false)
+    };
 
     //Joystick Device passed into Dance
     private XInputDevice xInputDevice = null;
@@ -201,10 +205,10 @@ public class Dance extends JWindow
         loadImage();
 
         //Initial Aarrow button status
-        direct[0] = false;
-        direct[1] = false;
-        direct[2] = false;
-        direct[3] = false;
+        direct[0].set(false);
+        direct[1].set(false);
+        direct[2].set(false);
+        direct[3].set(false);
 
         //Initialize and setup joystick
         this.xInputDevice = xInputDevice;
@@ -459,13 +463,13 @@ public class Dance extends JWindow
                     }
 
                         //-- Aarrow reactions control -->
-                    if (!this.direct[0]) gc.drawImage(image_left, g_off_x+30, g_off_y+arrow_y_position, this);
+                    if (!this.direct[0].get()) gc.drawImage(image_left, g_off_x+30, g_off_y+arrow_y_position, this);
                     else gc.drawImage(image_leftfill, g_off_x+30, g_off_y+arrow_y_position, this);
-                    if (!this.direct[1]) gc.drawImage(image_down, g_off_x+130, g_off_y+arrow_y_position, this);
+                    if (!this.direct[1].get()) gc.drawImage(image_down, g_off_x+130, g_off_y+arrow_y_position, this);
                     else gc.drawImage(image_downfill, g_off_x+130, g_off_y+arrow_y_position, this);
-                    if (!this.direct[2]) gc.drawImage(image_up, g_off_x+230, g_off_y+arrow_y_position, this);
+                    if (!this.direct[2].get()) gc.drawImage(image_up, g_off_x+230, g_off_y+arrow_y_position, this);
                     else gc.drawImage(image_upfill, g_off_x+230, g_off_y+arrow_y_position, this);
-                    if (!this.direct[3]) gc.drawImage(image_right, g_off_x+330, g_off_y+arrow_y_position, this);
+                    if (!this.direct[3].get()) gc.drawImage(image_right, g_off_x+330, g_off_y+arrow_y_position, this);
                     else gc.drawImage(image_rightfill, g_off_x+330, g_off_y+arrow_y_position, this);
                     //-- Aarrow reactions control -->
 
@@ -473,8 +477,7 @@ public class Dance extends JWindow
                         gc.setColor(Color.black);
                         //Draw all Aarrows in screen vec[0,1,2,3]
                         for (int vec_index = 0; vec_index < 4; vec_index++) {
-                            for (int element_index = 0; element_index < producer.vec[vec_index].size(); element_index++) {
-                                Arrow myarrow = (Arrow) producer.vec[vec_index].get(element_index);
+                            for (Arrow myarrow : producer.vec[vec_index]) {
                                 gc.drawImage(arrow[vec_index], g_off_x+myarrow.x, g_off_y+myarrow.y, null);
                             }
                         }

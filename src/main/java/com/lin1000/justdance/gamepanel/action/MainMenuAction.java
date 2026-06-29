@@ -107,7 +107,8 @@ public class MainMenuAction {
         try {
             song  = BeatMapGenerator.analyze(musicFile, mode);
         } catch (Exception e) {
-            System.err.println("BeatMapGenerator has problem");
+            System.err.println("BeatMapGenerator has problem: " + e);
+            e.printStackTrace();
         }
         return song;
     }

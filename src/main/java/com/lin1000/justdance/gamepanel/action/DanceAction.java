@@ -4,9 +4,12 @@ import com.lin1000.justdance.beats.Arrow;
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.input.Input;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DanceAction {
 
-    private static DanceAction danceAction = null;
+    private static volatile DanceAction danceAction = null;
     private static Object danceActionSingletonLock = new Object();
     private static int judgeLine[] = {60, 80, 105}; // 判斷線位置，根據需要調整
 
@@ -18,8 +21,27 @@ public class DanceAction {
             if (danceAction == null) {
                 danceAction = new DanceAction();
             }
+            return danceAction;
         }
-        return danceAction;
+    }
+
+    private void handleArrowHit(int vecIndex, Dance target) {
+        List<Arrow> arrows = target.producer.vec[vecIndex];
+        List<Arrow> toRemove = new ArrayList<>();
+        for (Arrow myarrow : arrows) {
+            if (myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1]) {
+                toRemove.add(myarrow);
+                target.conditionControl.setCondition(0); // perfect
+                target.effectManager.addSpecialEffect(
+                    target.g_off_x + myarrow.x + 50, target.g_off_y + myarrow.y + 40);
+                target.soundController.playEffectSound(0);
+            } else if (myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2]) {
+                toRemove.add(myarrow);
+                target.conditionControl.setCondition(1); // good
+                target.soundController.playEffectSound(1);
+            }
+        }
+        arrows.removeAll(toRemove);
     }
 
     public void inputAction(Input input, Dance mainWindowTarget) {
@@ -46,119 +68,20 @@ public class DanceAction {
                         case LEFT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
                         case RIGHT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
                         case UP:
-                            mainWindowTarget.direct[2]=true;//讓gui反應出有按到
-                            try
-                            {
-                                for(int element_index=0 ; element_index < 4 ; element_index++)
-                                {
-                                    //mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                    Arrow myarrow =(Arrow) mainWindowTarget.producer.vec[2].get(element_index);
-
-                                    //y=55~70是perfect
-                                    if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
-                                    {
-                                        mainWindowTarget.producer.vec[2].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
-                                        mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
-                                        mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
-                                    }
-                                    //y=71~90是good
-                                    if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
-                                    {
-                                        mainWindowTarget.producer.vec[2].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(1);//1代表good
-                                        mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
-                                    }
-                                }
-
-                            }catch(java.lang.ArrayIndexOutOfBoundsException e){}
+                            mainWindowTarget.direct[2].set(true);
+                            handleArrowHit(2, mainWindowTarget);
                             break;
                         case DOWN:
-                            mainWindowTarget.direct[1]=true;//讓gui反應出有按到
-                            try
-                            {
-                                for(int element_index=0 ; element_index < 4 ; element_index++)
-                                {
-                                    //mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                    Arrow myarrow =(Arrow) mainWindowTarget.producer.vec[1].get(element_index);
-
-                                    //y=55~70是perfect
-                                    if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
-                                    {
-                                        mainWindowTarget.producer.vec[1].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
-                                        mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
-                                        mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
-                                    }
-                                    //y=71~90是good
-                                    if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
-                                    {
-                                        mainWindowTarget.producer.vec[1].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(1);//1代表good
-                                        mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
-                                    }
-                                }
-
-                            }catch(java.lang.ArrayIndexOutOfBoundsException e){}
+                            mainWindowTarget.direct[1].set(true);
+                            handleArrowHit(1, mainWindowTarget);
                             break;
                         case LEFT:
-                            mainWindowTarget.direct[0]=true;//讓gui反應出有按到
-                            try
-                            {
-
-                                for(int element_index=0 ; element_index < 4 ; element_index++)
-                                {
-                                    //mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                    Arrow myarrow =(Arrow) mainWindowTarget.producer.vec[0].get(element_index);
-
-                                    //y=55~70是perfect
-                                    if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
-                                    {
-                                        mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
-                                        //mainWindowTarget.soundController.play_conditionSound(mainWindowTarget.conditionControl.getCondition());
-                                        mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
-                                        mainWindowTarget.soundController.playEffectSound(0);
-                                    }
-                                    //y=71~90是good
-                                    if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
-                                    {
-                                        mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(1);//1代表good
-                                        mainWindowTarget.soundController.playEffectSound(1);
-                                    }
-                                }
-
-                            }catch(java.lang.ArrayIndexOutOfBoundsException e){}
-
+                            mainWindowTarget.direct[0].set(true);
+                            handleArrowHit(0, mainWindowTarget);
                             break;
                         case RIGHT:
-                            mainWindowTarget.direct[3]=true;//讓gui反應出有按到
-                            try
-                            {
-                                for(int element_index=0 ; element_index < 4 ; element_index++)
-                                {
-                                    //mainWindowTarget.producer.vec[0].removeElementAt(element_index);
-                                    Arrow myarrow =(Arrow) mainWindowTarget.producer.vec[3].get(element_index);
-
-                                    //y=55~70是perfect
-                                    if(myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1] )
-                                    {
-                                        mainWindowTarget.producer.vec[3].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(0);//0代表perfect
-                                        mainWindowTarget.effectManager.addSpecialEffect(mainWindowTarget.g_off_x+myarrow.x + 50, mainWindowTarget.g_off_y+myarrow.y + 40); // Effect 中心位置
-                                        mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
-                                    }
-                                    //y=71~90是good
-                                    if(myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2])
-                                    {
-                                        mainWindowTarget.producer.vec[3].removeElementAt(element_index);
-                                        mainWindowTarget.conditionControl.setCondition(1);//1代表good
-                                        mainWindowTarget.soundController.playEffectSound(mainWindowTarget.conditionControl.getCondition());
-                                    }
-                                }
-
-                            }catch(java.lang.ArrayIndexOutOfBoundsException e){}
+                            mainWindowTarget.direct[3].set(true);
+                            handleArrowHit(3, mainWindowTarget);
                             break;
                         case LEFT_THUMBSTICK_MOVE_LEFT:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
                         case LEFT_THUMBSTICK_MOVE_RIGHT:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyPressed(input); break;
@@ -193,16 +116,16 @@ public class DanceAction {
                         case LEFT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
                         case RIGHT_SHOULDER:if(mainWindowTarget.dddCanvasComponent!=null)mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
                         case UP:
-                            mainWindowTarget.direct[2]=false;//讓gui反應出有按到
+                            mainWindowTarget.direct[2].set(false);
                             break;
                         case DOWN:
-                            mainWindowTarget.direct[1]=false;//讓gui反應出有按到
+                            mainWindowTarget.direct[1].set(false);
                             break;
                         case LEFT:
-                            mainWindowTarget.direct[0]=false;//讓gui反應出有按到
+                            mainWindowTarget.direct[0].set(false);
                             break;
                         case RIGHT:
-                            mainWindowTarget.direct[3]=false;//讓gui反應出有按到
+                            mainWindowTarget.direct[3].set(false);
                             break;
                         case LEFT_THUMBSTICK_MOVE_LEFT: mainWindowTarget.dddCanvasComponent.keyReleased(input); break;
                         case LEFT_THUMBSTICK_MOVE_RIGHT:mainWindowTarget.dddCanvasComponent.keyReleased(input); break;

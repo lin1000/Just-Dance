@@ -135,7 +135,14 @@ public class Project extends JFrame implements Runnable
 			// 否則顯示在預設螢幕中央
 			activeScreen = screens[0];
 			//this.setLocationRelativeTo(null);
-			activeScreen.setFullScreenWindow(this);
+			// Full-screen exclusive mode may not work on virtual/headless displays; fall back to maximised window
+			if (activeScreen.isFullScreenSupported()) {
+				activeScreen.setFullScreenWindow(this);
+			} else {
+				Rectangle bounds = activeScreen.getDefaultConfiguration().getBounds();
+				this.setSize(bounds.width, bounds.height);
+				this.setLocation(bounds.x, bounds.y);
+			}
 		}
 		this.setVisible(true);
 
@@ -219,34 +226,25 @@ public class Project extends JFrame implements Runnable
 
 	public XInputDevice initJXInputDevice()
 	{
-		if (!XInputDevice.isAvailable()) {
-			System.out.println("XInput 不可用，請確認系統支援並已載入 DLL。");
-			return null;
-		} else {
-			System.out.println("XInputDevice.getLibraryVersion()="+XInputDevice.getLibraryVersion());
-		}
-
-		// 取得玩家 1 的控制器（0~3 對應 4 個可能控制器）
-		XInputDevice[] devices = null;
-		XInputDevice device = null;
 		try {
-			devices = XInputDevice.getAllDevices();
-			for(int i=0; i < devices.length ;i++){
-				device = devices[i];
+			if (!XInputDevice.isAvailable()) {
+				System.out.println("XInput not available on this platform.");
+				return null;
+			}
+			System.out.println("XInputDevice.getLibraryVersion()="+XInputDevice.getLibraryVersion());
+
+			XInputDevice[] devices = XInputDevice.getAllDevices();
+			for (XInputDevice device : devices) {
 				System.out.println("device="+device + ", isConnected="+ device.isConnected());
 				if (device.isConnected()) {
 					System.out.println("device is Connected.");
-					break;
+					return device;
 				}
-				device=null;
 			}
-		} catch (XInputNotLoadedException e) {
-			throw new RuntimeException(e);
+		} catch (UnsatisfiedLinkError | Exception e) {
+			System.out.println("JXInput not available: " + e.getMessage());
 		}
-
-		System.out.println("using device="+device);
-
-		return device;
+		return null;
 	}
 
 	public MidiDevice initMidiDevice()

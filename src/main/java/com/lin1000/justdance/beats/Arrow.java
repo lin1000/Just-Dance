@@ -2,9 +2,9 @@ package com.lin1000.justdance.beats;
 
 //真正的箭頭
 public class Arrow extends Object {
-    public int x;
-    public int y;
-    public boolean triggered = false;
+    public volatile int x;
+    public volatile int y;
+    public volatile boolean triggered = false;
 
     public Arrow(int x_position, int y_position) {
         x = x_position;
