@@ -244,6 +244,7 @@ public class MainMenu extends JWindow
                 //skip the intro vide and continue
              }
 
+            boolean headlessDemo = System.getenv("HEADLESS_DEMO") != null;
             if (isFirstRound)//show game landing screen for the first time
             {
                 //soundControl.play_beginSound(2);
@@ -257,8 +258,13 @@ public class MainMenu extends JWindow
                 } catch (java.lang.InterruptedException e) {
                     e.printStackTrace();
                 }
-                project.jXInputDeviceWatcher.setMainTargetWindow(this);
-                project.jXInputDeviceWatcher.start();
+                try {
+                    project.jXInputDeviceWatcher.setMainTargetWindow(this);
+                    project.jXInputDeviceWatcher.start();
+                } catch (LinkageError e) {
+                    System.out.println("JXInputDeviceWatcher not available: " + e.getMessage());
+                    project.jXInputDeviceWatcher = null;
+                }
 
                 //MidiDeviceWatcher Setup and Start
                 try {
@@ -272,6 +278,8 @@ public class MainMenu extends JWindow
                 project.midiDeviceWatcher.start();
 
                 int paintIndex = 0;
+                int frameCount = 0;
+                boolean webCamUnavailable = false;
                 while (controlFlow == 1) {
                     try {
                         if (xInputDevice != null && xInputDevice.poll()) {
@@ -282,8 +290,18 @@ public class MainMenu extends JWindow
                         Thread.sleep(16);
 
                         //showing camera component
-                        if(webCamComponent==null) {
-                            webCamComponent= new WebCamComponent(this);
+                        if(webCamComponent==null && !webCamUnavailable) {
+                            try {
+                                webCamComponent= new WebCamComponent(this);
+                            } catch (Exception e) {
+                                System.err.println("WebCam not available: " + e.getMessage());
+                                webCamUnavailable = true;
+                            }
+                        }
+
+                        // auto-advance past splash in headless/demo mode after ~2 seconds (120 frames @ 16ms)
+                        if (headlessDemo && ++frameCount > 120) {
+                            controlFlow = 2;
                         }
 
                     } catch (java.lang.InterruptedException e) {
@@ -302,6 +320,7 @@ public class MainMenu extends JWindow
             if (controlFlow == 1) controlFlow = 2;
 
             boolean isDefaultMusic = true;
+            int menuFrameCount = 0;
             while (controlFlow == 2) { // show main menu screen
                 try {
                     if (xInputDevice !=null && xInputDevice.poll()) {
@@ -316,10 +335,21 @@ public class MainMenu extends JWindow
                         defaultInput.setPressed(true);
                         MainMenuAction.getInstance().inputAction(defaultInput, this);
                     }
-                    menuscreen(musicOptionIndex);
-                    //controlFlow=3;
+                    try {
+                        menuscreen(musicOptionIndex);
+                    } catch (Exception e) {
+                        System.err.println("menuscreen error (non-fatal): " + e.getMessage());
+                    }
                 } catch (java.lang.InterruptedException e) {
                     e.printStackTrace();
+                }
+
+                // auto-select first song in headless/demo mode after ~3 seconds (60 frames @ 50ms)
+                if (headlessDemo && ++menuFrameCount > 60) {
+                    Input selectInput = new Input();
+                    selectInput.setInputType(Input.InputType.A);
+                    selectInput.setPressed(true);
+                    MainMenuAction.getInstance().inputAction(selectInput, this);
                 }
             }
 
@@ -489,6 +519,7 @@ public class MainMenu extends JWindow
             int songInfoX = 400;
             int songInfoY = 500;
             int songIntoLineHeight = 23;
+            if (whichSong == null) { repaint(); return; }
             gc.setColor(Color.black);
             gc.setFont(new Font("verdana", Font.ITALIC, 25));
             gc.drawString("Song Name: " + whichSong.getName(), songInfoX, songInfoY);

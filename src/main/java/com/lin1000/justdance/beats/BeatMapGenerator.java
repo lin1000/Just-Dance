@@ -59,10 +59,17 @@ public class BeatMapGenerator {
             double sum = 0;
             for (int ch = 0; ch < channels; ch++) {
                 int base = (i * channels + ch) * sampleSize;
-                int low = audioBytes[base] & 0xFF;
-                int high = audioBytes[base + 1];
-                int sample = bigEndian ? ((high << 8) | low) : ((low) | (high << 8));
-                sum += sample / 32768.0;
+                double sampleVal;
+                if (sampleSize == 1) {
+                    // 8-bit unsigned PCM: single byte, normalize to -1..1
+                    sampleVal = ((audioBytes[base] & 0xFF) - 128) / 128.0;
+                } else {
+                    int low = audioBytes[base] & 0xFF;
+                    int high = audioBytes[base + 1];
+                    int s = bigEndian ? ((high << 8) | low) : ((low) | (high << 8));
+                    sampleVal = s / 32768.0;
+                }
+                sum += sampleVal;
             }
             samples[i] = sum / channels;
         }
