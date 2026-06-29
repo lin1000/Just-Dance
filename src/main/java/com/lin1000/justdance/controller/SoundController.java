@@ -44,15 +44,15 @@ public class SoundController implements Runnable
      * Audio Analysis Visualizer info
      */
     // 計算當前播放秒數
-    public double currentSec;
+    public volatile double currentSec;
     // 或改用取得當前秒數
-    public double currentSecSourceDataLine;
+    public volatile double currentSecSourceDataLine;
     // 或改用取得當前LongFrameposition;
-    public long currentLongFramePositionSourceDataLine;
+    public volatile long currentLongFramePositionSourceDataLine;
     // 取得當前之avaiable(已在緩衝區的資料量)及buffer size
-    public long currentAvailableSourceDataLine ;
-    public int currentBufferSize;
-    public double durationSec;
+    public volatile long currentAvailableSourceDataLine;
+    public volatile int currentBufferSize;
+    public volatile double durationSec;
 
     //Generic JWindow control the main game screen repainting process
     private Dance mainTargetWindow = null;
