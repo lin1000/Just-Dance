@@ -387,7 +387,9 @@ public class SoundController implements Runnable
             // Schedule task to run every 16 milliseconds after an initial 0 second delay
             fpsTimer = new java.util.Timer("FPSTimer");
             FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
-            fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 300);
+            // ~60 FPS. Arrow movement is time-based (audio-slaved) so a higher frame rate
+            // only makes motion smoother — it does not change the scroll speed.
+            fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
             //}
 
             SourceDataLine line = AudioSystem.getSourceDataLine(format);

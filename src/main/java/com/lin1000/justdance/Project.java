@@ -184,12 +184,17 @@ public class Project extends JFrame implements Runnable
 			System.out.println("Step=(4)Dance Ready");
 			//開始玩
 
-			//mainThreadPause and wait until game thread notify
+			//mainThreadPause and wait until game thread notify.
+			//Guard the wait() with the exit predicate so that (a) a spurious wakeup does
+			//not let us proceed early, and (b) if the player's exit/replay notifyAll() races
+			//ahead of this wait(), getExit() is already true and we never block forever.
 			synchronized (getMainThreadPauseLock()){
-                try {
-                    getMainThreadPauseLock().wait();
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                while (!dance.conditionControl.getExit()) {
+                    try {
+                        getMainThreadPauseLock().wait();
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
 
@@ -202,7 +207,10 @@ public class Project extends JFrame implements Runnable
 			if(dance!=null){
 				//如果dance已經存在，則關閉它
 				System.out.println("dance is not null, dispose it.");
-				dance.producer.produceThread.stop();
+				//producer.stop() sets the volatile isStop flag and closes the chart stream,
+				//letting the producer thread exit its loop cleanly. The old Thread.stop() call
+				//was deprecated and unsafe (it can abort the thread mid-operation, leaking the
+				//file handle or corrupting shared state) and has been removed.
 				dance.producer.stop();
 				dance.soundController.stop_all();
 				dance.removeInputDeviceListener();//remove xInputDevice listener when xInputDevice is available.

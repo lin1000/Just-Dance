@@ -119,6 +119,15 @@ public class Dance extends JWindow
     double deltaTime ;
     long deltaFrame;
 
+    // --- Audio-slaved arrow movement ---
+    // Arrow scroll speed in pixels/second. The legacy loop moved `y_movement` pixels
+    // every 300ms render frame, i.e. y_movement / 0.3 px/s; we preserve that feel.
+    private double scrollSpeedPxPerSec;
+    // Last audio playback position (seconds) consumed by the simulation step. Movement
+    // is driven by the *change* in this value, so arrows track the music exactly and
+    // never drift, regardless of frame rate or how busy the EDT is.
+    private double lastAudioSec = 0;
+
     //DDDCanvasComponent
     public DDDCanvasComponent dddCanvasComponent = null;
 
@@ -241,6 +250,9 @@ public class Dance extends JWindow
 
         System.err.println(" this.BPM=" +this.BPM);
         producer = new ArrowsProducer(30, 130, 230, 330, this.BPM);//producer is a separate thread to generate arrows according to BPM parameter
+
+        // Preserve the legacy scroll speed: old loop moved y_movement px per 300ms frame.
+        scrollSpeedPxPerSec = this.y_movement / 0.3;
 
         //Setting up and start counting the rhythm nanos
         this.soundController = soundController;
@@ -366,6 +378,45 @@ public class Dance extends JWindow
         this.deltaFrame = deltaFrame;
     }
 
+    /**
+     * Simulation step — advances game state by one frame. Runs on the EDT (scheduled by
+     * the frame timer just before {@link #repaint()}), so it shares the EDT with the
+     * keyboard handlers and never races them over {@link ConditionController}. Kept
+     * separate from {@link #paint} so rendering stays a pure read of game state.
+     *
+     * Arrow movement is slaved to the audio playback position: we move arrows by
+     * speed × (how much the music advanced since the last tick). If audio stalls or a
+     * frame is dropped, the next tick's larger delta transparently catches up, so
+     * arrow/music sync is exact and frame-rate independent.
+     */
+    public void tick() {
+        if (soundController == null) return;
+        if (conditionControl.getGameOver() || conditionControl.getExit()) return;
+
+        // Poll the game controller here (was previously buried inside paint()).
+        if (xInputDevice != null && xInputDevice.poll()) {
+            DanceXInputDeviceListener.calculateAxis(xInputDevice);
+        }
+
+        // Prefer the audio playback position so arrows stay locked to the music. If audio
+        // isn't advancing (not started yet, or no sound device at all — e.g. headless CI),
+        // fall back to a wall-clock measurement of elapsed time so the game still runs and
+        // movement stays time-based. Both measure "seconds since playback start", so the two
+        // clocks are nearly equal and switching between them is seamless.
+        double nowSec = soundController.currentSec;
+        if (nowSec <= 0) {
+            long startNanos = soundController.getStartTimeNanos();
+            nowSec = startNanos > 0 ? (System.nanoTime() - startNanos) / 1_000_000_000.0 : 0;
+        }
+
+        double deltaSec = nowSec - lastAudioSec;
+        lastAudioSec = nowSec;
+        // Skip if the clock hasn't started, hasn't advanced, or jumped (restart/seek).
+        if (deltaSec <= 0 || deltaSec > 1.0) return;
+
+        producer.move(conditionControl, scrollSpeedPxPerSec * deltaSec);
+    }
+
     public void update(Graphics g) {
         System.out.println("update before paint");
         paint(g);
@@ -385,22 +436,10 @@ public class Dance extends JWindow
 
                 // screen control logic 20250510
                 try {
-                    int removecondition = 0;
-                    //while (true) {
-                    if (xInputDevice!=null && xInputDevice.poll()) {
-                        // polling the xInputDevice Controller status and trigger events!
-                        DanceXInputDeviceListener.calculateAxis(xInputDevice);
-                    }
-
-                    //To wipe out subtitles regularly
-                    if ((removecondition %= 200) == 0) {
-                        //conditionControl.setCondition(7);
-                    }
-                    removecondition++;
-
-                    //tohandle:
-                    producer.move(conditionControl, this.y_movement);//�q���Ѽ�y_movement
-                    //tohandle:repaint();
+                    // NOTE: simulation (controller polling + arrow movement) has been moved
+                    // out of paint() into Dance.tick(), which the frame timer runs on the EDT
+                    // immediately before this repaint. paint() is now a pure render of game
+                    // state; it no longer mutates arrows or game conditions.
 
 
 

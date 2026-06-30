@@ -93,7 +93,12 @@ public class ArrowsProducer extends Object implements Runnable
                 {
                         System.out.println("***Generation Foot steps in ArrowProducer***");
                 //讀取舞步檔!! input為ASCII碼，如 0-->讀出來變48 , eof=-1
-                int input[]={foot.read()-48,foot.read()-48,foot.read()-48,foot.read()-48};
+                int b0 = foot.read();
+                if (b0 == -1) {        // end of the dance chart — stop spawning new arrows
+                        isStop = true;
+                        return;
+                }
+                int input[]={b0-48,foot.read()-48,foot.read()-48,foot.read()-48};
 
                 if(input[0]==1) vec[0].add(new Arrow(position_left,730));
                 if(input[1]==1) vec[1].add(new Arrow(position_down,730));
@@ -106,16 +111,18 @@ public class ArrowsProducer extends Object implements Runnable
 
         }
 
-        public void move(ConditionController conditionControl, int y_movement)
+        // Advance every on-screen arrow upward by `dyPixels` (a fractional, time-scaled
+        // amount computed by the caller from elapsed audio time). Arrows that scroll past
+        // the top are removed and counted as a MISS.
+        public void move(ConditionController conditionControl, double dyPixels)
         {
-        //y_movement是變數依歌而定走幾格
         //讓每個vec裡的箭頭往上走
                 for(int vec_index=0;vec_index<4;vec_index++)
                 {
                         List<Arrow> toRemove = new ArrayList<>();
                         for (Arrow myarrow : vec[vec_index])
                         {
-                                int remove_or_not=myarrow.move(y_movement);
+                                int remove_or_not=myarrow.move(dyPixels);
                                 if(remove_or_not < 0)
                                 {
                                         toRemove.add(myarrow);
