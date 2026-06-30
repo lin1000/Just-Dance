@@ -123,6 +123,10 @@ public class Dance extends JWindow
     // Arrow scroll speed in pixels/second. The legacy loop moved `y_movement` pixels
     // every 300ms render frame, i.e. y_movement / 0.3 px/s; we preserve that feel.
     private double scrollSpeedPxPerSec;
+    // Seconds of music between successive chart rows. Matches the legacy 300ms spawn
+    // cadence (and the scrollSpeed denominator), so note feel is unchanged — only the
+    // clock that triggers each spawn changes from wall-clock to the audio sample position.
+    private static final double ROW_INTERVAL_SEC = 0.3;
     // Last audio playback position (seconds) consumed by the simulation step. Movement
     // is driven by the *change* in this value, so arrows track the music exactly and
     // never drift, regardless of frame rate or how busy the EDT is.
@@ -249,7 +253,7 @@ public class Dance extends JWindow
         }
 
         System.err.println(" this.BPM=" +this.BPM);
-        producer = new ArrowsProducer(30, 130, 230, 330, this.BPM);//producer is a separate thread to generate arrows according to BPM parameter
+        producer = new ArrowsProducer(30, 130, 230, 330, this.BPM);//pre-loads the dance chart; arrows are spawned on demand from tick(), sample-locked to the audio clock
 
         // Preserve the legacy scroll speed: old loop moved y_movement px per 300ms frame.
         scrollSpeedPxPerSec = this.y_movement / 0.3;
@@ -414,6 +418,8 @@ public class Dance extends JWindow
         // Skip if the clock hasn't started, hasn't advanced, or jumped (restart/seek).
         if (deltaSec <= 0 || deltaSec > 1.0) return;
 
+        // Spawn any chart rows now due (sample-locked to the same clock), then advance.
+        producer.spawnDueArrows(nowSec, ROW_INTERVAL_SEC);
         producer.move(conditionControl, scrollSpeedPxPerSec * deltaSec);
     }
 

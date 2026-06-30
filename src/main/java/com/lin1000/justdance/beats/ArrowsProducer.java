@@ -3,23 +3,24 @@ package com.lin1000.justdance.beats;
 import com.lin1000.justdance.controller.ConditionController;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 //=====================================================================
-//利用producer，本身是一個執行緒，會自動的按照舞步產生箭頭，至於箭頭產
-//出後如何往上移，完全是由move()Function在控制，特別的是跟producer本身，
-//無關，因為move是給外面的program去呼叫的，
+//Producer holds the dance chart and spawns arrows. Spawn timing is no
+//longer wall-clock based: the whole chart is pre-loaded once, and rows
+//are emitted on demand by spawnDueArrows(nowSec, ...) — driven by the
+//audio sample position from the single game tick. move() advances the
+//on-screen arrows; both are called from Dance.tick() on the EDT.
 //=======================================================================
-public class ArrowsProducer extends Object implements Runnable
+public class ArrowsProducer extends Object
 {
 
         @SuppressWarnings("unchecked")
         public List<Arrow>[] vec = new CopyOnWriteArrayList[4]; // 上下左右箭頭
-        public Thread produceThread;
 
         //上下左右箭頭的X軸位置
         public int position_left;
@@ -27,14 +28,15 @@ public class ArrowsProducer extends Object implements Runnable
         public int position_up;
         public int position_right;
 
-        //處理舞步檔
-        File foot_file;
-        FileInputStream foot;
-
         //歌曲參數BPM
         public int BPM;
 
-        //stop indicator — volatile ensures the producer thread sees the write immediately
+        // Pre-loaded dance chart: one int[4] (left/down/up/right, 0 or 1) per row.
+        private final List<int[]> chartRows = new ArrayList<>();
+        // Index of the next row that has not yet been spawned.
+        private int nextRow = 0;
+
+        //stop indicator — volatile so a stop() from another thread is seen immediately
         private volatile boolean isStop = false;
 
 
@@ -54,61 +56,49 @@ public class ArrowsProducer extends Object implements Runnable
                 //歌曲參數
                 this.BPM=BPM;
 
-                //讀取舞步檔
-                try{
-                        foot_file=new File("./foot/foot.txt");
-                        foot=new FileInputStream(foot_file);
-                }
-                catch(java.io.FileNotFoundException e){ e.printStackTrace(); }
-
-                //執行緒
-                produceThread = new Thread(this);
-                produceThread.start();
-
+                //讀取舞步檔 — load the entire chart up front so no file I/O happens during play
+                loadChart(new File("./foot/foot.txt"));
         }
 
-        public void run()
+        // Parse the foot-step file into chartRows. The file is whitespace-separated
+        // 4-character tokens (e.g. "0000 0010 0100"), each token one chart row.
+        private void loadChart(File footFile)
         {
-                while(true)
-                {
-                        try{
-                                Thread.sleep(300); //控制BPM!!!Beats Per Minute
-                        }catch(InterruptedException e){
-                                e.printStackTrace();
+                try {
+                        String content = new String(Files.readAllBytes(footFile.toPath()));
+                        for (String token : content.split("\\s+")) {
+                                if (token.length() != 4) continue; // skip blanks / malformed tokens
+                                int[] row = new int[4];
+                                for (int i = 0; i < 4; i++) {
+                                        row[i] = (token.charAt(i) == '1') ? 1 : 0;
+                                }
+                                chartRows.add(row);
                         }
-                        if(isStop) break;
-                        produce(); //核心
+                } catch (IOException e) {
+                        e.printStackTrace();
+                }
+        }
+
+        // Spawn every chart row whose scheduled time (rowIndex * rowIntervalSec) has been
+        // reached by the audio clock. Locked to the audio sample position via nowSec, so
+        // spawning advances exactly as the music plays — pausing on stalls, catching up on
+        // seeks — instead of drifting on a wall-clock timer. Called from Dance.tick().
+        public void spawnDueArrows(double nowSec, double rowIntervalSec)
+        {
+                if (isStop) return;
+                while (nextRow < chartRows.size() && nextRow * rowIntervalSec <= nowSec) {
+                        int[] r = chartRows.get(nextRow);
+                        if (r[0] == 1) vec[0].add(new Arrow(position_left, 730));
+                        if (r[1] == 1) vec[1].add(new Arrow(position_down, 730));
+                        if (r[2] == 1) vec[2].add(new Arrow(position_up, 730));
+                        if (r[3] == 1) vec[3].add(new Arrow(position_right, 730));
+                        nextRow++;
                 }
         }
 
         public void stop()
         {
                 isStop = true;
-                try { if (foot != null) foot.close(); } catch (IOException e) { e.printStackTrace(); }
-        }
-
-        public void produce()
-        {
-                try
-                {
-                        System.out.println("***Generation Foot steps in ArrowProducer***");
-                //讀取舞步檔!! input為ASCII碼，如 0-->讀出來變48 , eof=-1
-                int b0 = foot.read();
-                if (b0 == -1) {        // end of the dance chart — stop spawning new arrows
-                        isStop = true;
-                        return;
-                }
-                int input[]={b0-48,foot.read()-48,foot.read()-48,foot.read()-48};
-
-                if(input[0]==1) vec[0].add(new Arrow(position_left,730));
-                if(input[1]==1) vec[1].add(new Arrow(position_down,730));
-                if(input[2]==1) vec[2].add(new Arrow(position_up,730));
-                if(input[3]==1) vec[3].add(new Arrow(position_right,730));
-
-                foot.skip(1);
-
-                }catch(java.io.IOException e){e.printStackTrace();}
-
         }
 
         // Advance every on-screen arrow upward by `dyPixels` (a fractional, time-scaled

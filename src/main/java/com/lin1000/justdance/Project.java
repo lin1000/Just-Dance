@@ -207,10 +207,9 @@ public class Project extends JFrame implements Runnable
 			if(dance!=null){
 				//如果dance已經存在，則關閉它
 				System.out.println("dance is not null, dispose it.");
-				//producer.stop() sets the volatile isStop flag and closes the chart stream,
-				//letting the producer thread exit its loop cleanly. The old Thread.stop() call
-				//was deprecated and unsafe (it can abort the thread mid-operation, leaking the
-				//file handle or corrupting shared state) and has been removed.
+				//producer.stop() sets the volatile isStop flag so no further arrows spawn.
+				//The producer no longer owns a thread (spawning is driven from the game tick),
+				//so the old deprecated/unsafe Thread.stop() call is gone.
 				dance.producer.stop();
 				dance.soundController.stop_all();
 				dance.removeInputDeviceListener();//remove xInputDevice listener when xInputDevice is available.
