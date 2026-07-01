@@ -175,6 +175,8 @@ public class Project extends JFrame implements Runnable
 
 			System.out.println("Step=(3)Dance Preparation");
 			dance = new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, xInputDevice, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
+			//carry the difficulty level chosen in the song-selection screen into gameplay
+			dance.speedModifier.setDifficulty(mainMenu.getSelectedDifficulty());
 			soundController.setMainTargetWindow(dance);
 			mainMenu.setVisible(false);
 			//Setting up and start counting the rhythm nanos

@@ -61,6 +61,10 @@ public class MainMenu extends JWindow
         Image background;
         Image option[]=new Image[4];
         Image optionSelected[]=new Image[4];
+        //Per-song album/jacket art shown in the song-wheel slots. Optional: if a file is
+        //missing the wheel falls back to the gradient placeholder. Drop art at
+        //img/jacket1.png .. img/jacket4.png (square recommended).
+        Image jacket[]=new Image[4];
         public static int musicOptionIndex =0; // 0,1,2,3
 
         //XBox Controller Component
@@ -88,7 +92,12 @@ public class MainMenu extends JWindow
         private int whichmusic;
         private int y_movement;
         private int BPM;
-        
+
+        //Player-chosen difficulty level (scroll speed). Cycled with LEFT/RIGHT in the song
+        //selection screen and carried into gameplay (see Project.run -> Dance.speedModifier).
+        public final SpeedModifier speedModifier = new SpeedModifier();
+        public SpeedModifier.Difficulty getSelectedDifficulty() { return speedModifier.getDifficulty(); }
+
         //isFirstRound
         private boolean isFirstRound = true;
 
@@ -389,6 +398,12 @@ public class MainMenu extends JWindow
                 optionSelected[1]=kit.getImage("img/option2selected.jpg");
                 optionSelected[2]=kit.getImage("img/option3selected.jpg");
                 optionSelected[3]=kit.getImage("img/option4selected.jpg");
+
+                //Optional per-song jacket art (falls back to the gradient placeholder if absent)
+                jacket[0]=kit.getImage("img/jacket1.png");
+                jacket[1]=kit.getImage("img/jacket2.png");
+                jacket[2]=kit.getImage("img/jacket3.png");
+                jacket[3]=kit.getImage("img/jacket4.png");
         }
         
         //paint initial screen
@@ -465,75 +480,341 @@ public class MainMenu extends JWindow
         }
         
         //?e?X?D???
+        // Per-song display title, typeset as text (no longer the plate images) so the wheel
+        // matches the redesign. Rendered with the "SansSerif" logical font, which falls back
+        // to WenQuanYi/Droid for the CJK glyphs (verified canDisplay). Source is UTF-8.
+        private final String[] songTitle = {
+            "甜蜜蜜（舞曲版）",
+            "BARBIE GIRL — AQUA",
+            "Barbie Happy Boys",
+            "DEVIL + GHOST"
+        };
+
+        // Per-song artist / descriptor line (placeholder metadata — not stored in the song
+        // files; edit freely). Indexed by musicOptionIndex. · = middle dot.
+        private final String[] songArtist = {
+            "Teresa Teng · Dance Remix",
+            "Aqua",
+            "Party Mix",
+            "Hardcore"
+        };
+
+        // StepMania/ITG-style song-select: neon backdrop, left song wheel, right detail +
+        // difficulty panel, honest read-time readout, control-legend footer, tiny dev corner.
         public void menuscreen(int musicOptionIndex)
         {
-            int menuInfoX = 350;
-            int menuInfoY = 80;
-            int menuInfoXSelect = 313;
-
             this.musicOptionIndex = musicOptionIndex;
-            //gc.drawImage(background, 0, 0, 1024, 768, this);
-            gc.drawImage(background, 0, 0, getWidth(), getHeight(), this);
-            gc.drawImage(menutitle, menuInfoX, menuInfoY, 555, 60, this);
 
+            // per-index song config (state only; rendering is handled by the helpers below)
             switch (musicOptionIndex) {
-                case 0:
-                    this.whichmusic = 0;//whichmusic represent which muisc has been chosen
-                    this.y_movement = 15;//y_movement represent the speed of the Aarrow
-                    this.BPM = 400; //BPM represent the beats per minutes of the music
-                    gc.drawImage(option[1], menuInfoX, 260, 555, 60, this);
-                    gc.drawImage(option[2], menuInfoX, 320, 555, 60, this);
-                    gc.drawImage(option[3], menuInfoX, 380, 555, 60, this);
-                    gc.drawImage(optionSelected[0], menuInfoXSelect, 195, 640, 69, this);
-                    break;
-                case 1:
-                    this.whichmusic = 1;//whichmusic represent which muisc has been chosen
-                    this.y_movement = 7;//y_movement represent the speed of the Aarrow
-                    this.BPM = 120;//BPM represent the beats per minutes of the music
-                    gc.drawImage(option[0], menuInfoX, 200, 555, 60, this);
-                    gc.drawImage(option[2], menuInfoX, 320, 555, 60, this);
-                    gc.drawImage(option[3], menuInfoX, 380, 555, 60, this);
-                    gc.drawImage(optionSelected[1], menuInfoXSelect, 255, 640, 69, this);
-                    break;
-                case 2:
-                    this.whichmusic = 2;//whichmusic represent which muisc has been chosen
-                    this.y_movement = 5;//y_movement represent the speed of the Aarrow
-                    this.BPM = 180;//BPM represent the beats per minutes of the music
-                    gc.drawImage(option[0], menuInfoX, 200, 555, 60, this);
-                    gc.drawImage(option[1], menuInfoX, 260, 555, 60, this);
-                    gc.drawImage(option[3], menuInfoX, 380, 555, 60, this);
-                    gc.drawImage(optionSelected[2], menuInfoXSelect, 315, 640, 69, this);
-                    break;
-                case 3:
-                    this.whichmusic = 3;//whichmusic represent which muisc has been chosen
-                    this.y_movement = 12;//y_movement represent the speed of the Aarrow
-                    this.BPM = 300;//BPM represent the beats per minutes of the music
-                    gc.drawImage(option[0], menuInfoX, 200, 555, 60, this);
-                    gc.drawImage(option[1], menuInfoX, 260, 555, 60, this);
-                    gc.drawImage(option[2], menuInfoX, 320, 555, 60, this);
-                    gc.drawImage(optionSelected[3], menuInfoXSelect, 375, 640, 69, this);
-                    break;
+                case 0: this.whichmusic = 0; this.y_movement = 15; this.BPM = 400; break;
+                case 1: this.whichmusic = 1; this.y_movement = 7;  this.BPM = 120; break;
+                case 2: this.whichmusic = 2; this.y_movement = 5;  this.BPM = 180; break;
+                case 3: this.whichmusic = 3; this.y_movement = 12; this.BPM = 300; break;
             }
-
-            //draw song information
-            int songInfoX = 400;
-            int songInfoY = 500;
-            int songIntoLineHeight = 23;
             if (whichSong == null) { repaint(); return; }
-            gc.setColor(Color.black);
-            gc.setFont(new Font("verdana", Font.ITALIC, 25));
-            gc.drawString("Song Name: " + whichSong.getName(), songInfoX, songInfoY);
-            gc.drawString("Song Duration: " + String.format("%02d",whichSong.getSongLengthInMinutesAndSeconds()[0]) + ":" + String.format("%02d", whichSong.getSongLengthInMinutesAndSeconds()[1]), songInfoX, songInfoY + songIntoLineHeight);
-            gc.drawString("Song Feature: " + whichSong.getSongFeature(), songInfoX, songInfoY + songIntoLineHeight*2);
-            gc.drawString("Total Beats: " + whichSong.getSongNumOfBeats(), songInfoX, songInfoY + songIntoLineHeight*3);
-            gc.drawString("BPM: " + whichSong.getSongBPM(), songInfoX, songInfoY + songIntoLineHeight*4);
-            gc.drawString("Frame Rate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz", songInfoX, songInfoY + songIntoLineHeight*5);
-            gc.drawString("Audio Analysis Method: " + whichSong.getAudioAnalysisMethod(), songInfoX, songInfoY + songIntoLineHeight*6);
-            gc.drawString("Max Signal Strength: " + whichSong.getMaxSignalStrengthByWindow(), songInfoX, songInfoY + songIntoLineHeight*7);
-            gc.drawString("Min Signal Strength: " + whichSong.getMinSignalStrengthByWindow(), songInfoX, songInfoY + songIntoLineHeight*8);
-            gc.drawString("FFT Bin (Bandwidth): " + String.format("%.2f",whichSong.getBinHzWidth()), songInfoX, songInfoY + songIntoLineHeight*9);
+
+            gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            gc.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+            drawNeonBackground(gc);
+            drawHeader(gc);
+            drawSongWheel(gc, musicOptionIndex);
+            drawDetailPanel(gc, musicOptionIndex);
+            drawDevCorner(gc);
+            drawFooter(gc);
 
             repaint();
+        }
+
+        private static Color dim(Color c, double f) {
+            return new Color((int)(c.getRed()*f), (int)(c.getGreen()*f), (int)(c.getBlue()*f));
+        }
+
+        private void glassCard(Graphics2D gc, int x, int y, int w, int h) {
+            gc.setColor(new Color(10, 16, 40, 150));
+            gc.fillRoundRect(x, y, w, h, 16, 16);
+            gc.setStroke(new BasicStroke(1f));
+            gc.setColor(new Color(120, 170, 255, 45));
+            gc.drawRoundRect(x, y, w, h, 16, 16);
+        }
+
+        private void drawNeonBackground(Graphics2D gc) {
+            int w = getWidth(), h = getHeight();
+            gc.setPaint(new GradientPaint(0, 0, new Color(0x0a0e27), 0, h, new Color(0x0a0f28)));
+            gc.fillRect(0, 0, w, h);
+            gc.setPaint(new RadialGradientPaint(new java.awt.geom.Point2D.Float(w*0.80f, -h*0.10f),
+                Math.max(w, h)*0.75f, new float[]{0f, 1f},
+                new Color[]{ new Color(0,180,255,70), new Color(0,180,255,0) }));
+            gc.fillRect(0, 0, w, h);
+            gc.setPaint(new RadialGradientPaint(new java.awt.geom.Point2D.Float(w*0.08f, h*1.05f),
+                Math.max(w, h)*0.65f, new float[]{0f, 1f},
+                new Color[]{ new Color(255,0,170,60), new Color(255,0,170,0) }));
+            gc.fillRect(0, 0, w, h);
+            gc.setColor(new Color(90, 150, 255, 15));
+            for (int x = 0; x < w; x += 44) gc.drawLine(x, 64, x, h-52);
+            for (int y = 64; y < h-52; y += 44) gc.drawLine(0, y, w, y);
+        }
+
+        private void drawHeader(Graphics2D gc) {
+            int w = getWidth();
+            gc.setColor(new Color(120, 180, 255, 45));
+            gc.drawLine(0, 64, w, 64);
+            gc.setFont(new Font("SansSerif", Font.BOLD, 26));
+            gc.setColor(new Color(0x5fe6ff));
+            gc.drawString("♪", 28, 42);
+            FontMetrics fm = gc.getFontMetrics();
+            int tx = 28 + fm.stringWidth("♪") + 12;
+            gc.setPaint(new GradientPaint(tx, 0, new Color(0x57e0ff), tx+250, 0, new Color(0xff6ad5)));
+            gc.drawString("SELECT MUSIC", tx, 42);
+            String p = "PLAYER 1";
+            gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+            FontMetrics pf = gc.getFontMetrics();
+            int pw = pf.stringWidth(p) + 24;
+            gc.setStroke(new BasicStroke(1f));
+            gc.setColor(new Color(120, 180, 255, 100));
+            gc.drawRoundRect(w-28-pw, 18, pw, 28, 20, 20);
+            gc.setColor(new Color(0x8fb4e6));
+            gc.drawString(p, w-28-pw+12, 37);
+        }
+
+        private void drawSongWheel(Graphics2D gc, int sel) {
+            int x = 26, w = 600;
+            gc.setColor(new Color(0x7f9fd0));
+            gc.setFont(new Font("SansSerif", Font.BOLD, 12));
+            gc.drawString("4 SONGS", x+4, 100);
+
+            int y0 = 112, rowH = 80, gap = 8;
+            for (int i = 0; i < 4; i++) {
+                boolean s = (i == sel);
+                int ry = y0 + i*(rowH+gap);
+                if (s) {
+                    gc.setColor(new Color(60, 200, 255, 55));
+                    gc.fillRoundRect(x-3, ry-3, w+6, rowH+6, 18, 18);
+                    gc.setColor(new Color(0x0f1a3a));
+                    gc.fillRoundRect(x, ry, w, rowH, 14, 14);
+                    gc.setStroke(new BasicStroke(2f));
+                    gc.setColor(new Color(90, 220, 255, 210));
+                    gc.drawRoundRect(x, ry, w, rowH, 14, 14);
+                } else {
+                    gc.setColor(new Color(255, 255, 255, 10));
+                    gc.fillRoundRect(x, ry, w, rowH, 14, 14);
+                    gc.setStroke(new BasicStroke(1f));
+                    gc.setColor(new Color(120, 170, 255, 28));
+                    gc.drawRoundRect(x, ry, w, rowH, 14, 14);
+                }
+                int contentX = x + 18;
+                if (s) {
+                    gc.setColor(new Color(0x5fe6ff));
+                    gc.setFont(new Font("SansSerif", Font.BOLD, 22));
+                    gc.drawString("▶", x+8, ry+rowH/2+8);
+                    contentX = x + 34;
+                }
+                // jacket: gradient placeholder (bright cyan→purple when selected, muted
+                // otherwise) with the song's album art blitted on top if present
+                int js = s ? 60 : 48;
+                int jy = ry + (rowH-js)/2;
+                if (s) gc.setPaint(new GradientPaint(contentX, jy, new Color(0x0bd3ff), contentX+js, jy+js, new Color(0x8a5bff)));
+                else   gc.setPaint(new GradientPaint(contentX, jy, new Color(0x22305c), contentX+js, jy+js, new Color(0x38507f)));
+                gc.fillRoundRect(contentX, jy, js, js, 10, 10);
+                if (jacket[i] != null) {
+                    java.awt.Shape oldClip = gc.getClip();
+                    gc.setClip(new java.awt.geom.RoundRectangle2D.Float(contentX, jy, js, js, 10, 10));
+                    gc.drawImage(jacket[i], contentX, jy, js, js, this); // no-op if the file is missing → gradient shows
+                    gc.setClip(oldClip);
+                }
+                gc.setStroke(new BasicStroke(1f));
+                gc.setColor(new Color(255,255,255,s?70:22));
+                gc.drawRoundRect(contentX, jy, js, js, 10, 10);
+
+                // title + subtitle, typeset (CJK-capable SansSerif)
+                int tx = contentX + js + 16;
+                int cy = ry + rowH/2;
+                gc.setColor(s ? Color.white : new Color(0xc9d8f2));
+                gc.setFont(new Font("SansSerif", Font.BOLD, s ? 23 : 17));
+                gc.drawString(songTitle[i], tx, cy - 3);
+                gc.setColor(new Color(0x7f9fd0));
+                gc.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                gc.drawString(songArtist[i], tx, cy + 18);
+            }
+        }
+
+        private void drawDetailPanel(Graphics2D gc, int sel) {
+            int x = 654, w = 600;
+
+            int ty = 100, th = 92;
+            glassCard(gc, x, ty, w, th);
+            gc.setColor(Color.white);
+            gc.setFont(new Font("SansSerif", Font.BOLD, 30));
+            gc.drawString(songTitle[sel], x+22, ty+46);
+            gc.setColor(new Color(0x8fb4e6));
+            gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+            gc.drawString(songArtist[sel].toUpperCase(), x+22, ty+74);
+
+            int dy0 = ty + th + 14, dh = 152;
+            glassCard(gc, x, dy0, w, dh);
+            drawDifficultyCard(gc, x, dy0, w);
+
+            int sy = dy0 + dh + 14, sh = 108;
+            glassCard(gc, x, sy, w, sh);
+            drawStatsCard(gc, x, sy, w);
+        }
+
+        private void drawDifficultyCard(Graphics2D gc, int x, int y, int w) {
+            SpeedModifier.Difficulty[] d = SpeedModifier.Difficulty.values();
+            int sel = speedModifier.getDifficulty().ordinal();
+            int pad = 18;
+
+            gc.setColor(new Color(0x7f9fd0));
+            gc.setFont(new Font("SansSerif", Font.BOLD, 12));
+            gc.drawString("DIFFICULTY", x+pad, y+24);
+            String hint = "◄ LEFT / RIGHT ►";
+            gc.setColor(new Color(0x6f8fc0));
+            gc.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            FontMetrics hf = gc.getFontMetrics();
+            gc.drawString(hint, x+w-pad-hf.stringWidth(hint), y+24);
+
+            int gap = 8;
+            int innerW = w - pad*2;
+            int pillW = (innerW - gap*3) / 4;
+            int pillH = 46;
+            int py = y + 42;
+            for (int i = 0; i < 4; i++) {
+                int px = x + pad + i*(pillW+gap);
+                boolean s = (i == sel);
+                Color base = d[i].color;
+                int yy = py + (s ? -4 : 0);
+                int hh = pillH + (s ? 8 : 0);
+                if (s) {
+                    gc.setColor(new Color(base.getRed(), base.getGreen(), base.getBlue(), 90));
+                    gc.fillRoundRect(px-4, yy-4, pillW+8, hh+8, 14, 14);
+                }
+                gc.setPaint(new GradientPaint(px, yy, s ? base : dim(base, 0.42),
+                        px, yy+hh, s ? dim(base, 0.55) : dim(base, 0.16)));
+                gc.fillRoundRect(px, yy, pillW, hh, 12, 12);
+                gc.setStroke(new BasicStroke(s ? 2.5f : 1f));
+                gc.setColor(s ? Color.white : new Color(255, 255, 255, 60));
+                gc.drawRoundRect(px, yy, pillW, hh, 12, 12);
+                if (s) {
+                    gc.setColor(base.brighter());
+                    int mx = px + pillW/2;
+                    gc.fillPolygon(new int[]{mx-6, mx+6, mx}, new int[]{yy-10, yy-10, yy-2}, 3);
+                }
+                gc.setColor(s ? Color.white : new Color(220, 220, 220, 180));
+                gc.setFont(new Font("SansSerif", s ? Font.BOLD : Font.PLAIN, s ? 15 : 13));
+                FontMetrics fm = gc.getFontMetrics();
+                gc.drawString(d[i].label, px + (pillW-fm.stringWidth(d[i].label))/2, yy + hh/2 + fm.getAscent()/2 - 2);
+            }
+
+            int ry = py + pillH + 26;
+            SpeedModifier.Difficulty cur = d[sel];
+            gc.setColor(cur.color.brighter());
+            gc.setFont(new Font("SansSerif", Font.BOLD, 20));
+            gc.drawString(cur.label, x+pad, ry+4);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 4; i++) sb.append(i <= sel ? "★" : "☆");
+            gc.setFont(new Font("SansSerif", Font.PLAIN, 16));
+            gc.setColor(new Color(0xffd43b));
+            gc.drawString(sb.toString(), x+pad, ry+26);
+
+            double approach = 660.0 / cur.pxPerSec;
+            String readK = "READ TIME";
+            String readV = String.format("%.2fs · %d px/s", approach, (int)cur.pxPerSec);
+            gc.setColor(new Color(0x7f9fd0));
+            gc.setFont(new Font("SansSerif", Font.PLAIN, 11));
+            FontMetrics rk = gc.getFontMetrics();
+            gc.drawString(readK, x+w-pad-rk.stringWidth(readK), ry+4);
+            gc.setColor(Color.white);
+            gc.setFont(new Font("SansSerif", Font.BOLD, 15));
+            FontMetrics rv = gc.getFontMetrics();
+            gc.drawString(readV, x+w-pad-rv.stringWidth(readV), ry+26);
+        }
+
+        private void drawStatsCard(Graphics2D gc, int x, int y, int w) {
+            int pad = 18;
+            int[] len = whichSong.getSongLengthInMinutesAndSeconds();
+            String[] k = { "BPM", "LENGTH" };
+            String[] v = { String.valueOf(BPM), String.format("%d:%02d", len[0], len[1]) };
+            int colW = (w - pad*2) / 2;
+            for (int i = 0; i < 2; i++) {
+                int cx = x + pad + i*colW;
+                gc.setColor(new Color(0x7f9fd0));
+                gc.setFont(new Font("SansSerif", Font.BOLD, 11));
+                FontMetrics kf = gc.getFontMetrics();
+                gc.drawString(k[i], cx + (colW-kf.stringWidth(k[i]))/2, y+30);
+                gc.setColor(Color.white);
+                gc.setFont(new Font("SansSerif", Font.BOLD, 26));
+                FontMetrics vf = gc.getFontMetrics();
+                gc.drawString(v[i], cx + (colW-vf.stringWidth(v[i]))/2, y+62);
+            }
+            String am;
+            try { am = String.valueOf(soundController.getCurrentAudioAnalysisMode()); }
+            catch (Exception e) { am = "FFT_BASS"; }
+            String chip = "◂ " + am + " ▸";
+            String lbl = "AUDIO ANALYSIS";
+            gc.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            FontMetrics cf = gc.getFontMetrics();
+            int chipW = cf.stringWidth(chip) + 24;
+            int totalW = cf.stringWidth(lbl) + 12 + chipW;
+            int sx = x + (w-totalW)/2;
+            int sy = y + 92;
+            gc.setColor(new Color(0x8fb4e6));
+            gc.drawString(lbl, sx, sy);
+            int chx = sx + cf.stringWidth(lbl) + 12;
+            gc.setStroke(new BasicStroke(1f));
+            gc.setColor(new Color(120, 180, 255, 100));
+            gc.drawRoundRect(chx, sy-15, chipW, 22, 14, 14);
+            gc.setColor(new Color(0xbcd4ff));
+            gc.drawString(chip, chx+12, sy);
+        }
+
+        private void drawDevCorner(Graphics2D gc) {
+            int x = 30, y = 476;
+            gc.setColor(new Color(140, 160, 190, 120));
+            gc.setFont(new Font("Monospaced", Font.PLAIN, 11));
+            String[] lines = {
+                "dev · " + whichSong.getName(),
+                "feature: " + whichSong.getSongFeature(),
+                "analysis: " + whichSong.getAudioAnalysisMethod(),
+                "signal max/min: " + whichSong.getMaxSignalStrengthByWindow() + " / " + whichSong.getMinSignalStrengthByWindow(),
+                "frameRate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz",
+                "fft bin: " + String.format("%.2f", whichSong.getBinHzWidth()) + " Hz",
+            };
+            for (int i = 0; i < lines.length; i++) gc.drawString(lines[i], x, y + i*14);
+        }
+
+        private int footItem(Graphics2D gc, int x, int y, String key, String label) {
+            gc.setColor(new Color(0x5fe6ff));
+            gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+            FontMetrics kf = gc.getFontMetrics();
+            gc.drawString(key, x, y);
+            int kx = x + kf.stringWidth(key) + 6;
+            gc.setColor(new Color(0x9fc0ee));
+            gc.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            FontMetrics lf = gc.getFontMetrics();
+            gc.drawString(label, kx, y);
+            return kx + lf.stringWidth(label) + 22;
+        }
+
+        private void drawFooter(Graphics2D gc) {
+            int w = getWidth(), h = getHeight();
+            int fy = h - 52;
+            gc.setColor(new Color(120, 180, 255, 40));
+            gc.drawLine(0, fy, w, fy);
+            int x = 28, y = h - 20;
+            x = footItem(gc, x, y, "↑↓", "Song");
+            x = footItem(gc, x, y, "←→", "Difficulty");
+            x = footItem(gc, x, y, "↵ / A", "Start");
+            x = footItem(gc, x, y, "Esc", "Back");
+            String kk = "L / R", vv = "Audio Analysis";
+            gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+            FontMetrics kf = gc.getFontMetrics();
+            int rx = w - 28 - (kf.stringWidth(kk) + 6 + gc.getFontMetrics(new Font("SansSerif", Font.PLAIN, 13)).stringWidth(vv));
+            gc.setColor(new Color(0x5fe6ff));
+            gc.drawString(kk, rx, y);
+            gc.setColor(new Color(0x6f8fc0));
+            gc.setFont(new Font("SansSerif", Font.PLAIN, 13));
+            gc.drawString(vv, rx + kf.stringWidth(kk) + 6, y);
         }
         
         //return controlflow

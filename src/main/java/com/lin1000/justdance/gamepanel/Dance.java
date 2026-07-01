@@ -80,7 +80,6 @@ public class Dance extends JWindow
     public int arrow_y_position = 50;
     //public int width = 1280, height = 720;
     public int width = 2560, height = 1440;
-    private final int dropSpeed = 300; // 300 pixels movement per seconds
     private final int judgeLineY = 500; // Y line where arrows are judged
 
     //Song master information
@@ -120,9 +119,11 @@ public class Dance extends JWindow
     long deltaFrame;
 
     // --- Audio-slaved arrow movement ---
-    // Arrow scroll speed in pixels/second. The legacy loop moved `y_movement` pixels
-    // every 300ms render frame, i.e. y_movement / 0.3 px/s; we preserve that feel.
-    private double scrollSpeedPxPerSec;
+    // DDR/StepMania scroll-speed modifier: turns the song BPM + player setting (XMOD
+    // multiplier or CMOD target) into pixels/second. Adjusted live from DanceAction and
+    // shown on the HUD; consumed each frame in tick(). Replaces the old per-song magic
+    // `y_movement / 0.3` speed.
+    public final SpeedModifier speedModifier = new SpeedModifier();
     // Seconds of music between successive chart rows. Matches the legacy 300ms spawn
     // cadence (and the scrollSpeed denominator), so note feel is unchanged — only the
     // clock that triggers each spawn changes from wall-clock to the audio sample position.
@@ -255,8 +256,9 @@ public class Dance extends JWindow
         System.err.println(" this.BPM=" +this.BPM);
         producer = new ArrowsProducer(30, 130, 230, 330, this.BPM);//pre-loads the dance chart; arrows are spawned on demand from tick(), sample-locked to the audio clock
 
-        // Preserve the legacy scroll speed: old loop moved y_movement px per 300ms frame.
-        scrollSpeedPxPerSec = this.y_movement / 0.3;
+        // Scroll speed comes from the chosen difficulty level (speedModifier), set during
+        // song selection and read live in tick(). The per-song `y_movement` no longer
+        // drives speed.
 
         //Setting up and start counting the rhythm nanos
         this.soundController = soundController;
@@ -419,8 +421,10 @@ public class Dance extends JWindow
         if (deltaSec <= 0 || deltaSec > 1.0) return;
 
         // Spawn any chart rows now due (sample-locked to the same clock), then advance.
+        // Scroll speed is the constant px/s of the player-chosen difficulty level, read
+        // every frame from the SpeedModifier set during song selection.
         producer.spawnDueArrows(nowSec, ROW_INTERVAL_SEC);
-        producer.move(conditionControl, scrollSpeedPxPerSec * deltaSec);
+        producer.move(conditionControl, speedModifier.pixelsPerSecond() * deltaSec);
     }
 
     public void update(Graphics g) {
@@ -547,6 +551,9 @@ public class Dance extends JWindow
                         gc.setFont(new Font("verdana", Font.PLAIN, 18));
                         gc.drawString("SCORE:", g_off_x+20, g_off_y+20);
                         gc.drawString(conditionControl.getScore() + "", g_off_x+100, g_off_y+20);
+
+                        //Chosen difficulty level readout
+                        gc.drawString("LEVEL: " + speedModifier.label(), g_off_x+20, g_off_y+44);
 
                         //FPS Info Block
                         int fps_x = g_off_x+300;

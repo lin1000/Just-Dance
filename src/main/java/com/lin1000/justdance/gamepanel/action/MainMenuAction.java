@@ -91,6 +91,12 @@ public class MainMenuAction {
                     //switch audio analysis mode
                     mainWindowTarget.soundController.switchAudioAnalysisMode(1);//next algorithm
                     switchSong(mainWindowTarget);
+                } else if (input.getInputType() == Input.InputType.LEFT && input.isPressed()) {
+                    //cycle difficulty level down (easier / slower scroll)
+                    mainWindowTarget.speedModifier.easier();
+                } else if (input.getInputType() == Input.InputType.RIGHT && input.isPressed()) {
+                    //cycle difficulty level up (harder / faster scroll)
+                    mainWindowTarget.speedModifier.harder();
                 }
                 break;
 
