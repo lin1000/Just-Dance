@@ -40,7 +40,7 @@ public class ArrowsProducer extends Object
         private volatile boolean isStop = false;
 
 
-        public ArrowsProducer(int position_left, int position_down, int position_up, int position_right, int BPM)
+        public ArrowsProducer(int position_left, int position_down, int position_up, int position_right, int BPM, String chartPath)
         {
                 vec[0] = new CopyOnWriteArrayList<>();
                 vec[1] = new CopyOnWriteArrayList<>();
@@ -56,8 +56,9 @@ public class ArrowsProducer extends Object
                 //歌曲參數
                 this.BPM=BPM;
 
-                //讀取舞步檔 — load the entire chart up front so no file I/O happens during play
-                loadChart(new File("./foot/foot.txt"));
+                //讀取舞步檔 — per-song chart path (from SongMeta); loaded up front so no file
+                //I/O happens during play
+                loadChart(new File(chartPath));
         }
 
         // Parse the foot-step file into chartRows. The file is whitespace-separated

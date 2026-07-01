@@ -55,12 +55,12 @@ public class MainMenuAction {
                 break;
             case 2://2 means in chose music (main menu screen)
                 if (input.getInputType() == Input.InputType.DOWN && input.isPressed()) {
-                    mainWindowTarget.musicOptionIndex++;
-                    if (mainWindowTarget.musicOptionIndex == 4) mainWindowTarget.musicOptionIndex = 0;
+                    int n = com.lin1000.justdance.song.SongLibrary.size();
+                    mainWindowTarget.musicOptionIndex = (mainWindowTarget.musicOptionIndex + 1) % n;
                     switchSong(mainWindowTarget);
                 } else if (input.getInputType() == Input.InputType.UP && input.isPressed()) {
-                    mainWindowTarget.musicOptionIndex--;
-                    if (mainWindowTarget.musicOptionIndex == -1) mainWindowTarget.musicOptionIndex = 3;
+                    int n = com.lin1000.justdance.song.SongLibrary.size();
+                    mainWindowTarget.musicOptionIndex = (mainWindowTarget.musicOptionIndex - 1 + n) % n;
                     switchSong(mainWindowTarget);
                 } else if (input.getInputType() == Input.InputType.A && input.isPressed()) {
                     switch (mainWindowTarget.controlFlow) {

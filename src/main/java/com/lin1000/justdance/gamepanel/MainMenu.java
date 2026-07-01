@@ -399,11 +399,14 @@ public class MainMenu extends JWindow
                 optionSelected[2]=kit.getImage("img/option3selected.jpg");
                 optionSelected[3]=kit.getImage("img/option4selected.jpg");
 
-                //Optional per-song jacket art (falls back to the gradient placeholder if absent)
-                jacket[0]=kit.getImage("img/jacket1.png");
-                jacket[1]=kit.getImage("img/jacket2.png");
-                jacket[2]=kit.getImage("img/jacket3.png");
-                jacket[3]=kit.getImage("img/jacket4.png");
+                //Optional per-song jacket art from the catalog (falls back to the gradient
+                //placeholder if the file is absent). One entry per song in SongLibrary.
+                java.util.List<com.lin1000.justdance.song.SongMeta> songs =
+                        com.lin1000.justdance.song.SongLibrary.all();
+                jacket = new Image[songs.size()];
+                for (int i = 0; i < songs.size(); i++) {
+                    jacket[i] = kit.getImage(songs.get(i).getJacketPath());
+                }
         }
         
         //paint initial screen
@@ -481,37 +484,21 @@ public class MainMenu extends JWindow
         
         //?e?X?D???
         // Per-song display title, typeset as text (no longer the plate images) so the wheel
-        // matches the redesign. Rendered with the "SansSerif" logical font, which falls back
-        // to WenQuanYi/Droid for the CJK glyphs (verified canDisplay). Source is UTF-8.
-        private final String[] songTitle = {
-            "甜蜜蜜（舞曲版）",
-            "BARBIE GIRL — AQUA",
-            "Barbie Happy Boys",
-            "DEVIL + GHOST"
-        };
-
-        // Per-song artist / descriptor line (placeholder metadata — not stored in the song
-        // files; edit freely). Indexed by musicOptionIndex. · = middle dot.
-        private final String[] songArtist = {
-            "Teresa Teng · Dance Remix",
-            "Aqua",
-            "Party Mix",
-            "Hardcore"
-        };
-
         // StepMania/ITG-style song-select: neon backdrop, left song wheel, right detail +
         // difficulty panel, honest read-time readout, control-legend footer, tiny dev corner.
+        // All per-song data (title/artist/bpm/jacket/chart) comes from SongLibrary — see
+        // songs/songs.json — instead of hardcoded arrays and a switch.
         public void menuscreen(int musicOptionIndex)
         {
             this.musicOptionIndex = musicOptionIndex;
 
-            // per-index song config (state only; rendering is handled by the helpers below)
-            switch (musicOptionIndex) {
-                case 0: this.whichmusic = 0; this.y_movement = 15; this.BPM = 400; break;
-                case 1: this.whichmusic = 1; this.y_movement = 7;  this.BPM = 120; break;
-                case 2: this.whichmusic = 2; this.y_movement = 5;  this.BPM = 180; break;
-                case 3: this.whichmusic = 3; this.y_movement = 12; this.BPM = 300; break;
-            }
+            // per-song state pulled from the authored catalog (rendering handled by helpers)
+            com.lin1000.justdance.song.SongMeta meta =
+                    com.lin1000.justdance.song.SongLibrary.get(musicOptionIndex);
+            this.whichmusic = musicOptionIndex;
+            this.BPM = meta.getBpm();
+            this.y_movement = 0; // legacy; scroll speed now comes from the difficulty level
+
             if (whichSong == null) { repaint(); return; }
 
             gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -580,12 +567,13 @@ public class MainMenu extends JWindow
 
         private void drawSongWheel(Graphics2D gc, int sel) {
             int x = 26, w = 600;
+            int songCount = com.lin1000.justdance.song.SongLibrary.size();
             gc.setColor(new Color(0x7f9fd0));
             gc.setFont(new Font("SansSerif", Font.BOLD, 12));
-            gc.drawString("4 SONGS", x+4, 100);
+            gc.drawString(songCount + " SONGS", x+4, 100);
 
             int y0 = 112, rowH = 80, gap = 8;
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < songCount; i++) {
                 boolean s = (i == sel);
                 int ry = y0 + i*(rowH+gap);
                 if (s) {
@@ -627,29 +615,33 @@ public class MainMenu extends JWindow
                 gc.setColor(new Color(255,255,255,s?70:22));
                 gc.drawRoundRect(contentX, jy, js, js, 10, 10);
 
-                // title + subtitle, typeset (CJK-capable SansSerif)
+                // title + subtitle from the catalog, typeset (CJK-capable SansSerif)
+                com.lin1000.justdance.song.SongMeta meta =
+                        com.lin1000.justdance.song.SongLibrary.get(i);
                 int tx = contentX + js + 16;
                 int cy = ry + rowH/2;
                 gc.setColor(s ? Color.white : new Color(0xc9d8f2));
                 gc.setFont(new Font("SansSerif", Font.BOLD, s ? 23 : 17));
-                gc.drawString(songTitle[i], tx, cy - 3);
+                gc.drawString(meta.getTitle(), tx, cy - 3);
                 gc.setColor(new Color(0x7f9fd0));
                 gc.setFont(new Font("SansSerif", Font.PLAIN, 12));
-                gc.drawString(songArtist[i], tx, cy + 18);
+                gc.drawString(meta.getArtist(), tx, cy + 18);
             }
         }
 
         private void drawDetailPanel(Graphics2D gc, int sel) {
             int x = 654, w = 600;
 
+            com.lin1000.justdance.song.SongMeta meta =
+                    com.lin1000.justdance.song.SongLibrary.get(sel);
             int ty = 100, th = 92;
             glassCard(gc, x, ty, w, th);
             gc.setColor(Color.white);
             gc.setFont(new Font("SansSerif", Font.BOLD, 30));
-            gc.drawString(songTitle[sel], x+22, ty+46);
+            gc.drawString(meta.getTitle(), x+22, ty+46);
             gc.setColor(new Color(0x8fb4e6));
             gc.setFont(new Font("SansSerif", Font.BOLD, 13));
-            gc.drawString(songArtist[sel].toUpperCase(), x+22, ty+74);
+            gc.drawString(meta.getArtist().toUpperCase(), x+22, ty+74);
 
             int dy0 = ty + th + 14, dh = 152;
             glassCard(gc, x, dy0, w, dh);
@@ -708,9 +700,17 @@ public class MainMenu extends JWindow
 
             int ry = py + pillH + 26;
             SpeedModifier.Difficulty cur = d[sel];
+            int foot = com.lin1000.justdance.song.SongLibrary.get(musicOptionIndex).rating(cur.label);
             gc.setColor(cur.color.brighter());
             gc.setFont(new Font("SansSerif", Font.BOLD, 20));
             gc.drawString(cur.label, x+pad, ry+4);
+            // per-song foot rating (StepMania-style) from the catalog, when authored
+            if (foot > 0) {
+                int lw = gc.getFontMetrics().stringWidth(cur.label);
+                gc.setColor(new Color(0xffe07a));
+                gc.setFont(new Font("SansSerif", Font.BOLD, 16));
+                gc.drawString("Lv." + foot, x+pad+lw+14, ry+3);
+            }
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < 4; i++) sb.append(i <= sel ? "★" : "☆");
             gc.setFont(new Font("SansSerif", Font.PLAIN, 16));
