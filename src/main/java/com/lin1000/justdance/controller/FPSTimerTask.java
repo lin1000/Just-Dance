@@ -2,6 +2,7 @@ package com.lin1000.justdance.controller;
 
 import com.lin1000.justdance.gamepanel.Dance;
 
+import javax.swing.SwingUtilities;
 import java.util.TimerTask;
 
 public class FPSTimerTask extends TimerTask {
@@ -32,6 +33,14 @@ public class FPSTimerTask extends TimerTask {
         lastLongFramePositionSourceDataLine = nowLongFramePositionSourceDataLine;
         mainTargetWindow.setDeltaFrame(deltaFrame);
 
-        mainTargetWindow.repaint();
+        // Run the simulation step and the repaint together on the EDT, in that order.
+        // This keeps all game-state mutation (controller polling, arrow movement, MISS
+        // scoring) on the same thread as the keyboard handlers, so they never race, while
+        // paint() remains a pure render. Movement itself is audio-slaved inside tick(), so
+        // if the EDT falls behind and a frame is skipped the next tick catches up exactly.
+        SwingUtilities.invokeLater(() -> {
+            mainTargetWindow.tick();
+            mainTargetWindow.repaint();
+        });
     }
 }
