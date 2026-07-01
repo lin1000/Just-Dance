@@ -61,6 +61,10 @@ public class MainMenu extends JWindow
         Image background;
         Image option[]=new Image[4];
         Image optionSelected[]=new Image[4];
+        //Per-song album/jacket art shown in the song-wheel slots. Optional: if a file is
+        //missing the wheel falls back to the gradient placeholder. Drop art at
+        //img/jacket1.png .. img/jacket4.png (square recommended).
+        Image jacket[]=new Image[4];
         public static int musicOptionIndex =0; // 0,1,2,3
 
         //XBox Controller Component
@@ -394,6 +398,12 @@ public class MainMenu extends JWindow
                 optionSelected[1]=kit.getImage("img/option2selected.jpg");
                 optionSelected[2]=kit.getImage("img/option3selected.jpg");
                 optionSelected[3]=kit.getImage("img/option4selected.jpg");
+
+                //Optional per-song jacket art (falls back to the gradient placeholder if absent)
+                jacket[0]=kit.getImage("img/jacket1.png");
+                jacket[1]=kit.getImage("img/jacket2.png");
+                jacket[2]=kit.getImage("img/jacket3.png");
+                jacket[3]=kit.getImage("img/jacket4.png");
         }
         
         //paint initial screen
@@ -600,12 +610,19 @@ public class MainMenu extends JWindow
                     gc.drawString("▶", x+8, ry+rowH/2+8);
                     contentX = x + 34;
                 }
-                // jacket placeholder: bright cyan→purple when selected, muted otherwise
+                // jacket: gradient placeholder (bright cyan→purple when selected, muted
+                // otherwise) with the song's album art blitted on top if present
                 int js = s ? 60 : 48;
                 int jy = ry + (rowH-js)/2;
                 if (s) gc.setPaint(new GradientPaint(contentX, jy, new Color(0x0bd3ff), contentX+js, jy+js, new Color(0x8a5bff)));
                 else   gc.setPaint(new GradientPaint(contentX, jy, new Color(0x22305c), contentX+js, jy+js, new Color(0x38507f)));
                 gc.fillRoundRect(contentX, jy, js, js, 10, 10);
+                if (jacket[i] != null) {
+                    java.awt.Shape oldClip = gc.getClip();
+                    gc.setClip(new java.awt.geom.RoundRectangle2D.Float(contentX, jy, js, js, 10, 10));
+                    gc.drawImage(jacket[i], contentX, jy, js, js, this); // no-op if the file is missing → gradient shows
+                    gc.setClip(oldClip);
+                }
                 gc.setStroke(new BasicStroke(1f));
                 gc.setColor(new Color(255,255,255,s?70:22));
                 gc.drawRoundRect(contentX, jy, js, js, 10, 10);
