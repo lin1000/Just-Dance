@@ -88,7 +88,12 @@ public class MainMenu extends JWindow
         private int whichmusic;
         private int y_movement;
         private int BPM;
-        
+
+        //Player-chosen difficulty level (scroll speed). Cycled with LEFT/RIGHT in the song
+        //selection screen and carried into gameplay (see Project.run -> Dance.speedModifier).
+        public final SpeedModifier speedModifier = new SpeedModifier();
+        public SpeedModifier.Difficulty getSelectedDifficulty() { return speedModifier.getDifficulty(); }
+
         //isFirstRound
         private boolean isFirstRound = true;
 
@@ -533,7 +538,64 @@ public class MainMenu extends JWindow
             gc.drawString("Min Signal Strength: " + whichSong.getMinSignalStrengthByWindow(), songInfoX, songInfoY + songIntoLineHeight*8);
             gc.drawString("FFT Bin (Bandwidth): " + String.format("%.2f",whichSong.getBinHzWidth()), songInfoX, songInfoY + songIntoLineHeight*9);
 
+            drawDifficultySelector(gc);
+
             repaint();
+        }
+
+        /**
+         * Fancy difficulty-level selector: a centered row of colored chips (EASY .. EXPERT),
+         * the chosen one enlarged with a glow, plus a "LEFT / RIGHT" hint. Higher level =
+         * faster scroll = harder. Cycled by MainMenuAction on LEFT/RIGHT.
+         */
+        private void drawDifficultySelector(java.awt.Graphics2D gc) {
+            SpeedModifier.Difficulty[] diffs = SpeedModifier.Difficulty.values();
+            int selIdx = speedModifier.getDifficulty().ordinal();
+
+            int chipW = 150, chipH = 54, gap = 14;
+            int totalW = diffs.length * chipW + (diffs.length - 1) * gap;
+            int dx = (getWidth() - totalW) / 2;   // centered horizontally
+            int dy = 96;
+
+            java.awt.Stroke oldStroke = gc.getStroke();
+
+            // heading
+            gc.setColor(Color.white);
+            gc.setFont(new Font("verdana", Font.BOLD, 24));
+            gc.drawString("SELECT DIFFICULTY", dx, dy - 16);
+
+            for (int i = 0; i < diffs.length; i++) {
+                int cx = dx + i * (chipW + gap);
+                boolean sel = (i == selIdx);
+                Color base = diffs[i].color;
+
+                if (sel) {
+                    // glow halo behind the selected chip
+                    gc.setColor(new Color(base.getRed(), base.getGreen(), base.getBlue(), 130));
+                    gc.fillRoundRect(cx - 8, dy - 8, chipW + 16, chipH + 16, 22, 22);
+                }
+                gc.setColor(sel ? base : base.darker().darker());
+                gc.fillRoundRect(cx, dy, chipW, chipH, 16, 16);
+                gc.setStroke(new java.awt.BasicStroke(sel ? 3f : 1f));
+                gc.setColor(sel ? Color.white : new Color(180, 180, 180));
+                gc.drawRoundRect(cx, dy, chipW, chipH, 16, 16);
+
+                String lbl = diffs[i].label;
+                gc.setFont(new Font("verdana", sel ? Font.BOLD : Font.PLAIN, sel ? 22 : 17));
+                java.awt.FontMetrics fm = gc.getFontMetrics();
+                int lx = cx + (chipW - fm.stringWidth(lbl)) / 2;
+                int ly = dy + (chipH + fm.getAscent()) / 2 - 4;
+                gc.setColor(sel ? Color.white : new Color(225, 225, 225));
+                gc.drawString(lbl, lx, ly);
+            }
+
+            // navigation hint
+            gc.setStroke(oldStroke);
+            gc.setColor(Color.white);
+            gc.setFont(new Font("verdana", Font.ITALIC, 17));
+            String hint = "◄  LEFT / RIGHT to change  ►";
+            java.awt.FontMetrics hfm = gc.getFontMetrics();
+            gc.drawString(hint, (getWidth() - hfm.stringWidth(hint)) / 2, dy + chipH + 28);
         }
         
         //return controlflow

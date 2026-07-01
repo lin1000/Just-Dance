@@ -256,9 +256,9 @@ public class Dance extends JWindow
         System.err.println(" this.BPM=" +this.BPM);
         producer = new ArrowsProducer(30, 130, 230, 330, this.BPM);//pre-loads the dance chart; arrows are spawned on demand from tick(), sample-locked to the audio clock
 
-        // Scroll speed is derived from BPM + the DDR speed modifier (see speedModifier),
-        // computed live in tick() so the player can change it mid-song. The per-song
-        // `y_movement` no longer drives speed.
+        // Scroll speed comes from the chosen difficulty level (speedModifier), set during
+        // song selection and read live in tick(). The per-song `y_movement` no longer
+        // drives speed.
 
         //Setting up and start counting the rhythm nanos
         this.soundController = soundController;
@@ -421,10 +421,10 @@ public class Dance extends JWindow
         if (deltaSec <= 0 || deltaSec > 1.0) return;
 
         // Spawn any chart rows now due (sample-locked to the same clock), then advance.
-        // Speed comes from the DDR modifier (BPM x XMOD multiplier, or CMOD constant),
-        // read every frame so live speed changes take effect immediately.
+        // Scroll speed is the constant px/s of the player-chosen difficulty level, read
+        // every frame from the SpeedModifier set during song selection.
         producer.spawnDueArrows(nowSec, ROW_INTERVAL_SEC);
-        producer.move(conditionControl, speedModifier.pixelsPerSecond(BPM) * deltaSec);
+        producer.move(conditionControl, speedModifier.pixelsPerSecond() * deltaSec);
     }
 
     public void update(Graphics g) {
@@ -552,8 +552,8 @@ public class Dance extends JWindow
                         gc.drawString("SCORE:", g_off_x+20, g_off_y+20);
                         gc.drawString(conditionControl.getScore() + "", g_off_x+100, g_off_y+20);
 
-                        //Scroll-speed modifier readout (+/- to adjust, M to toggle X/C mode)
-                        gc.drawString("SPEED: " + speedModifier.label(), g_off_x+20, g_off_y+44);
+                        //Chosen difficulty level readout
+                        gc.drawString("LEVEL: " + speedModifier.label(), g_off_x+20, g_off_y+44);
 
                         //FPS Info Block
                         int fps_x = g_off_x+300;
