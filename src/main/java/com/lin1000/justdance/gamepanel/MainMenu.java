@@ -470,13 +470,23 @@ public class MainMenu extends JWindow
         }
         
         //?e?X?D???
+        // Per-song display title, typeset as text (no longer the plate images) so the wheel
+        // matches the redesign. Rendered with the "SansSerif" logical font, which falls back
+        // to WenQuanYi/Droid for the CJK glyphs (verified canDisplay). Source is UTF-8.
+        private final String[] songTitle = {
+            "甜蜜蜜（舞曲版）",
+            "BARBIE GIRL — AQUA",
+            "Barbie Happy Boys",
+            "DEVIL + GHOST"
+        };
+
         // Per-song artist / descriptor line (placeholder metadata — not stored in the song
-        // files; edit freely). Indexed by musicOptionIndex.
+        // files; edit freely). Indexed by musicOptionIndex. · = middle dot.
         private final String[] songArtist = {
-            "TERESA TENG · DANCE REMIX",
-            "AQUA",
-            "PARTY MIX",
-            "HARDCORE"
+            "Teresa Teng · Dance Remix",
+            "Aqua",
+            "Party Mix",
+            "Hardcore"
         };
 
         // StepMania/ITG-style song-select: neon backdrop, left song wheel, right detail +
@@ -590,17 +600,25 @@ public class MainMenu extends JWindow
                     gc.drawString("▶", x+8, ry+rowH/2+8);
                     contentX = x + 34;
                 }
+                // jacket placeholder: bright cyan→purple when selected, muted otherwise
                 int js = s ? 60 : 48;
                 int jy = ry + (rowH-js)/2;
-                gc.setPaint(new GradientPaint(contentX, jy, new Color(0x22305c), contentX+js, jy+js, new Color(0x38507f)));
+                if (s) gc.setPaint(new GradientPaint(contentX, jy, new Color(0x0bd3ff), contentX+js, jy+js, new Color(0x8a5bff)));
+                else   gc.setPaint(new GradientPaint(contentX, jy, new Color(0x22305c), contentX+js, jy+js, new Color(0x38507f)));
                 gc.fillRoundRect(contentX, jy, js, js, 10, 10);
+                gc.setStroke(new BasicStroke(1f));
+                gc.setColor(new Color(255,255,255,s?70:22));
+                gc.drawRoundRect(contentX, jy, js, js, 10, 10);
 
-                Image banner = s ? optionSelected[i] : option[i];
-                int bx = contentX + js + 16;
-                int bw = x + w - bx - 20;
-                int bh = 44;
-                int by = ry + (rowH-bh)/2;
-                if (banner != null) gc.drawImage(banner, bx, by, bw, bh, this);
+                // title + subtitle, typeset (CJK-capable SansSerif)
+                int tx = contentX + js + 16;
+                int cy = ry + rowH/2;
+                gc.setColor(s ? Color.white : new Color(0xc9d8f2));
+                gc.setFont(new Font("SansSerif", Font.BOLD, s ? 23 : 17));
+                gc.drawString(songTitle[i], tx, cy - 3);
+                gc.setColor(new Color(0x7f9fd0));
+                gc.setFont(new Font("SansSerif", Font.PLAIN, 12));
+                gc.drawString(songArtist[i], tx, cy + 18);
             }
         }
 
@@ -609,11 +627,12 @@ public class MainMenu extends JWindow
 
             int ty = 100, th = 92;
             glassCard(gc, x, ty, w, th);
-            Image banner = optionSelected[sel];
-            if (banner != null) gc.drawImage(banner, x+20, ty+16, 380, 42, this);
+            gc.setColor(Color.white);
+            gc.setFont(new Font("SansSerif", Font.BOLD, 30));
+            gc.drawString(songTitle[sel], x+22, ty+46);
             gc.setColor(new Color(0x8fb4e6));
-            gc.setFont(new Font("SansSerif", Font.BOLD, 14));
-            gc.drawString(songArtist[sel], x+22, ty+78);
+            gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+            gc.drawString(songArtist[sel].toUpperCase(), x+22, ty+74);
 
             int dy0 = ty + th + 14, dh = 152;
             glassCard(gc, x, dy0, w, dh);
