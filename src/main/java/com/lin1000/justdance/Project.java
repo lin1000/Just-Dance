@@ -170,7 +170,9 @@ public class Project extends JFrame implements Runnable
 			//取得曲目變數
 			this.music = mainMenu.getwhichMusic();
 			this.y_movement = mainMenu.getMovement();
-			this.BPM = mainMenu.getWhichSong().getSongBPM();
+			// BPM from the authored catalog (analysis getSongBPM() returns 0), so gameplay,
+			// menu, and chart timing all agree on one value.
+			this.BPM = com.lin1000.justdance.song.SongLibrary.get(this.music).getBpm();
             this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");

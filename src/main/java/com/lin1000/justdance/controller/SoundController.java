@@ -64,29 +64,15 @@ public class SoundController implements Runnable
     private static File mainmenubox[] = null;
     private static File musicbox[] = null;
     static{
-        File soundFolder = new File("./sound/musicbox");
-        Vector<String> soundFilePaths = new Vector<String>();
-        if (soundFolder.exists() && soundFolder.isDirectory()) {
-            File[] files = soundFolder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.isFile()) {
-                        soundFilePaths.add(file.getPath());
-                    } else if (file.isDirectory()) {
-                        System.out.println("Directory: " + file.getName());
-                    }
-                }
-            } else {
-                System.out.println("The sound folder is empty or cannot be read. There will be no music in the game!");
-            }
-        } else {
-            throw new RuntimeException("The folder './sound' does not exist or is not a directory.");
-        }
-
-        musicbox = new File[soundFilePaths.size()];
-        for (int i = 0; i < soundFilePaths.size(); i++) {
-            musicbox[i] = new File(soundFilePaths.get(i));
-            System.out.println("musicbox[" + i + "]=" + musicbox[i]);
+        // Music files are bound to songs by the authored catalog (SongLibrary), NOT by
+        // File.listFiles() order — so index i always plays the song declared at index i,
+        // matching that song's title/BPM/jacket. Each song's audio path comes from songs.json.
+        java.util.List<com.lin1000.justdance.song.SongMeta> songs =
+                com.lin1000.justdance.song.SongLibrary.all();
+        musicbox = new File[songs.size()];
+        for (int i = 0; i < songs.size(); i++) {
+            musicbox[i] = new File(songs.get(i).getAudioPath());
+            System.out.println("musicbox[" + i + "]=" + musicbox[i] + " (" + songs.get(i).getId() + ")");
         }
     }
 

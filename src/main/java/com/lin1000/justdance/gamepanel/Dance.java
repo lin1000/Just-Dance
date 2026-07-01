@@ -254,7 +254,10 @@ public class Dance extends JWindow
         }
 
         System.err.println(" this.BPM=" +this.BPM);
-        producer = new ArrowsProducer(30, 130, 230, 330, this.BPM);//pre-loads the dance chart; arrows are spawned on demand from tick(), sample-locked to the audio clock
+        //pre-loads the per-song dance chart; arrows are spawned on demand from tick(),
+        //sample-locked to the audio clock. Chart path comes from the song catalog.
+        String chartPath = com.lin1000.justdance.song.SongLibrary.get(this.music).getChartPath();
+        producer = new ArrowsProducer(30, 130, 230, 330, this.BPM, chartPath);
 
         // Scroll speed comes from the chosen difficulty level (speedModifier), set during
         // song selection and read live in tick(). The per-song `y_movement` no longer
