@@ -21,7 +21,7 @@ public class SpeedModifier {
         EASY  ("EASY",   264, new Color(0x35C759)),  // ~2.5s to read each note
         NORMAL("NORMAL", 440, new Color(0xFFD60A)),  // ~1.5s
         HARD  ("HARD",   660, new Color(0xFF9F0A)),  // ~1.0s
-        EXPERT("EXPERT", 880, new Color(0xFF453A));  // ~0.75s
+        EXPERT("EXPERT", 880, new Color(0xFF3CAC));  // ~0.75s
 
         public final String label;
         public final double pxPerSec;
