@@ -29,16 +29,19 @@ public class DanceAction {
         List<Arrow> arrows = target.producer.vec[vecIndex];
         List<Arrow> toRemove = new ArrayList<>();
         for (Arrow myarrow : arrows) {
+            if (myarrow.held) continue; // an engaged hold is resolved by the tick loop, not re-hit
             if (myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1]) {
-                toRemove.add(myarrow);
                 target.conditionControl.setCondition(0); // perfect
                 target.effectManager.addSpecialEffect(
                     target.g_off_x + myarrow.x + 50, target.g_off_y + myarrow.y + 40);
                 target.soundController.playEffectSound(0);
+                if (myarrow.isHold()) myarrow.held = true; // engage: freeze at receptors until the tail
+                else toRemove.add(myarrow);
             } else if (myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2]) {
-                toRemove.add(myarrow);
                 target.conditionControl.setCondition(1); // good
                 target.soundController.playEffectSound(1);
+                if (myarrow.isHold()) myarrow.held = true;
+                else toRemove.add(myarrow);
             }
         }
         arrows.removeAll(toRemove);

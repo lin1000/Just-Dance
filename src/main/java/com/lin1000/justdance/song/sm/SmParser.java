@@ -78,6 +78,10 @@ public final class SmParser {
         c.difficulty = p[2].trim();
         try { c.meter = Integer.parseInt(p[3].trim()); } catch (Exception e) { c.meter = 0; }
 
+        // Rows are scanned in chart order, so an open hold/roll head per lane is simply the
+        // most recent unclosed one; the next `3` in that lane is its tail.
+        Simfile.Note[] openHold = new Simfile.Note[4];
+
         String[] measures = p[5].split(",");
         for (int m = 0; m < measures.length; m++) {
             List<String> rows = new ArrayList<>();
@@ -91,8 +95,17 @@ public final class SmParser {
                 double beat = (m + (double) r / R) * 4.0; // 4 beats per measure
                 for (int lane = 0; lane < 4 && lane < row.length(); lane++) {
                     char ch = row.charAt(lane);
-                    if (ch == '1' || ch == '2' || ch == '4') { // tap / hold-head / roll-head
+                    if (ch == '1') {                       // tap
                         c.notes.add(new Simfile.Note(lane, beat));
+                    } else if (ch == '2' || ch == '4') {   // hold head / roll head
+                        Simfile.Note n = new Simfile.Note(lane, beat);
+                        c.notes.add(n);
+                        openHold[lane] = n;
+                    } else if (ch == '3') {                // hold/roll tail
+                        if (openHold[lane] != null) {
+                            openHold[lane].endBeat = beat;
+                            openHold[lane] = null;
+                        }
                     }
                 }
             }

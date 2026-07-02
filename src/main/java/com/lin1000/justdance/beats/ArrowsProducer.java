@@ -59,24 +59,32 @@ public class ArrowsProducer extends Object
         }
 
         // Convert the playable chart's (lane, beat) notes into timed Arrows once, up front.
+        // Holds/rolls carry a tail time computed from their end beat.
         private void buildNotes(Simfile sm) {
                 if (sm == null) return;
                 Simfile.Chart chart = sm.playableChart();
                 if (chart == null) return;
+                int holds = 0;
                 for (Simfile.Note n : chart.notes) {
                         double t = sm.timing.beatToSeconds(n.beat);
-                        pending.add(new Arrow(laneX(n.lane), n.lane, t));
+                        double tEnd = sm.timing.beatToSeconds(n.endBeat);
+                        pending.add(new Arrow(laneX(n.lane), n.lane, t, tEnd));
+                        if (n.isHold()) holds++;
                 }
                 pending.sort((a, b) -> Double.compare(a.targetTimeSec, b.targetTimeSec));
-                System.out.println("ArrowsProducer: built " + pending.size() + " notes from chart");
+                System.out.println("ArrowsProducer: built " + pending.size() + " notes from chart ("
+                        + holds + " holds/rolls)");
         }
 
         /**
          * One simulation step, driven by the audio clock. Spawns notes as they enter view,
-         * repositions all on-screen arrows by their target time, and culls notes that rose past
-         * the top un-hit (MISS). Called from Dance.tick() on the EDT.
+         * repositions all on-screen arrows by their target time, resolves engaged holds
+         * (complete at the tail time, break on early release), and culls notes whose tail rose
+         * past the top un-hit (MISS). Called from Dance.tick() on the EDT.
          */
-        public void update(double nowSec, double pxPerSec, int judgeY, ConditionController conditionControl) {
+        public void update(double nowSec, double pxPerSec, int judgeY,
+                           ConditionController conditionControl,
+                           java.util.concurrent.atomic.AtomicBoolean[] direct) {
                 if (isStop) return;
 
                 // A note enters view when its Y would reach SPAWN_Y, i.e. it's within the lead time.
@@ -90,8 +98,21 @@ public class ArrowsProducer extends Object
                 for (int lane = 0; lane < 4; lane++) {
                         List<Arrow> toRemove = null;
                         for (Arrow a : vec[lane]) {
-                                int y = a.updateY(nowSec, pxPerSec, judgeY);
-                                if (y < 0) { // rose past the top without being hit
+                                a.updateY(nowSec, pxPerSec, judgeY);
+                                if (a.held) {
+                                        if (nowSec >= a.targetEndTimeSec) {
+                                                // held all the way to the tail — hold OK
+                                                if (toRemove == null) toRemove = new ArrayList<>();
+                                                toRemove.add(a);
+                                                conditionControl.setCondition(0); // PERFECT (hold OK)
+                                        } else if (direct != null && !direct[lane].get()) {
+                                                // released early — hold broken
+                                                if (toRemove == null) toRemove = new ArrayList<>();
+                                                toRemove.add(a);
+                                                conditionControl.setCondition(3); // MISS (hold NG)
+                                        }
+                                } else if (a.yTail < 0) {
+                                        // the whole note (incl. hold body) rose past the top un-hit
                                         if (toRemove == null) toRemove = new ArrayList<>();
                                         toRemove.add(a);
                                         conditionControl.setCondition(3); // MISS

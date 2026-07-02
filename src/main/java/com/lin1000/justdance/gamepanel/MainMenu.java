@@ -569,6 +569,8 @@ public class MainMenu extends JWindow
         // frame (menuscreen runs ~20fps), taking the shortest path around the wrap, so the
         // list rolls like a StepMania music wheel while the selection stays pinned center.
         private double wheelScroll = Double.NaN;
+        // Last slot the wheel's center crossed — used to fire a tick sound per slot passed.
+        private int wheelTickSlot = Integer.MIN_VALUE;
 
         private void drawSongWheel(Graphics2D gc, int sel) {
             int x = 26, w = 600;
@@ -577,13 +579,22 @@ public class MainMenu extends JWindow
             gc.setFont(new Font("SansSerif", Font.BOLD, 12));
             gc.drawString(songCount + " SONGS", x+4, 100);
 
-            // ease the wheel toward the selection via the shortest wrap-around path
+            // ease the wheel toward the selection via the shortest wrap-around path;
+            // the further behind it is (fast seeking), the faster it rolls
             if (Double.isNaN(wheelScroll)) wheelScroll = sel;
             double delta = sel - wheelScroll;
             delta -= Math.round(delta / songCount) * (double) songCount;
-            wheelScroll += delta * 0.30;
+            double ease = Math.min(0.60, 0.30 + 0.06 * Math.abs(delta));
+            wheelScroll += delta * ease;
             if (Math.abs(delta) < 0.002) wheelScroll = sel;
             wheelScroll = ((wheelScroll % songCount) + songCount) % songCount;
+
+            // tick once per slot the wheel's center crosses while rolling (silent if no audio)
+            int tickSlot = (int) Math.round(wheelScroll);
+            if (wheelTickSlot != Integer.MIN_VALUE && tickSlot != wheelTickSlot) {
+                try { soundController.playEffectSound(1); } catch (Exception ignored) {}
+            }
+            wheelTickSlot = tickSlot;
 
             int y0 = 112, rowH = 80, gap = 8, spacing = rowH + gap;
             int viewH = 5 * spacing - gap;              // 5 visible slots

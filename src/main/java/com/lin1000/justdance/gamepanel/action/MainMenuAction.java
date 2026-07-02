@@ -26,6 +26,21 @@ public class MainMenuAction {
         return mainMenuAction;
     }
 
+    // Fast-seek acceleration: holding UP/DOWN delivers OS key-repeat events in a rapid
+    // stream; a streak of them grows the per-press step (1 → 2 → 3 slots) so long
+    // libraries can be crossed quickly. Any pause resets to single-step precision.
+    private long navLastMs = 0;
+    private int navStreak = 0;
+
+    private int navStep() {
+        long now = System.currentTimeMillis();
+        navStreak = (now - navLastMs < 230) ? navStreak + 1 : 1;
+        navLastMs = now;
+        if (navStreak >= 10) return 3;
+        if (navStreak >= 5)  return 2;
+        return 1;
+    }
+
     public void inputAction(Input input, MainMenu mainWindowTarget) {
         switch (mainWindowTarget.getcontrolFlow()) {
             case 1: //1 means in game landing screen
@@ -56,11 +71,11 @@ public class MainMenuAction {
             case 2://2 means in chose music (main menu screen)
                 if (input.getInputType() == Input.InputType.DOWN && input.isPressed()) {
                     int n = com.lin1000.justdance.song.SongLibrary.size();
-                    mainWindowTarget.musicOptionIndex = (mainWindowTarget.musicOptionIndex + 1) % n;
+                    mainWindowTarget.musicOptionIndex = (mainWindowTarget.musicOptionIndex + navStep()) % n;
                     switchSong(mainWindowTarget);
                 } else if (input.getInputType() == Input.InputType.UP && input.isPressed()) {
                     int n = com.lin1000.justdance.song.SongLibrary.size();
-                    mainWindowTarget.musicOptionIndex = (mainWindowTarget.musicOptionIndex - 1 + n) % n;
+                    mainWindowTarget.musicOptionIndex = (mainWindowTarget.musicOptionIndex - navStep() % n + n) % n;
                     switchSong(mainWindowTarget);
                 } else if (input.getInputType() == Input.InputType.A && input.isPressed()) {
                     switch (mainWindowTarget.controlFlow) {

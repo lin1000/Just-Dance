@@ -423,8 +423,9 @@ public class Dance extends JWindow
         if (deltaSec <= 0 || deltaSec > 1.0) return;
 
         // Beat-based simulation: spawn notes as they enter view, reposition each by its target
-        // audio time, cull misses. Scroll speed = the chosen difficulty's constant px/s.
-        producer.update(nowSec, speedModifier.pixelsPerSecond(), JUDGE_Y, conditionControl);
+        // audio time, resolve engaged holds (direct[] carries the live panel state), cull
+        // misses. Scroll speed = the chosen difficulty's constant px/s.
+        producer.update(nowSec, speedModifier.pixelsPerSecond(), JUDGE_Y, conditionControl, direct);
     }
 
     public void update(Graphics g) {
@@ -527,6 +528,21 @@ public class Dance extends JWindow
                         //Draw all Aarrows in screen vec[0,1,2,3]
                         for (int vec_index = 0; vec_index < 4; vec_index++) {
                             for (Arrow myarrow : producer.vec[vec_index]) {
+                                // hold/roll body: a bar from the head down to the tail (tail is
+                                // later in time, so lower on screen); green + bright while engaged
+                                if (myarrow.isHold()) {
+                                    int bx = g_off_x + myarrow.x + 32;
+                                    int byTop = g_off_y + myarrow.y + 45;
+                                    int byBot = g_off_y + myarrow.yTail + 45;
+                                    if (byBot > byTop) {
+                                        gc.setColor(myarrow.held ? new Color(80, 230, 120, 210)
+                                                                 : new Color(120, 200, 150, 110));
+                                        gc.fillRoundRect(bx, byTop, 28, byBot - byTop, 12, 12);
+                                        gc.setColor(myarrow.held ? new Color(200, 255, 210, 230)
+                                                                 : new Color(255, 255, 255, 70));
+                                        gc.drawRoundRect(bx, byTop, 28, byBot - byTop, 12, 12);
+                                    }
+                                }
                                 gc.drawImage(arrow[vec_index], g_off_x+myarrow.x, g_off_y+myarrow.y, null);
                             }
                         }

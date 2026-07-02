@@ -26,7 +26,11 @@ public final class Simfile {
     public static final class Note {
         public final int lane;     // 0=L 1=D 2=U 3=R
         public final double beat;
-        public Note(int lane, double beat) { this.lane = lane; this.beat = beat; }
+        // Tail beat for holds (2...3) and rolls (4...3); equals `beat` for plain taps.
+        // Set by the parser when the matching `3` tail row is reached.
+        public double endBeat;
+        public Note(int lane, double beat) { this.lane = lane; this.beat = beat; this.endBeat = beat; }
+        public boolean isHold() { return endBeat > beat; }
     }
 
     public static final class Chart {
