@@ -7,7 +7,7 @@ import java.util.Map;
 /**
  * Authored, immutable definition of a song — the single source of truth for its title,
  * artist, asset paths, tempo and per-difficulty foot ratings. Loaded by {@link SongLibrary}
- * from songs/songs.json.
+ * from the .sm files under songs/.
  *
  * This is distinct from {@link Song}, which is the *runtime* result of analysing the audio
  * (beats, signal strengths, etc.). SongMeta is what the author declares; Song is what the

@@ -66,7 +66,7 @@ public class SoundController implements Runnable
     static{
         // Music files are bound to songs by the authored catalog (SongLibrary), NOT by
         // File.listFiles() order — so index i always plays the song declared at index i,
-        // matching that song's title/BPM/jacket. Each song's audio path comes from songs.json.
+        // matching that song's title/BPM/jacket. Each audio path comes from the song's .sm #MUSIC.
         java.util.List<com.lin1000.justdance.song.SongMeta> songs =
                 com.lin1000.justdance.song.SongLibrary.all();
         musicbox = new File[songs.size()];

@@ -1,99 +1,103 @@
 package com.lin1000.justdance.song;
 
-import com.badlogic.gdx.utils.JsonReader;
-import com.badlogic.gdx.utils.JsonValue;
+import com.lin1000.justdance.song.sm.Simfile;
+import com.lin1000.justdance.song.sm.SmParser;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The song catalog — a single, stable source of truth for every song's metadata.
+ * The song catalog, built by scanning StepMania-style song folders under songs/ and reading
+ * each folder's .sm header. This is the single source of truth: title/artist/audio/banner/bpm
+ * all come from the .sm — adding a song means dropping a folder in, no code or index file.
  *
- * Loaded once from songs/songs.json (read as UTF-8 so CJK titles are safe on any platform).
- * If the file is missing or malformed, a built-in default catalog is used so the game always
- * has songs. Every component (menu, sound, chart producer, gameplay) reads song bindings from
- * here instead of hardcoding them or relying on filesystem ordering.
+ * Audio must be WAV (the engine's audio loop decodes WAV); a .sm whose #MUSIC points at a .wav
+ * is fully StepMania-standard.
  */
 public final class SongLibrary {
 
-    private static final String PATH = "songs/songs.json";
-    private static final List<SongMeta> SONGS = load();
+    private static final String SONGS_DIR = "songs";
+
+    /** One catalog entry: the authored metadata plus the fully-parsed simfile (notes + timing). */
+    public static final class Entry {
+        public final SongMeta meta;
+        public final Simfile simfile;
+        Entry(SongMeta meta, Simfile simfile) { this.meta = meta; this.simfile = simfile; }
+    }
+
+    private static final List<Entry> ENTRIES = scan();
+    private static final List<SongMeta> METAS = new ArrayList<>();
+    static { for (Entry e : ENTRIES) METAS.add(e.meta); }
 
     private SongLibrary() {}
 
-    public static List<SongMeta> all() { return SONGS; }
-    public static int size()           { return SONGS.size(); }
+    public static List<SongMeta> all() { return METAS; }
+    public static int size()           { return METAS.size(); }
 
-    /** Song at an index, wrapping so callers never go out of bounds. */
     public static SongMeta get(int index) {
-        return SONGS.get(Math.floorMod(index, SONGS.size()));
+        if (ENTRIES.isEmpty()) throw new IllegalStateException("No songs found under ./" + SONGS_DIR);
+        return METAS.get(Math.floorMod(index, METAS.size()));
     }
 
-    private static List<SongMeta> load() {
-        File f = new File(PATH);
-        if (f.exists()) {
-            try (InputStreamReader r = new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8)) {
-                JsonValue root = new JsonReader().parse(r);
-                List<SongMeta> list = new ArrayList<>();
-                for (JsonValue s = root.child; s != null; s = s.next) {
-                    Map<String, Integer> ratings = new HashMap<>();
-                    JsonValue rv = s.get("ratings");
-                    if (rv != null) {
-                        for (JsonValue e = rv.child; e != null; e = e.next) ratings.put(e.name, e.asInt());
-                    }
-                    list.add(new SongMeta(
-                            s.getString("id", ""),
-                            s.getString("title", ""),
-                            s.getString("artist", ""),
-                            s.getString("audio", ""),
-                            s.getString("jacket", ""),
-                            s.getString("chart", "foot/foot.txt"),
-                            s.getInt("bpm", 120),
-                            s.getInt("offsetMs", 0),
-                            ratings));
-                }
-                if (!list.isEmpty()) {
-                    System.out.println("SongLibrary: loaded " + list.size() + " songs from " + PATH);
-                    return list;
-                }
-                System.err.println("SongLibrary: " + PATH + " had no songs — using built-in defaults");
-            } catch (Exception e) {
-                System.err.println("SongLibrary: failed to read " + PATH + " — using built-in defaults: " + e);
-            }
-        } else {
-            System.out.println("SongLibrary: " + PATH + " not found — using built-in defaults");
+    /** The parsed simfile (charts + timing) for a song — used by gameplay to build the chart. */
+    public static Simfile simfileFor(int index) {
+        if (ENTRIES.isEmpty()) throw new IllegalStateException("No songs found under ./" + SONGS_DIR);
+        return ENTRIES.get(Math.floorMod(index, ENTRIES.size())).simfile;
+    }
+
+    private static List<Entry> scan() {
+        List<Entry> list = new ArrayList<>();
+        File dir = new File(SONGS_DIR);
+        File[] folders = dir.listFiles(File::isDirectory);
+        if (folders == null) {
+            System.err.println("SongLibrary: no ./" + SONGS_DIR + " directory — no songs.");
+            return list;
         }
-        return defaults();
+        Arrays.sort(folders, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
+        for (File folder : folders) {
+            File sm = firstSm(folder);
+            if (sm == null) continue;
+            Simfile s = SmParser.parse(sm);
+
+            String folderPath = folder.getPath();
+            String audio  = resolve(folderPath, s.music);
+            String jacket = resolve(folderPath, s.banner);
+
+            Map<String, Integer> ratings = new LinkedHashMap<>();
+            for (Simfile.Chart c : s.charts) if (c.meter > 0) ratings.put(c.difficulty.toUpperCase(), c.meter);
+
+            SongMeta meta = new SongMeta(
+                    folder.getName(),
+                    s.title.isEmpty() ? folder.getName() : s.title,
+                    s.artist,
+                    audio,
+                    jacket,
+                    sm.getPath(),
+                    (int) Math.round(s.timing.firstBpm()),
+                    (int) Math.round(s.offsetSec * 1000),
+                    ratings);
+            list.add(new Entry(meta, s));
+            System.out.println("SongLibrary: " + meta + " chart-notes="
+                    + (s.playableChart() == null ? 0 : s.playableChart().notes.size()));
+        }
+        if (list.isEmpty()) System.err.println("SongLibrary: ./" + SONGS_DIR + " has no valid .sm songs.");
+        else System.out.println("SongLibrary: loaded " + list.size() + " songs from ./" + SONGS_DIR);
+        return list;
     }
 
-    /** Built-in catalog, matching songs.json, used when the data file is absent/invalid. */
-    private static List<SongMeta> defaults() {
-        List<SongMeta> l = new ArrayList<>();
-        l.add(new SongMeta("tianmimi", "甜蜜蜜（舞曲版）", "Teresa Teng · Dance Remix",
-                "sound/musicbox/music4.wav", "img/jacket1.png", "foot/foot.txt", 400, 0,
-                ratingMap(2, 4, 6, 9)));
-        l.add(new SongMeta("barbiegirl", "BARBIE GIRL — AQUA", "Aqua",
-                "sound/musicbox/music3.wav", "img/jacket2.png", "foot/foot.txt", 120, 0,
-                ratingMap(1, 3, 5, 7)));
-        l.add(new SongMeta("happyboys", "Barbie Happy Boys", "Party Mix",
-                "sound/musicbox/music1.wav", "img/jacket3.png", "foot/foot.txt", 180, 0,
-                ratingMap(2, 4, 6, 8)));
-        l.add(new SongMeta("devilghost", "DEVIL + GHOST", "Hardcore",
-                "sound/musicbox/music2.wav", "img/jacket4.png", "foot/foot.txt", 300, 0,
-                ratingMap(3, 5, 8, 10)));
-        return l;
+    private static File firstSm(File folder) {
+        File[] sms = folder.listFiles((d, n) -> n.toLowerCase().endsWith(".sm"));
+        return (sms == null || sms.length == 0) ? null : sms[0];
     }
 
-    private static Map<String, Integer> ratingMap(int easy, int normal, int hard, int expert) {
-        Map<String, Integer> m = new LinkedHashMap<>();
-        m.put("EASY", easy); m.put("NORMAL", normal); m.put("HARD", hard); m.put("EXPERT", expert);
-        return m;
+    /** Resolve a #MUSIC/#BANNER path (relative to the song folder) to a repo-root-relative path. */
+    private static String resolve(String folderPath, String ref) {
+        if (ref == null || ref.isEmpty()) return "";
+        return Paths.get(folderPath, ref).normalize().toString();
     }
 }

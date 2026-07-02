@@ -77,7 +77,10 @@ public class Dance extends JWindow
     public final int g_off_x = 450; // Game Area x offset in pixels
     public final int g_off_y = 0; // Game Area y offset in pixels
     //Control position of user controlled arraow pad
-    public int arrow_y_position = 50;
+    // A note reaches this Y at exactly its target audio time; it's also where the receptors are
+    // drawn and matches DanceAction.judgeLine's perfect zone, so on-time = perfect.
+    public static final int JUDGE_Y = 70;
+    public int arrow_y_position = JUDGE_Y;
     //public int width = 1280, height = 720;
     public int width = 2560, height = 1440;
     private final int judgeLineY = 500; // Y line where arrows are judged
@@ -124,10 +127,6 @@ public class Dance extends JWindow
     // shown on the HUD; consumed each frame in tick(). Replaces the old per-song magic
     // `y_movement / 0.3` speed.
     public final SpeedModifier speedModifier = new SpeedModifier();
-    // Seconds of music between successive chart rows. Matches the legacy 300ms spawn
-    // cadence (and the scrollSpeed denominator), so note feel is unchanged — only the
-    // clock that triggers each spawn changes from wall-clock to the audio sample position.
-    private static final double ROW_INTERVAL_SEC = 0.3;
     // Last audio playback position (seconds) consumed by the simulation step. Movement
     // is driven by the *change* in this value, so arrows track the music exactly and
     // never drift, regardless of frame rate or how busy the EDT is.
@@ -254,10 +253,10 @@ public class Dance extends JWindow
         }
 
         System.err.println(" this.BPM=" +this.BPM);
-        //pre-loads the per-song dance chart; arrows are spawned on demand from tick(),
-        //sample-locked to the audio clock. Chart path comes from the song catalog.
-        String chartPath = com.lin1000.justdance.song.SongLibrary.get(this.music).getChartPath();
-        producer = new ArrowsProducer(30, 130, 230, 330, this.BPM, chartPath);
+        //beat-based chart from the song's parsed .sm (notes + tempo map). Each note is placed by
+        //the audio clock: y = JUDGE_Y + (targetTime - now) * scrollSpeed.
+        producer = new ArrowsProducer(30, 130, 230, 330, this.BPM,
+                com.lin1000.justdance.song.SongLibrary.simfileFor(this.music));
 
         // Scroll speed comes from the chosen difficulty level (speedModifier), set during
         // song selection and read live in tick(). The per-song `y_movement` no longer
@@ -423,11 +422,9 @@ public class Dance extends JWindow
         // Skip if the clock hasn't started, hasn't advanced, or jumped (restart/seek).
         if (deltaSec <= 0 || deltaSec > 1.0) return;
 
-        // Spawn any chart rows now due (sample-locked to the same clock), then advance.
-        // Scroll speed is the constant px/s of the player-chosen difficulty level, read
-        // every frame from the SpeedModifier set during song selection.
-        producer.spawnDueArrows(nowSec, ROW_INTERVAL_SEC);
-        producer.move(conditionControl, speedModifier.pixelsPerSecond() * deltaSec);
+        // Beat-based simulation: spawn notes as they enter view, reposition each by its target
+        // audio time, cull misses. Scroll speed = the chosen difficulty's constant px/s.
+        producer.update(nowSec, speedModifier.pixelsPerSecond(), JUDGE_Y, conditionControl);
     }
 
     public void update(Graphics g) {
