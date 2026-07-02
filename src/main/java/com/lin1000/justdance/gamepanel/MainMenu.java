@@ -486,8 +486,8 @@ public class MainMenu extends JWindow
         // Per-song display title, typeset as text (no longer the plate images) so the wheel
         // StepMania/ITG-style song-select: neon backdrop, left song wheel, right detail +
         // difficulty panel, honest read-time readout, control-legend footer, tiny dev corner.
-        // All per-song data (title/artist/bpm/jacket/chart) comes from SongLibrary — see
-        // songs/songs.json — instead of hardcoded arrays and a switch.
+        // All per-song data (title/artist/bpm/jacket/chart) comes from SongLibrary, which
+        // scans the .sm files under songs/ — instead of hardcoded arrays and a switch.
         public void menuscreen(int musicOptionIndex)
         {
             this.musicOptionIndex = musicOptionIndex;
@@ -700,7 +700,10 @@ public class MainMenu extends JWindow
 
             int ry = py + pillH + 26;
             SpeedModifier.Difficulty cur = d[sel];
-            int foot = com.lin1000.justdance.song.SongLibrary.get(musicOptionIndex).rating(cur.label);
+            // Foot rating = the song's playable-chart meter from the .sm (StepMania-style Lv.N).
+            com.lin1000.justdance.song.sm.Simfile.Chart _chart =
+                    com.lin1000.justdance.song.SongLibrary.simfileFor(musicOptionIndex).playableChart();
+            int foot = (_chart != null) ? _chart.meter : 0;
             gc.setColor(cur.color.brighter());
             gc.setFont(new Font("SansSerif", Font.BOLD, 20));
             gc.drawString(cur.label, x+pad, ry+4);
