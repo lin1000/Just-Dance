@@ -772,7 +772,9 @@ public class MainMenu extends JWindow
         }
 
         private void drawDevCorner(Graphics2D gc) {
-            int x = 30, y = 476;
+            // Anchored just above the footer so it never collides with the song wheel,
+            // however many songs the library holds.
+            int x = 30, y = getHeight() - 52 - 6*14 - 10;
             gc.setColor(new Color(140, 160, 190, 120));
             gc.setFont(new Font("Monospaced", Font.PLAIN, 11));
             String[] lines = {
