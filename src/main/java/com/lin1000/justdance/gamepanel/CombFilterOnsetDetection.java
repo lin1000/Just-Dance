@@ -1,5 +1,7 @@
 package com.lin1000.justdance.gamepanel;
 
+import com.lin1000.justdance.audio.AudioFormatAdapter;
+
 import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.*;
@@ -16,7 +18,7 @@ public class CombFilterOnsetDetection extends JPanel {
     private static List<Double> onsets = new ArrayList<>();
 
     public static List<Double> detectOnsets(String filepath) throws Exception {
-        AudioInputStream stream = AudioSystem.getAudioInputStream(new File(filepath));
+        AudioInputStream stream = AudioFormatAdapter.openPcm(new File(filepath));
         AudioFormat format = stream.getFormat();
         byte[] audioBytes = stream.readAllBytes();
 

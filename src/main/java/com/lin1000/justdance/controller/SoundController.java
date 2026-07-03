@@ -1,5 +1,6 @@
 package com.lin1000.justdance.controller;
 
+import com.lin1000.justdance.audio.AudioFormatAdapter;
 import com.lin1000.justdance.audio.FFT;
 import com.lin1000.justdance.beats.BeatMapGenerator;
 import com.lin1000.justdance.gamepanel.Dance;
@@ -177,7 +178,7 @@ public class SoundController implements Runnable
 
         // 載入並開啟音效檔
         try {
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(effectbox[condition]);
+            AudioInputStream audioIn = AudioFormatAdapter.openPcm(effectbox[condition]);
             effectClip = AudioSystem.getClip();
             effectClip.open(audioIn); // 將音頻資料載入Clip
         } catch (Exception e) {
@@ -200,7 +201,7 @@ public class SoundController implements Runnable
 
         // 載入並開啟音效檔
         try {
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(mainmenubox[shortmusic]);
+            AudioInputStream audioIn = AudioFormatAdapter.openPcm(mainmenubox[shortmusic]);
             mainMenuClip = AudioSystem.getClip();
             mainMenuClip.open(audioIn); // 將音頻資料載入 Clip
         } catch (Exception e) {
@@ -229,7 +230,7 @@ public class SoundController implements Runnable
 
         // 載入並開啟音效檔
         try {
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(musicbox[music]);
+            AudioInputStream audioIn = AudioFormatAdapter.openPcm(musicbox[music]);
             danceClip = AudioSystem.getClip();
             danceClip.open(audioIn); // 將音頻資料載入Clip
         } catch (Exception e) {
@@ -344,7 +345,7 @@ public class SoundController implements Runnable
     public void run() {
         // 載入並開啟音效檔 Steaming Mode
         try {
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(musicbox[music]);
+            AudioInputStream audioIn = AudioFormatAdapter.openPcm(musicbox[music]);
             AudioFormat format = audioIn.getFormat();
             frameLength = audioIn.getFrameLength();
             frameRate = format.getFrameRate();

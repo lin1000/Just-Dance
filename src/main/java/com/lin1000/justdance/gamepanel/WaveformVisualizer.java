@@ -1,4 +1,5 @@
 package com.lin1000.justdance.gamepanel;
+import com.lin1000.justdance.audio.AudioFormatAdapter;
 import com.lin1000.justdance.audio.FFT;
 
 import javax.sound.sampled.*;
@@ -29,7 +30,7 @@ public class WaveformVisualizer extends JPanel {
     private java.util.List<Double> beatTimestamps = new ArrayList<Double>();
 
     public WaveformVisualizer(String filepath) throws Exception {
-        AudioInputStream stream = AudioSystem.getAudioInputStream(new File(filepath));
+        AudioInputStream stream = AudioFormatAdapter.openPcm(new File(filepath));
         format = stream.getFormat();
         sampleRate = format.getSampleRate();
         channels = format.getChannels();
