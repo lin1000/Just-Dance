@@ -565,6 +565,13 @@ public class MainMenu extends JWindow
             gc.drawString(p, w-28-pw+12, 37);
         }
 
+        // Music-wheel scroll position in row units. Eases toward the selected index every
+        // frame (menuscreen runs ~20fps), taking the shortest path around the wrap, so the
+        // list rolls like a StepMania music wheel while the selection stays pinned center.
+        private double wheelScroll = Double.NaN;
+        // Last slot the wheel's center crossed — used to fire a tick sound per slot passed.
+        private int wheelTickSlot = Integer.MIN_VALUE;
+
         private void drawSongWheel(Graphics2D gc, int sel) {
             int x = 26, w = 600;
             int songCount = com.lin1000.justdance.song.SongLibrary.size();
@@ -572,10 +579,43 @@ public class MainMenu extends JWindow
             gc.setFont(new Font("SansSerif", Font.BOLD, 12));
             gc.drawString(songCount + " SONGS", x+4, 100);
 
-            int y0 = 112, rowH = 80, gap = 8;
-            for (int i = 0; i < songCount; i++) {
-                boolean s = (i == sel);
-                int ry = y0 + i*(rowH+gap);
+            // ease the wheel toward the selection via the shortest wrap-around path;
+            // the further behind it is (fast seeking), the faster it rolls
+            if (Double.isNaN(wheelScroll)) wheelScroll = sel;
+            double delta = sel - wheelScroll;
+            delta -= Math.round(delta / songCount) * (double) songCount;
+            double ease = Math.min(0.60, 0.30 + 0.06 * Math.abs(delta));
+            wheelScroll += delta * ease;
+            if (Math.abs(delta) < 0.002) wheelScroll = sel;
+            wheelScroll = ((wheelScroll % songCount) + songCount) % songCount;
+
+            // tick once per slot the wheel's center crosses while rolling (silent if no audio)
+            int tickSlot = (int) Math.round(wheelScroll);
+            if (wheelTickSlot != Integer.MIN_VALUE && tickSlot != wheelTickSlot) {
+                try { soundController.playEffectSound(1); } catch (Exception ignored) {}
+            }
+            wheelTickSlot = tickSlot;
+
+            int y0 = 112, rowH = 80, gap = 8, spacing = rowH + gap;
+            int viewH = 5 * spacing - gap;              // 5 visible slots
+            int centerTop = y0 + 2 * spacing;           // center slot's row top
+
+            java.awt.Shape viewClip = gc.getClip();
+            gc.setClip(x - 8, y0 - 6, w + 16, viewH + 12);
+
+            // draw integer song positions around the (fractional) scroll position; each
+            // wraps into the catalog with floorMod, so the wheel is endless in both directions
+            int jc = (int) Math.round(wheelScroll);
+            for (int j = jc - 3; j <= jc + 3; j++) {
+                int ry = centerTop + (int) Math.round((j - wheelScroll) * spacing);
+                if (ry + rowH < y0 - 6 || ry > y0 + viewH + 6) continue;
+                int songIdx = Math.floorMod(j, songCount);
+
+                // proximity to center: 1 at the pinned slot, fading with distance
+                double d = Math.abs(j - wheelScroll);
+                boolean s = d < 0.5;                     // the (arriving) center row
+                float fade = (float) Math.max(0.25, 1.0 - 0.28 * d);
+
                 if (s) {
                     gc.setColor(new Color(60, 200, 255, 55));
                     gc.fillRoundRect(x-3, ry-3, w+6, rowH+6, 18, 18);
@@ -585,10 +625,10 @@ public class MainMenu extends JWindow
                     gc.setColor(new Color(90, 220, 255, 210));
                     gc.drawRoundRect(x, ry, w, rowH, 14, 14);
                 } else {
-                    gc.setColor(new Color(255, 255, 255, 10));
+                    gc.setColor(new Color(255, 255, 255, (int)(10*fade+2)));
                     gc.fillRoundRect(x, ry, w, rowH, 14, 14);
                     gc.setStroke(new BasicStroke(1f));
-                    gc.setColor(new Color(120, 170, 255, 28));
+                    gc.setColor(new Color(120, 170, 255, (int)(28*fade)));
                     gc.drawRoundRect(x, ry, w, rowH, 14, 14);
                 }
                 int contentX = x + 18;
@@ -598,35 +638,38 @@ public class MainMenu extends JWindow
                     gc.drawString("▶", x+8, ry+rowH/2+8);
                     contentX = x + 34;
                 }
-                // jacket: gradient placeholder (bright cyan→purple when selected, muted
+                // jacket: gradient placeholder (bright cyan→purple when centered, muted
                 // otherwise) with the song's album art blitted on top if present
                 int js = s ? 60 : 48;
                 int jy = ry + (rowH-js)/2;
                 if (s) gc.setPaint(new GradientPaint(contentX, jy, new Color(0x0bd3ff), contentX+js, jy+js, new Color(0x8a5bff)));
                 else   gc.setPaint(new GradientPaint(contentX, jy, new Color(0x22305c), contentX+js, jy+js, new Color(0x38507f)));
                 gc.fillRoundRect(contentX, jy, js, js, 10, 10);
-                if (jacket[i] != null) {
+                if (jacket[songIdx] != null) {
                     java.awt.Shape oldClip = gc.getClip();
-                    gc.setClip(new java.awt.geom.RoundRectangle2D.Float(contentX, jy, js, js, 10, 10));
-                    gc.drawImage(jacket[i], contentX, jy, js, js, this); // no-op if the file is missing → gradient shows
+                    gc.clip(new java.awt.geom.RoundRectangle2D.Float(contentX, jy, js, js, 10, 10));
+                    gc.drawImage(jacket[songIdx], contentX, jy, js, js, this); // no-op if the file is missing → gradient shows
                     gc.setClip(oldClip);
                 }
                 gc.setStroke(new BasicStroke(1f));
-                gc.setColor(new Color(255,255,255,s?70:22));
+                gc.setColor(new Color(255,255,255,s?70:(int)(22*fade)));
                 gc.drawRoundRect(contentX, jy, js, js, 10, 10);
 
-                // title + subtitle from the catalog, typeset (CJK-capable SansSerif)
+                // title + subtitle from the catalog, typeset (CJK-capable SansSerif),
+                // fading with distance from the pinned center slot
                 com.lin1000.justdance.song.SongMeta meta =
-                        com.lin1000.justdance.song.SongLibrary.get(i);
+                        com.lin1000.justdance.song.SongLibrary.get(songIdx);
                 int tx = contentX + js + 16;
                 int cy = ry + rowH/2;
-                gc.setColor(s ? Color.white : new Color(0xc9d8f2));
+                gc.setColor(s ? Color.white : new Color(0.79f, 0.85f, 0.95f, fade));
                 gc.setFont(new Font("SansSerif", Font.BOLD, s ? 23 : 17));
                 gc.drawString(meta.getTitle(), tx, cy - 3);
-                gc.setColor(new Color(0x7f9fd0));
+                gc.setColor(new Color(0.50f, 0.62f, 0.82f, fade));
                 gc.setFont(new Font("SansSerif", Font.PLAIN, 12));
                 gc.drawString(meta.getArtist(), tx, cy + 18);
             }
+
+            gc.setClip(viewClip);
         }
 
         private void drawDetailPanel(Graphics2D gc, int sel) {
@@ -772,7 +815,9 @@ public class MainMenu extends JWindow
         }
 
         private void drawDevCorner(Graphics2D gc) {
-            int x = 30, y = 476;
+            // Anchored just above the footer so it never collides with the song wheel,
+            // however many songs the library holds.
+            int x = 30, y = getHeight() - 52 - 6*14 - 10;
             gc.setColor(new Color(140, 160, 190, 120));
             gc.setFont(new Font("Monospaced", Font.PLAIN, 11));
             String[] lines = {

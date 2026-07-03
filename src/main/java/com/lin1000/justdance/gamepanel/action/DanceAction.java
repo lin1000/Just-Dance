@@ -29,16 +29,33 @@ public class DanceAction {
         List<Arrow> arrows = target.producer.vec[vecIndex];
         List<Arrow> toRemove = new ArrayList<>();
         for (Arrow myarrow : arrows) {
+            if (myarrow.broken) continue; // a broken corpse takes no further judgment
+            if (myarrow.held) {
+                // engaged roll: each re-tap refreshes its life (+spark); holds resolve in tick
+                if (myarrow.isRoll) {
+                    myarrow.lastTapNanos = System.nanoTime();
+                    target.effectManager.addSpecialEffect(
+                        target.g_off_x + myarrow.x + 50, target.g_off_y + Dance.JUDGE_Y + 40);
+                    target.soundController.playEffectSound(0);
+                }
+                continue;
+            }
             if (myarrow.y >= judgeLine[0] && myarrow.y <= judgeLine[1]) {
-                toRemove.add(myarrow);
                 target.conditionControl.setCondition(0); // perfect
                 target.effectManager.addSpecialEffect(
                     target.g_off_x + myarrow.x + 50, target.g_off_y + myarrow.y + 40);
                 target.soundController.playEffectSound(0);
+                if (myarrow.isHold()) { // engage: freeze at receptors, sustain begins
+                    myarrow.held = true;
+                    myarrow.lastTapNanos = System.nanoTime();
+                } else toRemove.add(myarrow);
             } else if (myarrow.y > judgeLine[1] && myarrow.y <= judgeLine[2]) {
-                toRemove.add(myarrow);
                 target.conditionControl.setCondition(1); // good
                 target.soundController.playEffectSound(1);
+                if (myarrow.isHold()) {
+                    myarrow.held = true;
+                    myarrow.lastTapNanos = System.nanoTime();
+                } else toRemove.add(myarrow);
             }
         }
         arrows.removeAll(toRemove);

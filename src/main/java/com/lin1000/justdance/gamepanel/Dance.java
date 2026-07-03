@@ -127,6 +127,10 @@ public class Dance extends JWindow
     // shown on the HUD; consumed each frame in tick(). Replaces the old per-song magic
     // `y_movement / 0.3` speed.
     public final SpeedModifier speedModifier = new SpeedModifier();
+    // Beat-pulse phase (0..1) within the current beat, computed in tick() from the audio
+    // clock and BPM; paint() uses it to slide a shimmer band down engaged sustain bodies.
+    private volatile double beatFrac = 0;
+    private int lastBeatIdx = -1;
     // Last audio playback position (seconds) consumed by the simulation step. Movement
     // is driven by the *change* in this value, so arrows track the music exactly and
     // never drift, regardless of frame rate or how busy the EDT is.
@@ -423,8 +427,112 @@ public class Dance extends JWindow
         if (deltaSec <= 0 || deltaSec > 1.0) return;
 
         // Beat-based simulation: spawn notes as they enter view, reposition each by its target
-        // audio time, cull misses. Scroll speed = the chosen difficulty's constant px/s.
-        producer.update(nowSec, speedModifier.pixelsPerSecond(), JUDGE_Y, conditionControl);
+        // audio time, resolve engaged sustains (direct[] carries the live panel state for
+        // holds; rolls track their own re-tap timer), cull misses. Resolutions flash
+        // HOLD/ROLL OK! or NG and burst sparks at the receptors.
+        producer.update(nowSec, speedModifier.pixelsPerSecond(), JUDGE_Y, conditionControl, direct,
+                (a, ok) -> {
+                    if (ok) {
+                        effectManager.addTextFlashEffect(a.isRoll ? "ROLL OK!" : "HOLD OK!",
+                                g_off_x + ((width - g_off_x) / 6), g_off_y + (height / 2));
+                        effectManager.addSpecialEffect(g_off_x + a.x + 50, g_off_y + JUDGE_Y + 40);
+                    } else {
+                        effectManager.addTextFlashEffect("NG",
+                                g_off_x + a.x + 30, g_off_y + JUDGE_Y + 120);
+                    }
+                });
+
+        // Beat clock for engaged-sustain effects: a shimmer travels down each engaged body
+        // once per beat (beatFrac drives it in paint), and each beat boundary bursts sparks
+        // at every engaged sustain's receptor.
+        double beatSec = (BPM > 0) ? 60.0 / BPM : 0.5;
+        beatFrac = (nowSec % beatSec) / beatSec;
+        int beatIdx = (int) Math.floor(nowSec / beatSec);
+        if (beatIdx != lastBeatIdx) {
+            lastBeatIdx = beatIdx;
+            for (int lane = 0; lane < 4; lane++) {
+                for (Arrow a : producer.vec[lane]) {
+                    if (a.held && !a.broken) {
+                        effectManager.addSpecialEffect(g_off_x + a.x + 50, g_off_y + JUDGE_Y + 40);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The designed sustain body: a 64px tube centered under the 100px arrow, spanning head
+     * center to tail center with a rounded tail cap and darker edge rails. Holds are a
+     * hue-drifting cyan↔green gradient; rolls are animated orange↔magenta candy stripes.
+     * Engaged bodies brighten and gain a white core plus a beat-synced shimmer band
+     * (beatFrac); broken corpses desaturate to gray.
+     */
+    private void drawSustainBody(Graphics2D gc, Arrow a) {
+        int bx = g_off_x + a.x + 18, w = 64;
+        int headY = g_off_y + a.y + 40;
+        int tailY = g_off_y + a.yTail + 40;
+        if (tailY <= headY) return;
+        int h = tailY - headY;
+        boolean engaged = a.held && !a.broken;
+        double t = System.nanoTime() / 1e9;
+
+        java.awt.Shape oldClip = gc.getClip();
+        gc.clip(new java.awt.geom.RoundRectangle2D.Float(bx, headY, w, h + 14, 16, 16));
+
+        if (a.broken) {
+            gc.setColor(new Color(120, 126, 138, 105));
+            gc.fillRect(bx, headY, w, h + 14);
+        } else if (a.isRoll) {
+            // animated candy stripes scrolling down the tube
+            int stripe = 26;
+            int phase = (int) ((t * 60) % (stripe * 2));
+            Color c1 = new Color(255, 140, 60, engaged ? 235 : 150);
+            Color c2 = new Color(255, 60, 160, engaged ? 235 : 150);
+            int k = 0;
+            for (int yy = headY - stripe * 2 + phase; yy < tailY + 14; yy += stripe, k++) {
+                gc.setColor((k % 2 == 0) ? c1 : c2);
+                gc.fillPolygon(new int[]{bx, bx + w, bx + w, bx},
+                               new int[]{yy + 12, yy, yy + stripe, yy + stripe + 12}, 4);
+            }
+        } else {
+            // hold: hue-drifting green↔cyan gradient, mirrored edge→center→edge
+            float hue = 0.40f + 0.06f * (float) Math.sin(t * 0.8);
+            Color edge = Color.getHSBColor(hue, 0.85f, 0.55f);
+            Color core = Color.getHSBColor(hue, 0.55f, engaged ? 1.0f : 0.85f);
+            int alpha = engaged ? 235 : 150;
+            gc.setPaint(new GradientPaint(bx, 0,
+                    new Color(edge.getRed(), edge.getGreen(), edge.getBlue(), alpha),
+                    bx + w / 2f, 0,
+                    new Color(core.getRed(), core.getGreen(), core.getBlue(), alpha), true));
+            gc.fillRect(bx, headY, w, h + 14);
+        }
+
+        // darker edge rails give the tube a 3D read
+        gc.setColor(new Color(0, 0, 0, a.broken ? 60 : 90));
+        gc.fillRect(bx, headY, 4, h + 14);
+        gc.fillRect(bx + w - 4, headY, 4, h + 14);
+
+        if (engaged) {
+            // white core glow + beat-synced shimmer band traveling head→tail
+            gc.setColor(new Color(255, 255, 255, 90));
+            gc.fillRect(bx + w / 2 - 8, headY, 16, h + 14);
+            int py = headY + (int) (beatFrac * h);
+            gc.setColor(new Color(255, 255, 255, 150));
+            gc.fillRoundRect(bx - 2, py - 10, w + 4, 20, 10, 10);
+        }
+        gc.setClip(oldClip);
+
+        // rounded tail cap + tube outline
+        Color capFill = a.broken ? new Color(110, 116, 128, 130)
+                : a.isRoll ? new Color(255, 140, 60, engaged ? 255 : 190)
+                           : new Color(70, 220, 120, engaged ? 255 : 190);
+        gc.setColor(capFill);
+        gc.fillRoundRect(bx, tailY - 2, w, 18, 12, 12);
+        gc.setStroke(new BasicStroke(engaged ? 2.5f : 1.5f));
+        gc.setColor(a.broken ? new Color(160, 166, 178, 120)
+                             : new Color(255, 255, 255, engaged ? 220 : 110));
+        gc.drawRoundRect(bx, headY, w, tailY - headY + 16, 16, 16);
+        gc.setStroke(new BasicStroke(1f));
     }
 
     public void update(Graphics g) {
@@ -527,7 +635,15 @@ public class Dance extends JWindow
                         //Draw all Aarrows in screen vec[0,1,2,3]
                         for (int vec_index = 0; vec_index < 4; vec_index++) {
                             for (Arrow myarrow : producer.vec[vec_index]) {
+                                if (myarrow.isHold()) drawSustainBody(gc, myarrow);
                                 gc.drawImage(arrow[vec_index], g_off_x+myarrow.x, g_off_y+myarrow.y, null);
+                                // engaged sustain: green glow ring around the receptor position
+                                if (myarrow.held && !myarrow.broken) {
+                                    gc.setStroke(new BasicStroke(4f));
+                                    gc.setColor(new Color(120, 255, 170, 190));
+                                    gc.drawOval(g_off_x + myarrow.x - 4, g_off_y + JUDGE_Y - 6, 108, 92);
+                                    gc.setStroke(new BasicStroke(1f));
+                                }
                             }
                         }
 
