@@ -28,6 +28,27 @@ It's a music game developed by Java. Features include:
 ![image](https://github.com/lin1000/Just-Dance/blob/main/readme/screen-gameplay-1.png?raw=true)
 ![image](https://github.com/lin1000/Just-Dance/blob/main/readme/xbox-gamepad.jpg?raw=true)
 
+## Building & Running
+
+No installed Maven and no IDE setup required — the Maven Wrapper is vendored:
+
+```
+./mvnw compile        # Linux/macOS
+./mvnw exec:java
+
+mvnw.cmd compile      # Windows
+mvnw.cmd exec:java
+```
+
+Build output always goes to `out/production/just-dance/` (both the wrapper and a plain
+`mvn` produce the same path — see `pom.xml`).
+
+**IntelliJ**: just open the project folder (or `pom.xml`) — no manual module/SDK wiring
+needed. A ready-to-click **"Run Just Dance (Maven)"** run configuration is included
+(`.idea/runConfigurations/`); it always delegates to Maven, so it can't drift from the
+CLI build. IDE project files (`.idea/workspace.xml`, `*.iml`, etc.) are intentionally
+**not** committed — IntelliJ regenerates them per machine from `pom.xml`.
+
 # Note
 
 ## HID(Human Interface Devices) 開啟HID Device後為什麼 HID 讀不到

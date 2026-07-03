@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Just Dance (Maven)" type="MavenRunConfiguration" factoryName="Maven">
+    <MavenSettings>
+      <MavenSimpleSettings>
+        <option name="workingDirectory" value="$PROJECT_DIR$" />
+        <option name="explicitProfiles">
+          <set />
+        </option>
+        <option name="goalNames">
+          <list>
+            <option value="exec:java" />
+          </list>
+        </option>
+      </MavenSimpleSettings>
+    </MavenSettings>
+    <method v="2" />
+  </configuration>
+</component>
