@@ -1,5 +1,6 @@
 package com.lin1000.justdance.beats;
 
+import com.lin1000.justdance.audio.AudioFormatAdapter;
 import com.lin1000.justdance.audio.FFT;
 import com.lin1000.justdance.song.Song;
 
@@ -23,7 +24,7 @@ public class BeatMapGenerator {
 
     public static Song analyze(File musicFile, Mode mode) throws Exception {
 
-        AudioInputStream stream = AudioSystem.getAudioInputStream(musicFile);
+        AudioInputStream stream = AudioFormatAdapter.openPcm(musicFile);
         AudioFormat format = stream.getFormat();
 
         long audioFileLength = musicFile.length();
@@ -270,7 +271,7 @@ public class BeatMapGenerator {
 
     public static List<Beat> generateBeats(File musicFile, Mode mode) throws Exception {
 
-        AudioInputStream stream = AudioSystem.getAudioInputStream(musicFile);
+        AudioInputStream stream = AudioFormatAdapter.openPcm(musicFile);
         AudioFormat format = stream.getFormat();
 
         long audioFileLength = musicFile.length();
