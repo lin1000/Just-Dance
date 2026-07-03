@@ -23,15 +23,19 @@
 hs_err_pid*
 replay_pid*
 
-#executable folder
-out/production/justdance
+#build output (IntelliJ out/ and Maven target/)
+out/
 /core/
 /target/
-/sound/
-/img/
+/sound
+/img
 /desktop/
 /.vscode/
-/foot/
+/foot
 src/main/resources/default-font.fnt
 src/main/resources/default-font.png
+
+# IDE state is per-machine — IntelliJ re-imports the project from pom.xml
+.idea/
+*.iml
 
