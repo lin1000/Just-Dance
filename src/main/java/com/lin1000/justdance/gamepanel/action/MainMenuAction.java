@@ -26,6 +26,66 @@ public class MainMenuAction {
         return mainMenuAction;
     }
 
+    // BeatMapGenerator.analyze() decodes and FFT-scans the whole song (hundreds of ms to
+    // low seconds); running it inline on every wheel tick used to freeze the caller (EDT for
+    // keyboard nav, projectThread for gamepad nav) since both also drive rendering. This
+    // background worker coalesces requests: each scroll tick just overwrites
+    // `pendingRequest` rather than queuing, so a burst of fast-seek ticks never piles up
+    // backlog, and a result computed for a song the user has since scrolled past is
+    // discarded instead of published (latest request always wins).
+    private record AnalysisRequest(File musicFile, BeatMapGenerator.Mode mode, MainMenu target) {}
+
+    private static final Object analysisLock = new Object();
+    private static AnalysisRequest pendingRequest;
+    private static Thread analysisWorkerThread;
+
+    private static void requestSongAnalysis(File musicFile, BeatMapGenerator.Mode mode, MainMenu target) {
+        synchronized (analysisLock) {
+            pendingRequest = new AnalysisRequest(musicFile, mode, target);
+            if (analysisWorkerThread == null) {
+                analysisWorkerThread = new Thread(MainMenuAction::runAnalysisWorker, "song-analysis-worker");
+                analysisWorkerThread.setDaemon(true);
+                analysisWorkerThread.start();
+            }
+            analysisLock.notifyAll();
+        }
+    }
+
+    private static void runAnalysisWorker() {
+        while (true) {
+            AnalysisRequest request;
+            synchronized (analysisLock) {
+                while (pendingRequest == null) {
+                    try {
+                        analysisLock.wait();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+                request = pendingRequest;
+                pendingRequest = null;
+            }
+
+            Song song = null;
+            try {
+                song = BeatMapGenerator.analyze(request.musicFile(), request.mode());
+            } catch (Exception e) {
+                System.err.println("BeatMapGenerator has problem: " + e);
+                e.printStackTrace();
+            }
+
+            synchronized (analysisLock) {
+                if (pendingRequest == null) {
+                    // Nothing newer arrived while we were analyzing: still the latest selection.
+                    request.target().setWhichSong(song);
+                }
+                // else: the user has already scrolled past this song; drop the stale result
+                // and loop back around to pick up pendingRequest immediately.
+            }
+        }
+    }
+
     // Fast-seek acceleration: holding UP/DOWN delivers OS key-repeat events in a rapid
     // stream; a streak of them grows the per-press step (1 → 2 → 3 slots) so long
     // libraries can be crossed quickly. Any pause resets to single-step precision.
@@ -119,19 +179,14 @@ public class MainMenuAction {
     }
 
     /**
-     * Audio BPM Analysis by FFT_BASS or ENERGY_PEAK and return song
+     * Audio BPM Analysis by FFT_BASS or ENERGY_PEAK, run asynchronously on the background
+     * analysis worker; the result lands in mainWindowTarget.whichSong once ready (see
+     * requestSongAnalysis/runAnalysisWorker above).
      */
-    private Song analyzeSong(MainMenu mainWindowTarget){
-        Song song = null;
+    private void analyzeSongAsync(MainMenu mainWindowTarget){
         File musicFile = mainWindowTarget.soundController.getMusicbox()[mainWindowTarget.musicOptionIndex];
         BeatMapGenerator.Mode mode = mainWindowTarget.soundController.getCurrentAudioAnalysisMode();
-        try {
-            song  = BeatMapGenerator.analyze(musicFile, mode);
-        } catch (Exception e) {
-            System.err.println("BeatMapGenerator has problem: " + e);
-            e.printStackTrace();
-        }
-        return song;
+        requestSongAnalysis(musicFile, mode, mainWindowTarget);
     }
 
     /**
@@ -152,8 +207,7 @@ public class MainMenuAction {
 
     private void switchSong(MainMenu mainWindowTarget) {
         mainWindowTarget.soundController.playBackgroundSound(mainWindowTarget.musicOptionIndex, true);
-        Song song = analyzeSong(mainWindowTarget);
-        mainWindowTarget.setWhichSong(song);
+        analyzeSongAsync(mainWindowTarget);
         mainWindowTarget.menuscreen(mainWindowTarget.musicOptionIndex);
     }
 

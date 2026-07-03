@@ -88,7 +88,7 @@ public class MainMenu extends JWindow
         //Which Music
         //y_movement
         //BPM(Beats per Minutes)
-        public Song whichSong;
+        public volatile Song whichSong;
         private int whichmusic;
         private int y_movement;
         private int BPM;
