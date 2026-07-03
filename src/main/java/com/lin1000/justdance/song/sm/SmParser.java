@@ -99,6 +99,7 @@ public final class SmParser {
                         c.notes.add(new Simfile.Note(lane, beat));
                     } else if (ch == '2' || ch == '4') {   // hold head / roll head
                         Simfile.Note n = new Simfile.Note(lane, beat);
+                        n.roll = (ch == '4');
                         c.notes.add(n);
                         openHold[lane] = n;
                     } else if (ch == '3') {                // hold/roll tail

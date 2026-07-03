@@ -29,6 +29,8 @@ public final class Simfile {
         // Tail beat for holds (2...3) and rolls (4...3); equals `beat` for plain taps.
         // Set by the parser when the matching `3` tail row is reached.
         public double endBeat;
+        // True for roll heads (`4`): the player must keep re-tapping until the tail.
+        public boolean roll = false;
         public Note(int lane, double beat) { this.lane = lane; this.beat = beat; this.endBeat = beat; }
         public boolean isHold() { return endBeat > beat; }
     }
