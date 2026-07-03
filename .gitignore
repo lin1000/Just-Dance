@@ -35,7 +35,12 @@ out/
 src/main/resources/default-font.fnt
 src/main/resources/default-font.png
 
-# IDE state is per-machine — IntelliJ re-imports the project from pom.xml
-.idea/
+# IDE state is per-machine — IntelliJ re-imports the project from pom.xml.
+# Exception: runConfigurations/ is JetBrains' documented shared/team location (no
+# machine-specific paths), so we keep the one Maven-backed Run config committed.
+# NOTE: must ignore .idea/* (not .idea/) or git won't descend into it to apply the
+# negation below — see https://git-scm.com/docs/gitignore#_pattern_format.
+.idea/*
+!.idea/runConfigurations/
 *.iml
 

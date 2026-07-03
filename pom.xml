@@ -18,7 +18,7 @@
 
     <build>
         <sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-        <outputDirectory>${basedir}/out/production/justdance</outputDirectory>
+        <outputDirectory>${basedir}/out/production/just-dance</outputDirectory>
         <resources>
             <resource>
                 <directory>${basedir}/src/main/resources</directory>
