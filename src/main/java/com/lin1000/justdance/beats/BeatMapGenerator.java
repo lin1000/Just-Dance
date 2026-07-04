@@ -207,7 +207,7 @@ public class BeatMapGenerator {
         song.setName(musicFile.getName());
         song.setSongFilePath(musicFile.getAbsolutePath());
         song.setSongNumOfBeats(songBeats);
-        song.setSongBPM(((int) (songBeats / songLengthInSeconds)));
+        song.setSongBPM((int) Math.round(songBeats * 60.0 / songLengthInSeconds));
         song.setSongLengthInSeconds(songLengthInSeconds);
         song.setSongLengthInMillis(songLengthInMillis);
         song.setFrameLength(frameLength);
