@@ -815,19 +815,20 @@ public class MainMenu extends JWindow
         }
 
         private void drawDevCorner(Graphics2D gc) {
-            // Anchored just above the footer so it never collides with the song wheel,
-            // however many songs the library holds.
-            int x = 30, y = getHeight() - 52 - 6*14 - 10;
-            gc.setColor(new Color(140, 160, 190, 120));
-            gc.setFont(new Font("Monospaced", Font.PLAIN, 11));
             String[] lines = {
                 "dev · " + whichSong.getName(),
                 "feature: " + whichSong.getSongFeature(),
                 "analysis: " + whichSong.getAudioAnalysisMethod(),
+                "BPM detected: " + whichSong.getSongBPM() + "  (authored: " + BPM + ")",
                 "signal max/min: " + whichSong.getMaxSignalStrengthByWindow() + " / " + whichSong.getMinSignalStrengthByWindow(),
                 "frameRate: " + optional1Decimalformatter.format(whichSong.getFrameRate()/1000) + "kHz",
                 "fft bin: " + String.format("%.2f", whichSong.getBinHzWidth()) + " Hz",
             };
+            // Anchored just above the footer so it never collides with the song wheel,
+            // however many songs the library holds.
+            int x = 30, y = getHeight() - 52 - lines.length*14 - 10;
+            gc.setColor(new Color(140, 160, 190, 120));
+            gc.setFont(new Font("Monospaced", Font.PLAIN, 11));
             for (int i = 0; i < lines.length; i++) gc.drawString(lines[i], x, y + i*14);
         }
 
