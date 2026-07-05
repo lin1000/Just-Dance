@@ -90,6 +90,11 @@ public class BeatMapGenerator {
         Beat[] bassBeatsArray = new Beat[frameCount];
         Beat[] middleBeatsArray = new Beat[frameCount];
 
+        // FFT_FLUX needs the *previous window's* spectrum to compute a real frame-to-frame
+        // difference, so it must live outside the loop (a variable re-declared inside the loop
+        // body would be reset to all zeros every window, comparing each window only to silence).
+        double[] fluxPrevSpectrum = new double[windowSize / 2];
+
         for (int i = 0, windowCount=0; i <  frameCount - windowSize; i += windowSize / 2, windowCount++) {//FOR EACH WINDOW
             for (int j = 0; j < windowSize; j++) {//FOR EACH SAMPLE IN WINDOW
                 int sampleIndex = (i + j) * frameSize;
@@ -149,22 +154,19 @@ public class BeatMapGenerator {
 
             } else if (mode == Mode.FFT_FLUX) {
                 FFT.fft(window, imag);
-                double[] prevSpectrum = new double[windowSize / 2];
                 double threshold = 0.5;
                 double flux = 0;
-                for (int b = 0; b < windowSize / 2; b++) {//FOR EACH BAD IN FIRST HALF WINDOW
+                for (int b = 0; b < windowSize / 2; b++) {//FOR EACH BIN IN FIRST HALF WINDOW
                     double magnitude = Math.sqrt(window[b] * window[b] + imag[b] * imag[b]);
-                    double diff = magnitude - prevSpectrum[b];
+                    double diff = magnitude - fluxPrevSpectrum[b];
                     flux += (diff > 0) ? diff : 0;
-                    prevSpectrum[b] = magnitude;
-
-                    if (flux > threshold) {
-                        isBassBeat = true;
-                    }
-                    signalMode = Mode.FFT_FLUX;
-                    signalStrength = flux;
+                    fluxPrevSpectrum[b] = magnitude;
                 }
-
+                // Decide once per window, over the *full* spectrum sum — not mid-accumulation
+                // after only the first few bins, which is what tripped the old inner-loop check.
+                signalMode = Mode.FFT_FLUX;
+                signalStrength = flux;
+                isBassBeat = flux > threshold;
             }
 
             //populate signalStrengthByWindow
