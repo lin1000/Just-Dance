@@ -6,6 +6,7 @@ import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.gamepanel.MainMenu;
 import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
+import com.lin1000.justdance.input.device.MidiDeviceUtil;
 import com.lin1000.justdance.input.device.MidiDeviceWatcher;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.api.JCodecException;
@@ -274,13 +275,13 @@ public class Project extends JFrame implements Runnable
 				System.out.println("device.getMaxTransmitters()="+device.getMaxTransmitters());
 				System.out.println("device.getMicrosecondPosition()="+device.getMicrosecondPosition());
 				System.out.println("device="+device);
-				if (info.getName().equals("USB-MIDI") && device.getMaxTransmitters() !=0 && device.toString().contains("MidiInDevice")){
+				if (MidiDeviceUtil.isUsableInputDevice(device)){
 					device.open();
 					System.out.println("Connected to Midi Device：" + info.getName());
 					return device;
 				}
 			}
-			System.err.println("Cannot find KAWAI CN201 Piano MIDI Device.");
+			System.err.println("No usable MIDI input device found.");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
