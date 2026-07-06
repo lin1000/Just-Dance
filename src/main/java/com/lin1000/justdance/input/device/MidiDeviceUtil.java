@@ -20,12 +20,36 @@ import javax.sound.midi.Synthesizer;
  * unlimited transmitters (confirmed via a real headless run: a "Real Time Sequencer" with no
  * physical keyboard attached passed a transmitters-only check). Neither is a physical
  * controller a person plays, so both types are excluded explicitly.
+ *
+ * This general check is a heuristic that has only been validated in an environment with no
+ * physical MIDI device to test against, so the original exact-match behavior is kept alongside
+ * it rather than deleted: {@link #isLegacyUsbMidiDevice} reproduces the old condition verbatim.
+ * {@link #isUsableInputDevice} always recognizes a legacy-matching device regardless of
+ * {@link #LEGACY_EXACT_MATCH_ONLY}; flip that one flag to {@code true} to fall back to exactly
+ * the pre-generalization behavior everywhere, in one line, if the general heuristic ever
+ * misbehaves against real hardware.
  */
 public final class MidiDeviceUtil {
 
     private MidiDeviceUtil() {}
 
-    public static boolean isUsableInputDevice(MidiDevice device) {
+    /** Set to true to disable the general heuristic and only ever match the legacy device. */
+    private static final boolean LEGACY_EXACT_MATCH_ONLY = false;
+
+    public static boolean isUsableInputDevice(MidiDevice.Info info, MidiDevice device) {
+        if (isLegacyUsbMidiDevice(info, device)) return true;
+        if (LEGACY_EXACT_MATCH_ONLY) return false;
+        return isGeneralInputDevice(device);
+    }
+
+    /** Exact pre-generalization behavior: only a device literally named "USB-MIDI". */
+    public static boolean isLegacyUsbMidiDevice(MidiDevice.Info info, MidiDevice device) {
+        return info.getName().equals("USB-MIDI")
+                && device.getMaxTransmitters() != 0
+                && device.toString().contains("MidiInDevice");
+    }
+
+    private static boolean isGeneralInputDevice(MidiDevice device) {
         return device.getMaxTransmitters() != 0
                 && !(device instanceof Sequencer)
                 && !(device instanceof Synthesizer);

@@ -275,7 +275,7 @@ public class Project extends JFrame implements Runnable
 				System.out.println("device.getMaxTransmitters()="+device.getMaxTransmitters());
 				System.out.println("device.getMicrosecondPosition()="+device.getMicrosecondPosition());
 				System.out.println("device="+device);
-				if (MidiDeviceUtil.isUsableInputDevice(device)){
+				if (MidiDeviceUtil.isUsableInputDevice(info, device)){
 					device.open();
 					System.out.println("Connected to Midi Device：" + info.getName());
 					return device;

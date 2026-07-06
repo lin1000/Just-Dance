@@ -152,13 +152,13 @@ public class MidiDeviceWatcher {
                 midiDeviceHeartbeatHash.put(device.getClass().toString(), Boolean.TRUE);
 
                 /**
-                 * IF p==null, then new device is discovered (additional condition: MidiDeviceUtil.isUsableInputDevice(device))
+                 * IF p==null, then new device is discovered (additional condition: MidiDeviceUtil.isUsableInputDevice(info, device))
                  * IF p!=null and p.isConnected() == true and device.isOpen() == false, then device goes offline
                  * IF p!=null and p.isConnected() == true and device.isOpen() == true, then device is connected without change
                  * IF p!=null and p.isConnected() == false and device.isOpen() == false, then device is disconnected without change
                  * IF p!=null and p.isConnected() == false and device.isOpen() == true, then device comes online again
                  */
-                if(p==null && MidiDeviceUtil.isUsableInputDevice(device)){//New Device Join
+                if(p==null && MidiDeviceUtil.isUsableInputDevice(info, device)){//New Device Join
                     p = extractDeviceIntoPlayer(device);
                     midiDeviceHash.put(device.getClass().toString(),p);
                     listener.onDeviceDiscovered(device);
