@@ -4,6 +4,7 @@ import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.Dance;
+import com.lin1000.justdance.gamepanel.GameMode;
 import com.lin1000.justdance.gamepanel.MainMenu;
 import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
 import com.lin1000.justdance.input.device.MidiDeviceUtil;
@@ -177,6 +178,12 @@ public class Project extends JFrame implements Runnable
             this.repaint();
 
 			System.out.println("Step=(3)Dance Preparation");
+			GameMode.Mode selectedGameMode = mainMenu.getSelectedGameMode();
+			if (selectedGameMode == GameMode.Mode.PIANO) {
+				// PianoDance doesn't exist yet (Phase 5 of the arrow/piano mode plan) -
+				// fall back to arrow mode rather than fail the round.
+				System.out.println("PIANO mode selected but not yet implemented - falling back to ARROW.");
+			}
 			dance = new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, xInputDevice, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
 			//carry the difficulty level chosen in the song-selection screen into gameplay
 			dance.speedModifier.setDifficulty(mainMenu.getSelectedDifficulty());

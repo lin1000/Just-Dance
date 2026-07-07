@@ -172,6 +172,9 @@ public class MainMenuAction {
                 } else if (input.getInputType() == Input.InputType.RIGHT && input.isPressed()) {
                     //cycle difficulty level up (harder / faster scroll)
                     mainWindowTarget.speedModifier.harder();
+                } else if (input.getInputType() == Input.InputType.X && input.isPressed()) {
+                    //toggle game mode (arrow <-> piano)
+                    mainWindowTarget.gameMode.toggle();
                 }
                 break;
 
