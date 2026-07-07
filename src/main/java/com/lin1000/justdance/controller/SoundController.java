@@ -3,7 +3,7 @@ package com.lin1000.justdance.controller;
 import com.lin1000.justdance.audio.AudioFormatAdapter;
 import com.lin1000.justdance.audio.FFT;
 import com.lin1000.justdance.beats.BeatMapGenerator;
-import com.lin1000.justdance.gamepanel.Dance;
+import com.lin1000.justdance.gamepanel.GameplayScreen;
 
 import java.io.File;
 import java.util.*;
@@ -56,7 +56,7 @@ public class SoundController implements Runnable
     public volatile double durationSec;
 
     //Generic JWindow control the main game screen repainting process
-    private Dance mainTargetWindow = null;
+    private GameplayScreen mainTargetWindow = null;
     private java.util.Timer fpsTimer = null;
     //exact timing of main dance background music clip start
     private long startTimeNanos;
@@ -245,7 +245,7 @@ public class SoundController implements Runnable
                 setStartTimeNanos(System.nanoTime());
                 // Schedule task to run every 16 milliseconds after an initial 0 second delay
                 fpsTimer = new java.util.Timer("FPSTimer");
-                FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
+                FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow, this);
                 fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
             }
         }
@@ -325,11 +325,11 @@ public class SoundController implements Runnable
         this.startTimeNanos = startTimeNanos;// high-resolution clock
     }
 
-    public JWindow getMainTargetWindow() {
+    public GameplayScreen getMainTargetWindow() {
         return mainTargetWindow;
     }
 
-    public void setMainTargetWindow(Dance mainTargetWindow) {
+    public void setMainTargetWindow(GameplayScreen mainTargetWindow) {
         this.mainTargetWindow = mainTargetWindow;
     }
 
@@ -373,7 +373,7 @@ public class SoundController implements Runnable
             setStartTimeNanos(System.nanoTime());
             // Schedule task to run every 16 milliseconds after an initial 0 second delay
             fpsTimer = new java.util.Timer("FPSTimer");
-            FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow);
+            FPSTimerTask fpsTimerTask =  new FPSTimerTask(mainTargetWindow, this);
             // ~60 FPS. Arrow movement is time-based (audio-slaved) so a higher frame rate
             // only makes motion smoother — it does not change the scroll speed.
             fpsTimer.scheduleAtFixedRate(fpsTimerTask, 0, 16);
@@ -436,7 +436,7 @@ public class SoundController implements Runnable
                 //Thread.sleep(16);
                 mainTargetWindow.setDeltaTime(dt);
                 //mainTargetWindow.repaint();
-                if(mainTargetWindow.conditionControl.getGameOver()){
+                if(mainTargetWindow.getConditionControl().getGameOver()){
                     break;
                 }
             } // end of audio main loop
