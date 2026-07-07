@@ -21,12 +21,13 @@ public final class SongMeta {
     private final String audioPath;
     private final String jacketPath;
     private final String chartPath;
+    private final String midiPath; // "" if this song has no piano (.mid/.midi) chart
     private final int bpm;
     private final int offsetMs;
     private final Map<String, Integer> ratings; // difficulty label ("EASY"...) -> foot rating
 
     public SongMeta(String id, String title, String artist, String audioPath,
-                    String jacketPath, String chartPath, int bpm, int offsetMs,
+                    String jacketPath, String chartPath, String midiPath, int bpm, int offsetMs,
                     Map<String, Integer> ratings) {
         this.id = id;
         this.title = title;
@@ -34,6 +35,7 @@ public final class SongMeta {
         this.audioPath = audioPath;
         this.jacketPath = jacketPath;
         this.chartPath = chartPath;
+        this.midiPath = midiPath;
         this.bpm = bpm;
         this.offsetMs = offsetMs;
         this.ratings = (ratings == null) ? Collections.emptyMap()
@@ -46,8 +48,12 @@ public final class SongMeta {
     public String getAudioPath()  { return audioPath; }
     public String getJacketPath() { return jacketPath; }
     public String getChartPath()  { return chartPath; }
+    public String getMidiPath()   { return midiPath; }
     public int    getBpm()        { return bpm; }
     public int    getOffsetMs()   { return offsetMs; }
+
+    /** Whether this song has a piano (.mid/.midi) chart available for piano mode. */
+    public boolean hasPianoChart() { return midiPath != null && !midiPath.isEmpty(); }
 
     /** Foot rating for a difficulty label (e.g. "NORMAL"); 0 if none authored. */
     public int rating(String difficultyLabel) {
