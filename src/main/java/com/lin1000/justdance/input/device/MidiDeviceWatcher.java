@@ -152,22 +152,20 @@ public class MidiDeviceWatcher {
                 midiDeviceHeartbeatHash.put(device.getClass().toString(), Boolean.TRUE);
 
                 /**
-                 * IF p==null, then new device is discovered (additional condition && info.getName().equals("USB-MIDI") && device.getMaxTransmitters() !=0 && device.toString().contains("MidiInDevice"))
+                 * IF p==null, then new device is discovered (additional condition: MidiDeviceUtil.isUsableInputDevice(info, device))
                  * IF p!=null and p.isConnected() == true and device.isOpen() == false, then device goes offline
                  * IF p!=null and p.isConnected() == true and device.isOpen() == true, then device is connected without change
                  * IF p!=null and p.isConnected() == false and device.isOpen() == false, then device is disconnected without change
                  * IF p!=null and p.isConnected() == false and device.isOpen() == true, then device comes online again
                  */
-                if(p==null && info.getName().equals("USB-MIDI") && device.getMaxTransmitters() !=0 && device.toString().contains("MidiInDevice")){//New Device Join
+                if(p==null && MidiDeviceUtil.isUsableInputDevice(info, device)){//New Device Join
                     p = extractDeviceIntoPlayer(device);
                     midiDeviceHash.put(device.getClass().toString(),p);
                     listener.onDeviceDiscovered(device);
-                    if (info.getName().equals("USB-MIDI") && device.getMaxTransmitters() !=0 && device.toString().contains("MidiInDevice")){
-                        System.out.println("New MidiDevice Join="+device);
-                        device.open();
-                        System.out.println("Connected to Midi Device：" + info.getName());
-                        isMidiDeviceConnected = true;
-                    }
+                    System.out.println("New MidiDevice Join="+device);
+                    device.open();
+                    System.out.println("Connected to Midi Device：" + info.getName());
+                    isMidiDeviceConnected = true;
                 }else if( p!=null && p.isConnected() && !device.isOpen()){//Device become offline
                     p.setConnected(false); //which is false
                     MainMenuMidiDeviceListener mainMenuMidiDeviceListener = p.getMainMenuMidiDeviceListener();//take out the listener (for backup only)
@@ -195,9 +193,6 @@ public class MidiDeviceWatcher {
                 }
             }
 
-//            if(!isMidiDeviceConnected){
-//                System.err.println("Cannot find KAWAI CN201 Piano MIDI Device.");
-//            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -269,6 +264,7 @@ public class MidiDeviceWatcher {
         //Stream<Player> valueStream = xInputDeviceHash.values().stream();
         Stream<Map.Entry<String, MidiPlayer>> playerStream = entryStream.filter(entry -> entry.getValue().getPlayerNum() == playerNum);
         List<Map.Entry<String, MidiPlayer>> playerCollection = playerStream.collect(Collectors.toList());
+        if (playerCollection.isEmpty()) return null; // no device has claimed this player slot (yet)
         return playerCollection.get(0).getValue().isConnected()?playerCollection.get(0).getValue():null;
     }
 

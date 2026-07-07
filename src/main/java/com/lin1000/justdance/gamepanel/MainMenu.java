@@ -438,7 +438,7 @@ public class MainMenu extends JWindow
 
                 if(project.midiDeviceWatcher != null) {
                     MidiPlayer midiPlayer = project.midiDeviceWatcher.getMidiPlayer(0);
-                    if (midiPlayer != null || true) {
+                    if (midiPlayer != null) {
                         midiControllerComponent.draw(gc);
                     }
                 }
