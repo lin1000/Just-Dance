@@ -1,6 +1,6 @@
 package com.lin1000.justdance.controller;
 
-import com.lin1000.justdance.gamepanel.Dance;
+import com.lin1000.justdance.gamepanel.GameplayScreen;
 
 //=============================================================
 //情況控制中心，即時反應出目前的任何condition的參數，以供其它
@@ -18,7 +18,7 @@ public class ConditionController extends Object {
     //condition=6;paly again;
     //----------------------------------
     //Binding Main Window Target
-    Dance mainWindowTarget = null;
+    GameplayScreen mainWindowTarget = null;
 
     public int condition;
 
@@ -39,7 +39,7 @@ public class ConditionController extends Object {
     public boolean gameover = false;
 
     //CONSTRUCTOR
-    public ConditionController(Dance mainWindowTarget) {
+    public ConditionController(GameplayScreen mainWindowTarget) {
         //Reference to Main Window
         this.mainWindowTarget = mainWindowTarget;
         //初始化情況參數
@@ -85,17 +85,17 @@ public class ConditionController extends Object {
                 }
                 if(this.life > 30) {
                     for (int i = 0; i < 10; i++) {
-                        mainWindowTarget.effectManager.addLifeParticleEffect( mainWindowTarget.life_x + (getLife() * 3), mainWindowTarget.g_off_y + mainWindowTarget.life_y);
+                        mainWindowTarget.getEffectManager().addLifeParticleEffect( mainWindowTarget.getLifeX() + (getLife() * 3), mainWindowTarget.getOffsetY() + mainWindowTarget.getLifeY());
                     }
                 }else{
                     for (int i = 0; i < 20; i++) {
-                        mainWindowTarget.effectManager.addLifeParticleExtremeEffect( mainWindowTarget.life_x + (getLife() * 3), mainWindowTarget.g_off_y + mainWindowTarget.life_y);
+                        mainWindowTarget.getEffectManager().addLifeParticleExtremeEffect( mainWindowTarget.getLifeX() + (getLife() * 3), mainWindowTarget.getOffsetY() + mainWindowTarget.getLifeY());
                     }
                 }
                 break;
             case 4://GAMEOVER
                 this.gameover = true;
-                mainWindowTarget.producer.stop();
+                mainWindowTarget.stopGameplay();
                 break;
             case 5://NOT PLAYING
                 System.out.println("***ConditionController setCondition: exit game:" + this.toString());

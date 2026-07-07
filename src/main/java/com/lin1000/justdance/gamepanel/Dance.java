@@ -25,7 +25,7 @@ import com.lin1000.justdance.gamepanel.effect.EffectManager;
 import com.lin1000.justdance.song.Song;
 
 
-public class Dance extends JWindow
+public class Dance extends JWindow implements GameplayScreen
 {
     //Windows variable
     private Window window;
@@ -1041,6 +1041,39 @@ public class Dance extends JWindow
                 xInputDevice.removeListener(xInputDeviceListener);
             }
             this.removeAll();
+        }
+
+        // GameplayScreen accessors: trivial delegation to fields that already existed,
+        // named so the arrow-mode-specific orchestration seams (Project, SoundController,
+        // FPSTimerTask, ConditionController) can drive this class through the shared interface.
+        @Override
+        public ConditionController getConditionControl() {
+            return conditionControl;
+        }
+
+        @Override
+        public void stopGameplay() {
+            producer.stop();
+        }
+
+        @Override
+        public EffectManager getEffectManager() {
+            return effectManager;
+        }
+
+        @Override
+        public int getLifeX() {
+            return life_x;
+        }
+
+        @Override
+        public int getLifeY() {
+            return life_y;
+        }
+
+        @Override
+        public int getOffsetY() {
+            return g_off_y;
         }
 
 }

@@ -1,6 +1,6 @@
 package com.lin1000.justdance.controller;
 
-import com.lin1000.justdance.gamepanel.Dance;
+import com.lin1000.justdance.gamepanel.GameplayScreen;
 
 import javax.swing.SwingUtilities;
 import java.util.TimerTask;
@@ -10,10 +10,12 @@ public class FPSTimerTask extends TimerTask {
     private long last;
     private long lastLongFramePositionSourceDataLine;
 
-    private Dance mainTargetWindow;
+    private GameplayScreen mainTargetWindow;
+    private SoundController soundController;
 
-    public FPSTimerTask(Dance MainTargetWindow) {
-        this.mainTargetWindow = MainTargetWindow;
+    public FPSTimerTask(GameplayScreen mainTargetWindow, SoundController soundController) {
+        this.mainTargetWindow = mainTargetWindow;
+        this.soundController = soundController;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class FPSTimerTask extends TimerTask {
         mainTargetWindow.setDeltaTime(dt);
 
         // Calculating the delta Frame
-        long nowLongFramePositionSourceDataLine = mainTargetWindow.soundController.currentLongFramePositionSourceDataLine;
+        long nowLongFramePositionSourceDataLine = soundController.currentLongFramePositionSourceDataLine;
         long deltaFrame = (nowLongFramePositionSourceDataLine - lastLongFramePositionSourceDataLine);
         lastLongFramePositionSourceDataLine = nowLongFramePositionSourceDataLine;
         mainTargetWindow.setDeltaFrame(deltaFrame);
