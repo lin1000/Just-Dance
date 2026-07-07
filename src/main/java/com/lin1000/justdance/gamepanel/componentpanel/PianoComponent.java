@@ -47,6 +47,29 @@ public class PianoComponent {
         };
     }
 
+    /**
+     * X pixel position of a given MIDI note's key, in this component's own coordinate space
+     * (i.e. already offset by {@code p_off_x}). Mirrors the same white/black key layout
+     * {@link #draw} computes internally, exposed so callers (e.g. a falling-note renderer)
+     * can align notes with the keys they land on. Out-of-range notes fall back to the
+     * leftmost key.
+     */
+    public int xForNote(int note) {
+        int baseNote = 21;
+        int whiteX = p_off_x;
+        int lastWhiteX = p_off_x;
+        for (int n = baseNote; n <= note; n++) {
+            if (!isBlack(n)) {
+                lastWhiteX = whiteX;
+                if (n == note) return whiteX;
+                whiteX += style.whiteKeyWidth;
+            } else if (n == note) {
+                return lastWhiteX + style.whiteKeyWidth - (style.blackKeyWidth / 2);
+            }
+        }
+        return p_off_x;
+    }
+
     public void setInput(int command, int ch, int note, int velocity) {
         this.command=command;
         this.ch = ch;
