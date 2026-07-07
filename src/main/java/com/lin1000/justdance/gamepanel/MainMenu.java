@@ -98,6 +98,13 @@ public class MainMenu extends JWindow
         public final SpeedModifier speedModifier = new SpeedModifier();
         public SpeedModifier.Difficulty getSelectedDifficulty() { return speedModifier.getDifficulty(); }
 
+        //Player-chosen game mode (arrow vs. piano). Toggled with X in the song selection
+        //screen; read by Project.run() before constructing gameplay, since the choice decides
+        //which concrete gameplay class gets built (unlike speedModifier, which is copied in
+        //after construction — see GameMode's class doc for why).
+        public final GameMode gameMode = new GameMode();
+        public GameMode.Mode getSelectedGameMode() { return gameMode.getMode(); }
+
         //isFirstRound
         private boolean isFirstRound = true;
 
