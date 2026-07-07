@@ -1,5 +1,7 @@
 package com.lin1000.justdance.song;
 
+import com.lin1000.justdance.song.midi.MidiChart;
+import com.lin1000.justdance.song.midi.MidiChartLoader;
 import com.lin1000.justdance.song.sm.Simfile;
 import com.lin1000.justdance.song.sm.SmParser;
 
@@ -67,6 +69,18 @@ public final class SongLibrary {
             String folderPath = folder.getPath();
             String audio  = resolve(folderPath, s.music);
             String jacket = resolve(folderPath, s.banner);
+            File midi = firstMidi(folder);
+            String midiPath = midi == null ? "" : midi.getPath();
+            String pianoNotesLog = "none";
+            if (midi != null) {
+                try {
+                    MidiChart midiChart = MidiChartLoader.load(midi);
+                    pianoNotesLog = String.valueOf(midiChart.notes.size());
+                } catch (Exception e) {
+                    System.err.println("SongLibrary: failed to load piano chart " + midi + ": " + e);
+                    midiPath = ""; // treat an unparsable .mid as if it weren't there
+                }
+            }
 
             Map<String, Integer> ratings = new LinkedHashMap<>();
             for (Simfile.Chart c : s.charts) if (c.meter > 0) ratings.put(c.difficulty.toUpperCase(), c.meter);
@@ -78,12 +92,14 @@ public final class SongLibrary {
                     audio,
                     jacket,
                     sm.getPath(),
+                    midiPath,
                     (int) Math.round(s.timing.firstBpm()),
                     (int) Math.round(s.offsetSec * 1000),
                     ratings);
             list.add(new Entry(meta, s));
             System.out.println("SongLibrary: " + meta + " chart-notes="
-                    + (s.playableChart() == null ? 0 : s.playableChart().notes.size()));
+                    + (s.playableChart() == null ? 0 : s.playableChart().notes.size())
+                    + " piano-notes=" + pianoNotesLog);
         }
         if (list.isEmpty()) System.err.println("SongLibrary: ./" + SONGS_DIR + " has no valid .sm songs.");
         else System.out.println("SongLibrary: loaded " + list.size() + " songs from ./" + SONGS_DIR);
@@ -93,6 +109,16 @@ public final class SongLibrary {
     private static File firstSm(File folder) {
         File[] sms = folder.listFiles((d, n) -> n.toLowerCase().endsWith(".sm"));
         return (sms == null || sms.length == 0) ? null : sms[0];
+    }
+
+    /** A song's optional piano chart: unlike audio/banner, not referenced by any .sm tag —
+     *  just the first .mid/.midi file sitting in the song folder, if any. */
+    private static File firstMidi(File folder) {
+        File[] mids = folder.listFiles((d, n) -> {
+            String lower = n.toLowerCase();
+            return lower.endsWith(".mid") || lower.endsWith(".midi");
+        });
+        return (mids == null || mids.length == 0) ? null : mids[0];
     }
 
     /** Resolve a #MUSIC/#BANNER path (relative to the song folder) to a repo-root-relative path. */
