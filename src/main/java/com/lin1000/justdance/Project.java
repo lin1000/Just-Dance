@@ -5,7 +5,9 @@ import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.gamepanel.GameMode;
+import com.lin1000.justdance.gamepanel.GameplayScreen;
 import com.lin1000.justdance.gamepanel.MainMenu;
+import com.lin1000.justdance.gamepanel.PianoDance;
 import com.lin1000.justdance.input.device.JXInputDeviceWatcher;
 import com.lin1000.justdance.input.device.MidiDeviceUtil;
 import com.lin1000.justdance.input.device.MidiDeviceWatcher;
@@ -149,7 +151,7 @@ public class Project extends JFrame implements Runnable
 		this.setVisible(true);
 
 		MainMenu mainMenu = null;
-		Dance dance = null;
+		GameplayScreen gameplay = null;
 		while(true)
 		{
 			xInputDevice = initJXInputDevice();
@@ -179,15 +181,23 @@ public class Project extends JFrame implements Runnable
 
 			System.out.println("Step=(3)Dance Preparation");
 			GameMode.Mode selectedGameMode = mainMenu.getSelectedGameMode();
-			if (selectedGameMode == GameMode.Mode.PIANO) {
-				// PianoDance doesn't exist yet (Phase 5 of the arrow/piano mode plan) -
-				// fall back to arrow mode rather than fail the round.
-				System.out.println("PIANO mode selected but not yet implemented - falling back to ARROW.");
+			boolean usePiano = selectedGameMode == GameMode.Mode.PIANO
+					&& com.lin1000.justdance.song.SongLibrary.get(this.music).hasPianoChart();
+			if (selectedGameMode == GameMode.Mode.PIANO && !usePiano) {
+				// Selected song has no .mid chart - fall back to arrow mode rather than
+				// fail the round. (A greyed-out song-select indicator is later UI polish.)
+				System.out.println("PIANO mode selected but this song has no piano chart - falling back to ARROW.");
 			}
-			dance = new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, xInputDevice, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
-			//carry the difficulty level chosen in the song-selection screen into gameplay
-			dance.speedModifier.setDifficulty(mainMenu.getSelectedDifficulty());
-			soundController.setMainTargetWindow(dance);
+			if (usePiano) {
+				gameplay = new PianoDance(this, mainMenu.getWhichSong(), this.music, this.y_movement,
+						this.BPM, xInputDevice, midiDevice, soundController, activeScreen);
+			} else {
+				Dance dance = new Dance(this, mainMenu.getWhichSong(), this.music,this.y_movement,this.BPM, xInputDevice, midiDevice,soundController,activeScreen);//�ǤJ�ȬO����!
+				//carry the difficulty level chosen in the song-selection screen into gameplay
+				dance.speedModifier.setDifficulty(mainMenu.getSelectedDifficulty());
+				gameplay = dance;
+			}
+			soundController.setMainTargetWindow(gameplay);
 			mainMenu.setVisible(false);
 			//Setting up and start counting the rhythm nanos
 			//this.soundController.playBackgroundSound(music, false);
@@ -201,7 +211,7 @@ public class Project extends JFrame implements Runnable
 			//not let us proceed early, and (b) if the player's exit/replay notifyAll() races
 			//ahead of this wait(), getExit() is already true and we never block forever.
 			synchronized (getMainThreadPauseLock()){
-                while (!dance.conditionControl.getExit()) {
+                while (!gameplay.getConditionControl().getExit()) {
                     try {
                         getMainThreadPauseLock().wait();
                     } catch (InterruptedException e) {
@@ -214,22 +224,20 @@ public class Project extends JFrame implements Runnable
 			/**
 			 * Handle the restart or continues the game
 			 */
-			if(!(dance.conditionControl.getContinue())) gameStop();
+			if(!(gameplay.getConditionControl().getContinue())) gameStop();
 			//replay
-			if(dance!=null){
-				//如果dance已經存在，則關閉它
-				System.out.println("dance is not null, dispose it.");
-				//producer.stop() sets the volatile isStop flag so no further arrows spawn.
-				//The producer no longer owns a thread (spawning is driven from the game tick),
-				//so the old deprecated/unsafe Thread.stop() call is gone.
-				dance.producer.stop();
-				dance.soundController.stop_all();
-				dance.removeInputDeviceListener();//remove xInputDevice listener when xInputDevice is available.
-				dance.setVisible(false);
-				dance.dispose();
-				dance = null;
-
-				//dance.producer=null;
+			if(gameplay!=null){
+				//如果gameplay已經存在，則關閉它
+				System.out.println("gameplay is not null, dispose it.");
+				//stopGameplay() sets each mode's own volatile isStop flag so no further
+				//notes spawn. Neither producer owns a thread (spawning is driven from the
+				//game tick), so no explicit thread teardown is needed here.
+				gameplay.stopGameplay();
+				soundController.stop_all();
+				gameplay.removeInputDeviceListener();//remove xInputDevice listener when xInputDevice is available.
+				gameplay.setVisible(false);
+				gameplay.dispose();
+				gameplay = null;
 			}
 			//soundController.getFpsTimer().cancel();
 			soundController=null;
