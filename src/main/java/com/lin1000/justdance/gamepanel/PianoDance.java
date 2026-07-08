@@ -9,12 +9,14 @@ import com.lin1000.justdance.gamepanel.componentpanel.PianoComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.PianoStyle;
 import com.lin1000.justdance.gamepanel.effect.EffectManager;
 import com.lin1000.justdance.gamepanel.inputdevice.PianoDanceKeyboardDeviceListener;
+import com.lin1000.justdance.gamepanel.inputdevice.PianoDanceMidiDeviceListener;
 import com.lin1000.justdance.song.SongLibrary;
 import com.lin1000.justdance.song.Song;
 import com.lin1000.justdance.song.midi.MidiChart;
 import com.lin1000.justdance.song.midi.MidiChartLoader;
 
 import javax.sound.midi.MidiDevice;
+import javax.sound.midi.Transmitter;
 import javax.swing.JWindow;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -33,11 +35,10 @@ import java.util.List;
  * the arrow-mode consumption layer (fixed 4-lane arrays, hardcoded pixel offsets) has nothing
  * to reuse for an 88-key note highway.
  *
- * Phase 5 scope: orchestration and rendering only — the piano keyboard and falling notes are
- * drawn from the song's {@link MidiChart}, but no MIDI input is wired to judgment yet (no
- * scoring beyond whatever {@link ConditionController} defaults to). Phase 6 adds a
- * {@code PianoDanceMidiDeviceListener} that hit-tests live MIDI input against
- * {@link #producer} and calls {@link ConditionController#setCondition}.
+ * The piano keyboard and falling notes are drawn from the song's {@link MidiChart}. Real MIDI
+ * input (Phase 6) is hit-tested against {@link #producer} by {@link PianoDanceMidiDeviceListener}
+ * and fed into {@link ConditionController#setCondition}, the same fire-and-forget scoring signal
+ * arrow mode's {@code DanceAction} uses.
  */
 public class PianoDance extends JWindow implements GameplayScreen {
 
@@ -57,6 +58,7 @@ public class PianoDance extends JWindow implements GameplayScreen {
     public SoundController soundController;
     public PianoComponent pianoComponent;
     public PianoNoteProducer producer;
+    public PianoDanceMidiDeviceListener midiDeviceListener;
 
     private final int keyboardY;
     private static final double LOOKAHEAD_SEC = 3.0; // how far ahead notes become visible
@@ -124,6 +126,37 @@ public class PianoDance extends JWindow implements GameplayScreen {
             chart = new MidiChart(List.of());
         }
         producer = new PianoNoteProducer(chart);
+
+        // MIDI wiring, mirrors Dance.java's DanceMidiDeviceListener setup verbatim. Placed
+        // last: MIDI can deliver on a background thread the instant setReceiver returns, and
+        // the listener's send() dereferences conditionControl/effectManager/pianoComponent/
+        // producer, all of which must already be assigned by this point.
+        try {
+            if (midiDevice != null) {
+                this.midiDeviceListener = new PianoDanceMidiDeviceListener(this);
+                Transmitter transmitter = midiDevice.getTransmitter();
+                transmitter.setReceiver(this.midiDeviceListener);
+            } else {
+                System.err.println("System has NO midi devices, please use computer keyboard to play");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("System has midi devices, but cannot correctly setup. Please use computer keyboard to play");
+        }
+    }
+
+    /**
+     * Audio-clock-or-wallclock-fallback, shared by {@link #tick()}, {@link #paint(Graphics)},
+     * and {@link PianoDanceMidiDeviceListener} so a MIDI NOTE_ON hit-tests against the same
+     * "now" the renderer is using.
+     */
+    public double currentNowSec() {
+        double nowSec = soundController.currentSec;
+        if (nowSec <= 0) {
+            long startNanos = soundController.getStartTimeNanos();
+            nowSec = startNanos > 0 ? (System.nanoTime() - startNanos) / 1_000_000_000.0 : 0;
+        }
+        return nowSec;
     }
 
     @Override
@@ -137,19 +170,12 @@ public class PianoDance extends JWindow implements GameplayScreen {
         if (soundController == null) return;
         if (conditionControl.getGameOver() || conditionControl.getExit()) return;
 
-        // Same audio-clock convention as Dance.tick(): prefer the audio playback position,
-        // fall back to wall-clock elapsed time if audio hasn't started yet.
-        double nowSec = soundController.currentSec;
-        if (nowSec <= 0) {
-            long startNanos = soundController.getStartTimeNanos();
-            nowSec = startNanos > 0 ? (System.nanoTime() - startNanos) / 1_000_000_000.0 : 0;
-        }
+        double nowSec = currentNowSec();
         double deltaSec = nowSec - lastAudioSec;
         lastAudioSec = nowSec;
         if (deltaSec <= 0 || deltaSec > 1.0) return;
-        // Phase 5 has nothing further to advance each tick — visibleNotes() is computed
-        // fresh from the audio clock at paint time, so there's no simulation state to mutate
-        // yet (no hit-testing, no misses). Phase 6 adds that here.
+
+        producer.sweepMisses(nowSec, conditionControl);
     }
 
     @Override
@@ -165,11 +191,7 @@ public class PianoDance extends JWindow implements GameplayScreen {
         gc.setColor(Color.black);
         gc.fillRect(0, 0, width, height);
 
-        double nowSec = soundController.currentSec;
-        if (nowSec <= 0) {
-            long startNanos = soundController.getStartTimeNanos();
-            nowSec = startNanos > 0 ? (System.nanoTime() - startNanos) / 1_000_000_000.0 : 0;
-        }
+        double nowSec = currentNowSec();
 
         // Falling notes: each note's y is derived from the audio clock exactly like Dance's
         // arrows (y = keyboardY - secondsUntilItArrives * pxPerSec), landing on the keyboard
@@ -186,7 +208,7 @@ public class PianoDance extends JWindow implements GameplayScreen {
         pianoComponent.draw(gc);
 
         gc.setColor(Color.white);
-        gc.drawString("PIANO MODE (preview - Phase 5, no scoring yet)", g_off_x, 20);
+        gc.drawString("PIANO MODE", g_off_x, 20);
         gc.drawString(song.getName(), g_off_x, 40);
         gc.drawString(String.format("Time: %.1fs", nowSec), g_off_x, 60);
 
