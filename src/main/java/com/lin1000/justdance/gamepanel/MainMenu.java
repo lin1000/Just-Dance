@@ -700,6 +700,69 @@ public class MainMenu extends JWindow
             int sy = dy0 + dh + 14, sh = 108;
             glassCard(gc, x, sy, w, sh);
             drawStatsCard(gc, x, sy, w);
+
+            int gy = sy + sh + 14, gh = 90;
+            glassCard(gc, x, gy, w, gh);
+            drawGameModeCard(gc, x, gy, w);
+        }
+
+        private void drawGameModeCard(Graphics2D gc, int x, int y, int w) {
+            GameMode.Mode[] modes = GameMode.Mode.values();
+            int sel = gameMode.getMode().ordinal();
+            boolean pianoAvailable = com.lin1000.justdance.song.SongLibrary.get(musicOptionIndex).hasPianoChart();
+            int pad = 18;
+
+            gc.setColor(new Color(0x7f9fd0));
+            gc.setFont(new Font("SansSerif", Font.BOLD, 12));
+            gc.drawString("GAME MODE", x+pad, y+24);
+            String hint = "PRESS X";
+            gc.setColor(new Color(0x6f8fc0));
+            gc.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            FontMetrics hf = gc.getFontMetrics();
+            gc.drawString(hint, x+w-pad-hf.stringWidth(hint), y+24);
+
+            int gap = 8;
+            int innerW = w - pad*2;
+            int pillW = (innerW - gap) / 2;
+            int pillH = 46;
+            int py = y + 42;
+            for (int i = 0; i < modes.length; i++) {
+                int px = x + pad + i*(pillW+gap);
+                boolean s = (i == sel);
+                // PIANO greys out for a song with no .mid chart — purely a visual cue; the
+                // actual fallback-to-ARROW safety net lives in Project.run(), not here.
+                boolean disabled = modes[i] == GameMode.Mode.PIANO && !pianoAvailable;
+                Color base = disabled ? dim(modes[i].color, 0.45) : modes[i].color;
+                int yy = py + (s ? -4 : 0);
+                int hh = pillH + (s ? 8 : 0);
+                if (s) {
+                    gc.setColor(new Color(base.getRed(), base.getGreen(), base.getBlue(), disabled ? 40 : 90));
+                    gc.fillRoundRect(px-4, yy-4, pillW+8, hh+8, 14, 14);
+                }
+                gc.setPaint(new GradientPaint(px, yy, s ? base : dim(base, 0.42),
+                        px, yy+hh, s ? dim(base, 0.55) : dim(base, 0.16)));
+                gc.fillRoundRect(px, yy, pillW, hh, 12, 12);
+                gc.setStroke(new BasicStroke(s ? 2.5f : 1f));
+                gc.setColor(disabled ? new Color(255, 255, 255, 40) : (s ? Color.white : new Color(255, 255, 255, 60)));
+                gc.drawRoundRect(px, yy, pillW, hh, 12, 12);
+                if (s) {
+                    gc.setColor(base.brighter());
+                    int mx = px + pillW/2;
+                    gc.fillPolygon(new int[]{mx-6, mx+6, mx}, new int[]{yy-10, yy-10, yy-2}, 3);
+                }
+                gc.setColor(disabled ? new Color(210, 210, 220, 140) : (s ? Color.white : new Color(220, 220, 220, 180)));
+                gc.setFont(new Font("SansSerif", s ? Font.BOLD : Font.PLAIN, s ? 15 : 13));
+                FontMetrics fm = gc.getFontMetrics();
+                int labelY = disabled ? yy + hh/2 + fm.getAscent()/2 - 8 : yy + hh/2 + fm.getAscent()/2 - 2;
+                gc.drawString(modes[i].label, px + (pillW-fm.stringWidth(modes[i].label))/2, labelY);
+                if (disabled) {
+                    String sub = "NO CHART";
+                    gc.setFont(new Font("SansSerif", Font.PLAIN, 9));
+                    FontMetrics sf = gc.getFontMetrics();
+                    gc.setColor(new Color(210, 210, 220, 120));
+                    gc.drawString(sub, px + (pillW-sf.stringWidth(sub))/2, labelY + 13);
+                }
+            }
         }
 
         private void drawDifficultyCard(Graphics2D gc, int x, int y, int w) {
@@ -861,6 +924,7 @@ public class MainMenu extends JWindow
             x = footItem(gc, x, y, "↑↓", "Song");
             x = footItem(gc, x, y, "←→", "Difficulty");
             x = footItem(gc, x, y, "↵ / A", "Start");
+            x = footItem(gc, x, y, "X", "Game Mode");
             x = footItem(gc, x, y, "Esc", "Back");
             String kk = "L / R", vv = "Audio Analysis";
             gc.setFont(new Font("SansSerif", Font.BOLD, 13));
