@@ -175,6 +175,15 @@ public class MainMenuAction {
                 } else if (input.getInputType() == Input.InputType.X && input.isPressed()) {
                     //toggle game mode (arrow <-> piano)
                     mainWindowTarget.gameMode.toggle();
+                } else if (input.getInputType() == Input.InputType.Y && input.isPressed()) {
+                    //enter the standalone water-dance showcase (attract-mode, no scoring)
+                    mainWindowTarget.controlFlow = 5;
+                }
+                break;
+
+            case 5: //5 means in the water-dance showcase (attract-mode)
+                if (input.getInputType() == Input.InputType.BACK && input.isPressed()) {
+                    mainWindowTarget.controlFlow = 2; //back to song-select, not a full exit
                 }
                 break;
 
