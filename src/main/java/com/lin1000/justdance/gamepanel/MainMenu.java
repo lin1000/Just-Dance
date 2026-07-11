@@ -25,6 +25,7 @@ import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
+import com.lin1000.justdance.gamepanel.effect.WaterDanceEffect;
 import com.lin1000.justdance.input.Input;
 import com.lin1000.justdance.input.device.MidiDeviceWatcher;
 import com.lin1000.justdance.player.JXInputPlayer;
@@ -83,7 +84,7 @@ public class MainMenu extends JWindow
         public SoundController soundController;
                        
         //Game Main Control Flow
-        public int controlFlow=1; //1,2,3,4(exit)
+        public int controlFlow=1; //1,2,3,4(exit),5(water-dance showcase)
         
         //Which Music
         //y_movement
@@ -337,37 +338,46 @@ public class MainMenu extends JWindow
 
             boolean isDefaultMusic = true;
             int menuFrameCount = 0;
-            while (controlFlow == 2) { // show main menu screen
-                try {
-                    if (xInputDevice !=null && xInputDevice.poll()) {
-                        // 輪詢控制器狀態，觸發事件
-                        MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
-                    }
-                    Thread.sleep(50);
-                    if (isDefaultMusic) {
-                        isDefaultMusic = false;
-                        Input defaultInput = new Input();
-                        defaultInput.setInputType(Input.InputType.GUIDE_BUTTON);
-                        defaultInput.setPressed(true);
-                        MainMenuAction.getInstance().inputAction(defaultInput, this);
-                    }
+            // Outer loop lets the water-dance showcase (controlFlow==5) round-trip back to the
+            // song-select screen on ESC, instead of falling out of this constructor like a real
+            // "start game"/"exit" transition would.
+            do {
+                while (controlFlow == 2) { // show main menu screen
                     try {
-                        menuscreen(musicOptionIndex);
-                    } catch (Exception e) {
-                        System.err.println("menuscreen error (non-fatal): " + e.getMessage());
+                        if (xInputDevice !=null && xInputDevice.poll()) {
+                            // 輪詢控制器狀態，觸發事件
+                            MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
+                        }
+                        Thread.sleep(50);
+                        if (isDefaultMusic) {
+                            isDefaultMusic = false;
+                            Input defaultInput = new Input();
+                            defaultInput.setInputType(Input.InputType.GUIDE_BUTTON);
+                            defaultInput.setPressed(true);
+                            MainMenuAction.getInstance().inputAction(defaultInput, this);
+                        }
+                        try {
+                            menuscreen(musicOptionIndex);
+                        } catch (Exception e) {
+                            System.err.println("menuscreen error (non-fatal): " + e.getMessage());
+                        }
+                    } catch (java.lang.InterruptedException e) {
+                        e.printStackTrace();
                     }
-                } catch (java.lang.InterruptedException e) {
-                    e.printStackTrace();
+
+                    // auto-select first song in headless/demo mode after ~3 seconds (60 frames @ 50ms)
+                    if (headlessDemo && ++menuFrameCount > 60) {
+                        Input selectInput = new Input();
+                        selectInput.setInputType(Input.InputType.A);
+                        selectInput.setPressed(true);
+                        MainMenuAction.getInstance().inputAction(selectInput, this);
+                    }
                 }
 
-                // auto-select first song in headless/demo mode after ~3 seconds (60 frames @ 50ms)
-                if (headlessDemo && ++menuFrameCount > 60) {
-                    Input selectInput = new Input();
-                    selectInput.setInputType(Input.InputType.A);
-                    selectInput.setPressed(true);
-                    MainMenuAction.getInstance().inputAction(selectInput, this);
+                if (controlFlow == 5) {
+                    runWaterDanceDemo(); // blocks until ESC, then sets controlFlow back to 2
                 }
-            }
+            } while (controlFlow == 2 || controlFlow == 5);
 
             /**
             if(this.xInputDeviceListener!=null) {
@@ -519,6 +529,57 @@ public class MainMenu extends JWindow
             drawFooter(gc);
 
             repaint();
+        }
+
+        /**
+         * Standalone "water dance" showcase (attract-mode, controlFlow==5): plays the currently
+         * browsed song's audio purely for ambience and drives a {@link WaterDanceEffect} synced
+         * to its BPM — no scoring, no chart. Blocks until ESC (BACK), then stops the audio and
+         * returns, leaving controlFlow at 2 so the outer loop in the constructor re-enters the
+         * song-select screen.
+         */
+        private void runWaterDanceDemo() {
+            int demoMusic = musicOptionIndex;
+            int demoBpm = com.lin1000.justdance.song.SongLibrary.get(demoMusic).getBpm();
+            try {
+                soundController.playBackgroundSound(demoMusic, true); // isPreview=true: just plays, no FPSTimer/game loop
+            } catch (Exception e) {
+                System.err.println("water-dance showcase: failed to start audio: " + e.getMessage());
+            }
+
+            WaterDanceEffect effect = new WaterDanceEffect(getWidth(), getHeight(), 14, demoBpm);
+            long startNanos = System.nanoTime();
+            boolean headlessDemo = System.getenv("HEADLESS_DEMO") != null;
+            int demoFrameCount = 0;
+            while (controlFlow == 5) {
+                try {
+                    if (xInputDevice != null && xInputDevice.poll()) {
+                        MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
+                    }
+                    double nowSec = (System.nanoTime() - startNanos) / 1_000_000_000.0;
+                    effect.tick(nowSec);
+
+                    gc.setColor(Color.black);
+                    gc.fillRect(0, 0, getWidth(), getHeight());
+                    gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    effect.draw(gc, nowSec);
+                    gc.setColor(new Color(0xbcd4ff));
+                    gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+                    gc.drawString("WATER DANCE SHOWCASE — Esc to return", 28, 28);
+                    repaint();
+
+                    Thread.sleep(16);
+
+                    // auto-exit in headless/demo mode after ~2 seconds, mirroring the other
+                    // headless auto-advance hooks in this constructor
+                    if (headlessDemo && ++demoFrameCount > 120) {
+                        controlFlow = 2;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            soundController.stop_all();
         }
 
         private static Color dim(Color c, double f) {
@@ -925,6 +986,7 @@ public class MainMenu extends JWindow
             x = footItem(gc, x, y, "←→", "Difficulty");
             x = footItem(gc, x, y, "↵ / A", "Start");
             x = footItem(gc, x, y, "X", "Game Mode");
+            x = footItem(gc, x, y, "Y", "Water Dance");
             x = footItem(gc, x, y, "Esc", "Back");
             String kk = "L / R", vv = "Audio Analysis";
             gc.setFont(new Font("SansSerif", Font.BOLD, 13));
