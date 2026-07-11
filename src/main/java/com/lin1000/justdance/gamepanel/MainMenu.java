@@ -558,11 +558,7 @@ public class MainMenu extends JWindow
                     }
                     double nowSec = (System.nanoTime() - startNanos) / 1_000_000_000.0;
                     effect.tick(nowSec);
-
-                    gc.setColor(Color.black);
-                    gc.fillRect(0, 0, getWidth(), getHeight());
-                    gc.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    effect.draw(gc, nowSec);
+                    effect.draw(gc, nowSec); // fills its own background
                     gc.setColor(new Color(0xbcd4ff));
                     gc.setFont(new Font("SansSerif", Font.BOLD, 13));
                     gc.drawString("WATER DANCE SHOWCASE — Esc to return", 28, 28);
