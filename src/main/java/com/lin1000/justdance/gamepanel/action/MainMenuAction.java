@@ -178,10 +178,19 @@ public class MainMenuAction {
                 } else if (input.getInputType() == Input.InputType.Y && input.isPressed()) {
                     //enter the standalone water-dance showcase (attract-mode, no scoring)
                     mainWindowTarget.controlFlow = 5;
+                } else if (input.getInputType() == Input.InputType.B && input.isPressed()) {
+                    //enter the second, independent particle-based water-dance showcase
+                    mainWindowTarget.controlFlow = 6;
                 }
                 break;
 
             case 5: //5 means in the water-dance showcase (attract-mode)
+                if (input.getInputType() == Input.InputType.BACK && input.isPressed()) {
+                    mainWindowTarget.controlFlow = 2; //back to song-select, not a full exit
+                }
+                break;
+
+            case 6: //6 means in the water-dance particle showcase (attract-mode)
                 if (input.getInputType() == Input.InputType.BACK && input.isPressed()) {
                     mainWindowTarget.controlFlow = 2; //back to song-select, not a full exit
                 }

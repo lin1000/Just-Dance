@@ -26,6 +26,7 @@ import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
 import com.lin1000.justdance.gamepanel.effect.WaterDanceEffect;
+import com.lin1000.justdance.gamepanel.effect.WaterDanceParticleEffect;
 import com.lin1000.justdance.input.Input;
 import com.lin1000.justdance.input.device.MidiDeviceWatcher;
 import com.lin1000.justdance.player.JXInputPlayer;
@@ -84,7 +85,7 @@ public class MainMenu extends JWindow
         public SoundController soundController;
                        
         //Game Main Control Flow
-        public int controlFlow=1; //1,2,3,4(exit),5(water-dance showcase)
+        public int controlFlow=1; //1,2,3,4(exit),5(water-dance showcase),6(water-dance particle showcase)
         
         //Which Music
         //y_movement
@@ -338,9 +339,9 @@ public class MainMenu extends JWindow
 
             boolean isDefaultMusic = true;
             int menuFrameCount = 0;
-            // Outer loop lets the water-dance showcase (controlFlow==5) round-trip back to the
-            // song-select screen on ESC, instead of falling out of this constructor like a real
-            // "start game"/"exit" transition would.
+            // Outer loop lets the water-dance showcases (controlFlow==5/6) round-trip back to
+            // the song-select screen on ESC, instead of falling out of this constructor like a
+            // real "start game"/"exit" transition would.
             do {
                 while (controlFlow == 2) { // show main menu screen
                     try {
@@ -377,7 +378,10 @@ public class MainMenu extends JWindow
                 if (controlFlow == 5) {
                     runWaterDanceDemo(); // blocks until ESC, then sets controlFlow back to 2
                 }
-            } while (controlFlow == 2 || controlFlow == 5);
+                if (controlFlow == 6) {
+                    runWaterDanceParticleDemo(); // independent second showcase, blocks until ESC
+                }
+            } while (controlFlow == 2 || controlFlow == 5 || controlFlow == 6);
 
             /**
             if(this.xInputDeviceListener!=null) {
@@ -568,6 +572,50 @@ public class MainMenu extends JWindow
 
                     // auto-exit in headless/demo mode after ~2 seconds, mirroring the other
                     // headless auto-advance hooks in this constructor
+                    if (headlessDemo && ++demoFrameCount > 120) {
+                        controlFlow = 2;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            soundController.stop_all();
+        }
+
+        /**
+         * A second, independent showcase (attract-mode, controlFlow==6): same entry/exit shape
+         * as {@link #runWaterDanceDemo()} but drives {@link WaterDanceParticleEffect} — a true
+         * per-droplet particle simulation with additive-blend bloom, kept fully separate from
+         * the first showcase (its own class, its own control-flow state, its own button).
+         */
+        private void runWaterDanceParticleDemo() {
+            int demoMusic = musicOptionIndex;
+            int demoBpm = com.lin1000.justdance.song.SongLibrary.get(demoMusic).getBpm();
+            try {
+                soundController.playBackgroundSound(demoMusic, true);
+            } catch (Exception e) {
+                System.err.println("water-dance particle showcase: failed to start audio: " + e.getMessage());
+            }
+
+            WaterDanceParticleEffect effect = new WaterDanceParticleEffect(getWidth(), getHeight(), 14, demoBpm);
+            long startNanos = System.nanoTime();
+            boolean headlessDemo = System.getenv("HEADLESS_DEMO") != null;
+            int demoFrameCount = 0;
+            while (controlFlow == 6) {
+                try {
+                    if (xInputDevice != null && xInputDevice.poll()) {
+                        MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
+                    }
+                    double nowSec = (System.nanoTime() - startNanos) / 1_000_000_000.0;
+                    effect.tick(nowSec);
+                    effect.draw(gc, nowSec); // fills its own background
+                    gc.setColor(new Color(0xbcd4ff));
+                    gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+                    gc.drawString("WATER DANCE PARTICLES — Esc to return", 28, 28);
+                    repaint();
+
+                    Thread.sleep(16);
+
                     if (headlessDemo && ++demoFrameCount > 120) {
                         controlFlow = 2;
                     }
@@ -983,6 +1031,7 @@ public class MainMenu extends JWindow
             x = footItem(gc, x, y, "↵ / A", "Start");
             x = footItem(gc, x, y, "X", "Game Mode");
             x = footItem(gc, x, y, "Y", "Water Dance");
+            x = footItem(gc, x, y, "B", "Particles");
             x = footItem(gc, x, y, "Esc", "Back");
             String kk = "L / R", vv = "Audio Analysis";
             gc.setFont(new Font("SansSerif", Font.BOLD, 13));
