@@ -25,6 +25,7 @@ import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
+import com.lin1000.justdance.gamepanel.effect.MotionDanceEffect;
 import com.lin1000.justdance.gamepanel.effect.WaterDanceEffect;
 import com.lin1000.justdance.gamepanel.effect.WaterDanceParticleEffect;
 import com.lin1000.justdance.input.Input;
@@ -339,7 +340,7 @@ public class MainMenu extends JWindow
 
             boolean isDefaultMusic = true;
             int menuFrameCount = 0;
-            // Outer loop lets the water-dance showcases (controlFlow==5/6) round-trip back to
+            // Outer loop lets the attract-mode showcases (controlFlow==5/6/7) round-trip back to
             // the song-select screen on ESC, instead of falling out of this constructor like a
             // real "start game"/"exit" transition would.
             do {
@@ -381,7 +382,10 @@ public class MainMenu extends JWindow
                 if (controlFlow == 6) {
                     runWaterDanceParticleDemo(); // independent second showcase, blocks until ESC
                 }
-            } while (controlFlow == 2 || controlFlow == 5 || controlFlow == 6);
+                if (controlFlow == 7) {
+                    runMotionDanceDemo(); // camera motion-tracking showcase, blocks until ESC
+                }
+            } while (controlFlow == 2 || controlFlow == 5 || controlFlow == 6 || controlFlow == 7);
 
             /**
             if(this.xInputDeviceListener!=null) {
@@ -623,6 +627,44 @@ public class MainMenu extends JWindow
                     e.printStackTrace();
                 }
             }
+            soundController.stop_all();
+        }
+
+        /**
+         * A third, independent showcase (attract-mode, controlFlow==7): real (not decorative)
+         * webcam frame-differencing motion tracking via {@link MotionDanceEffect} — no scoring,
+         * no chart, no audio (driven by camera motion rather than a beat). Falls back to a
+         * clearly-labelled simulated motion signal when no camera is available so the
+         * visualization is still demoable. Same entry/exit shape as the water-dance showcases.
+         */
+        private void runMotionDanceDemo() {
+            MotionDanceEffect effect = new MotionDanceEffect(getWidth(), getHeight());
+            long startNanos = System.nanoTime();
+            boolean headlessDemo = System.getenv("HEADLESS_DEMO") != null;
+            int demoFrameCount = 0;
+            while (controlFlow == 7) {
+                try {
+                    if (xInputDevice != null && xInputDevice.poll()) {
+                        MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
+                    }
+                    double nowSec = (System.nanoTime() - startNanos) / 1_000_000_000.0;
+                    effect.tick(nowSec);
+                    effect.draw(gc, nowSec); // fills its own background
+                    gc.setColor(new Color(0xbcd4ff));
+                    gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+                    gc.drawString("MOTION DANCE — camera tracking showcase, Esc to return", 28, 28);
+                    repaint();
+
+                    Thread.sleep(16);
+
+                    if (headlessDemo && ++demoFrameCount > 120) {
+                        controlFlow = 2;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            effect.close();
             soundController.stop_all();
         }
 
@@ -1032,6 +1074,7 @@ public class MainMenu extends JWindow
             x = footItem(gc, x, y, "X", "Game Mode");
             x = footItem(gc, x, y, "Y", "Water Dance");
             x = footItem(gc, x, y, "B", "Particles");
+            x = footItem(gc, x, y, "S", "Motion Cam");
             x = footItem(gc, x, y, "Esc", "Back");
             String kk = "L / R", vv = "Audio Analysis";
             gc.setFont(new Font("SansSerif", Font.BOLD, 13));
