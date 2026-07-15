@@ -26,6 +26,7 @@ import com.lin1000.justdance.gamepanel.action.MainMenuAction;
 import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
 import com.lin1000.justdance.gamepanel.effect.MotionDanceEffect;
+import com.lin1000.justdance.gamepanel.effect.MotionSliceGame;
 import com.lin1000.justdance.gamepanel.effect.WaterDanceEffect;
 import com.lin1000.justdance.gamepanel.effect.WaterDanceParticleEffect;
 import com.lin1000.justdance.input.Input;
@@ -340,9 +341,9 @@ public class MainMenu extends JWindow
 
             boolean isDefaultMusic = true;
             int menuFrameCount = 0;
-            // Outer loop lets the attract-mode showcases (controlFlow==5/6/7) round-trip back to
-            // the song-select screen on ESC, instead of falling out of this constructor like a
-            // real "start game"/"exit" transition would.
+            // Outer loop lets the attract-mode showcases (controlFlow==5/6/7/8) round-trip back
+            // to the song-select screen on ESC, instead of falling out of this constructor like
+            // a real "start game"/"exit" transition would.
             do {
                 while (controlFlow == 2) { // show main menu screen
                     try {
@@ -385,7 +386,11 @@ public class MainMenu extends JWindow
                 if (controlFlow == 7) {
                     runMotionDanceDemo(); // camera motion-tracking showcase, blocks until ESC
                 }
-            } while (controlFlow == 2 || controlFlow == 5 || controlFlow == 6 || controlFlow == 7);
+                if (controlFlow == 8) {
+                    runMotionSliceGame(); // camera fruit-slicing game, blocks until ESC
+                }
+            } while (controlFlow == 2 || controlFlow == 5 || controlFlow == 6
+                    || controlFlow == 7 || controlFlow == 8);
 
             /**
             if(this.xInputDeviceListener!=null) {
@@ -665,6 +670,44 @@ public class MainMenu extends JWindow
                 }
             }
             effect.close();
+            soundController.stop_all();
+        }
+
+        /**
+         * Camera-controlled fruit-slicing game (controlFlow==8): hand swipes tracked by
+         * {@link MotionSliceGame}'s HandTracker slice fruit launched in parabolic arcs — real
+         * arcade-style motion gameplay with scoring, not just a visualization. Falls back to a
+         * clearly-labelled simulated hand when no camera is available. Same entry/exit shape as
+         * the other showcases.
+         */
+        private void runMotionSliceGame() {
+            MotionSliceGame game = new MotionSliceGame(getWidth(), getHeight());
+            long startNanos = System.nanoTime();
+            boolean headlessDemo = System.getenv("HEADLESS_DEMO") != null;
+            int demoFrameCount = 0;
+            while (controlFlow == 8) {
+                try {
+                    if (xInputDevice != null && xInputDevice.poll()) {
+                        MainMenuXInputDeviceListener.calculateAxis(xInputDevice);
+                    }
+                    double nowSec = (System.nanoTime() - startNanos) / 1_000_000_000.0;
+                    game.tick(nowSec);
+                    game.draw(gc, nowSec); // fills its own background
+                    gc.setColor(new Color(0xbcd4ff));
+                    gc.setFont(new Font("SansSerif", Font.BOLD, 13));
+                    gc.drawString("MOTION SLICE — camera fruit-slicing game, Esc to return", 28, 28);
+                    repaint();
+
+                    Thread.sleep(16);
+
+                    if (headlessDemo && ++demoFrameCount > 120) {
+                        controlFlow = 2;
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            game.close();
             soundController.stop_all();
         }
 
@@ -1075,6 +1118,7 @@ public class MainMenu extends JWindow
             x = footItem(gc, x, y, "Y", "Water Dance");
             x = footItem(gc, x, y, "B", "Particles");
             x = footItem(gc, x, y, "S", "Motion Cam");
+            x = footItem(gc, x, y, "W", "Slice Game");
             x = footItem(gc, x, y, "Esc", "Back");
             String kk = "L / R", vv = "Audio Analysis";
             gc.setFont(new Font("SansSerif", Font.BOLD, 13));
