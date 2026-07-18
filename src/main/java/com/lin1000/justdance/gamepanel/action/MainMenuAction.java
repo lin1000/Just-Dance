@@ -181,6 +181,12 @@ public class MainMenuAction {
                 } else if (input.getInputType() == Input.InputType.B && input.isPressed()) {
                     //enter the second, independent particle-based water-dance showcase
                     mainWindowTarget.controlFlow = 6;
+                } else if (input.getInputType() == Input.InputType.S && input.isPressed()) {
+                    //enter the camera motion-tracking showcase (real frame-diff, sim fallback)
+                    mainWindowTarget.controlFlow = 7;
+                } else if (input.getInputType() == Input.InputType.W && input.isPressed()) {
+                    //enter the camera fruit-slicing game (hand-swipe tracking, sim fallback)
+                    mainWindowTarget.controlFlow = 8;
                 }
                 break;
 
@@ -191,6 +197,18 @@ public class MainMenuAction {
                 break;
 
             case 6: //6 means in the water-dance particle showcase (attract-mode)
+                if (input.getInputType() == Input.InputType.BACK && input.isPressed()) {
+                    mainWindowTarget.controlFlow = 2; //back to song-select, not a full exit
+                }
+                break;
+
+            case 7: //7 means in the motion-dance camera showcase (attract-mode)
+                if (input.getInputType() == Input.InputType.BACK && input.isPressed()) {
+                    mainWindowTarget.controlFlow = 2; //back to song-select, not a full exit
+                }
+                break;
+
+            case 8: //8 means in the motion-slice camera game (attract-mode)
                 if (input.getInputType() == Input.InputType.BACK && input.isPressed()) {
                     mainWindowTarget.controlFlow = 2; //back to song-select, not a full exit
                 }
