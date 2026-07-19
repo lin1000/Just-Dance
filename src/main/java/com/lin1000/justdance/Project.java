@@ -3,6 +3,7 @@ package com.lin1000.justdance;
 import com.github.strikerx3.jxinput.XInputDevice;
 import com.github.strikerx3.jxinput.exceptions.XInputNotLoadedException;
 import com.lin1000.justdance.controller.SoundController;
+import com.lin1000.justdance.hr.UdpHRReceiver;
 import com.lin1000.justdance.gamepanel.Dance;
 import com.lin1000.justdance.gamepanel.GameMode;
 import com.lin1000.justdance.gamepanel.GameplayScreen;
@@ -44,6 +45,9 @@ public class Project extends JFrame implements Runnable
 	//SoundController
 	SoundController soundController = null;
 
+	//Heart Rate Receiver (UDP bridge from ble_hr_bridge.py)
+	private final UdpHRReceiver hrReceiver = new UdpHRReceiver();
+
 	//private mainMenu main;
 	private Dance dance;
 
@@ -80,6 +84,8 @@ public class Project extends JFrame implements Runnable
 		} catch (JCodecException e) {
 			throw new RuntimeException(e);
 		}**/
+
+		hrReceiver.start();
 
 		//temp
 		projectThread=new Thread(this);
@@ -310,6 +316,10 @@ public class Project extends JFrame implements Runnable
 
 	public Object getMainThreadPauseLock() {
 		return mainThreadPauseLock;
+	}
+
+	public UdpHRReceiver getHrReceiver() {
+		return hrReceiver;
 	}
 
 	public static void gameStart()

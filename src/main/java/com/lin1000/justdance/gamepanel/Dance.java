@@ -944,6 +944,9 @@ public class Dance extends JWindow implements GameplayScreen
                     gc.drawRect(life_x, g_off_y+life_y + 10, 300, 25);
                     gc.fillRect(life_x, g_off_y+life_y+10, conditionControl.getLife() * 3, 25);
 
+                    //Heart Rate Widget
+                    drawHeartRateWidget(gc);
+
 
 
                     g.drawImage(buffer, 0, 0, width, height, this);
@@ -956,6 +959,63 @@ public class Dance extends JWindow implements GameplayScreen
             }
         }
         
+    private void drawHeartRateWidget(Graphics2D g) {
+        int hr = (project != null && project.getHrReceiver() != null)
+                ? project.getHrReceiver().getHeartRate() : 0;
+
+        int wx = life_x, wy = g_off_y + life_y - 160;
+
+        // Translucent background panel
+        g.setColor(new Color(0, 0, 0, 150));
+        g.fillRoundRect(wx, wy, 190, 140, 14, 14);
+
+        // Zone: color + label based on HR range
+        Color zoneColor;
+        String zoneLabel;
+        if (hr == 0)        { zoneColor = Color.GRAY;                   zoneLabel = "NO SIGNAL"; }
+        else if (hr < 60)   { zoneColor = new Color(100, 180, 255);     zoneLabel = "REST";      }
+        else if (hr < 100)  { zoneColor = new Color(80,  220, 80);      zoneLabel = "FAT BURN";  }
+        else if (hr < 140)  { zoneColor = new Color(255, 220, 50);      zoneLabel = "CARDIO";    }
+        else if (hr < 170)  { zoneColor = new Color(255, 140, 30);      zoneLabel = "PEAK";      }
+        else                { zoneColor = new Color(255, 60,  60);      zoneLabel = "MAX";       }
+
+        // Pulsing heart: scale bounces once per heartbeat
+        double beatPhase = 0;
+        if (hr > 0) {
+            double beatPeriod = 60.0 / hr;
+            beatPhase = (System.nanoTime() / 1_000_000_000.0 % beatPeriod) / beatPeriod;
+        }
+        double pulse = hr > 0 ? Math.max(0, Math.sin(beatPhase * Math.PI * 2)) : 0;
+        int heartR = (int) (14 + 5 * pulse);
+
+        g.setColor(hr > 0 ? new Color(220, 40, 60) : Color.DARK_GRAY);
+        drawHeart(g, wx + 30, wy + 45, heartR);
+
+        // BPM number (large)
+        g.setFont(new Font("verdana", Font.BOLD, 38));
+        g.setColor(zoneColor);
+        g.drawString(hr > 0 ? String.valueOf(hr) : "--", wx + 65, wy + 65);
+
+        // "BPM" label
+        g.setFont(new Font("verdana", Font.PLAIN, 14));
+        g.setColor(Color.WHITE);
+        g.drawString("BPM", wx + 68, wy + 85);
+
+        // Zone label
+        g.setFont(new Font("verdana", Font.BOLD, 13));
+        g.setColor(zoneColor);
+        g.drawString(zoneLabel, wx + 15, wy + 120);
+    }
+
+    private void drawHeart(Graphics2D g, int cx, int cy, int r) {
+        // Two overlapping upper lobes + triangle pointing down
+        g.fillOval(cx - r, cy - r / 2, r, r);
+        g.fillOval(cx,     cy - r / 2, r, r);
+        int[] px = {cx - r, cx + r, cx};
+        int[] py = {cy + r / 4, cy + r / 4, cy + r + r / 2};
+        g.fillPolygon(px, py, 3);
+    }
+
         //loadImage what paint need
         public void loadImage()
         {

@@ -23,6 +23,7 @@ import com.lin1000.justdance.gamepanel.inputdevice.MainMenuKeyboardDeviceListene
 import com.lin1000.justdance.gamepanel.inputdevice.MainMenuXInputDeviceListener;
 import com.lin1000.justdance.controller.SoundController;
 import com.lin1000.justdance.gamepanel.action.MainMenuAction;
+import com.lin1000.justdance.gamepanel.componentpanel.HrmComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.WebCamComponent;
 import com.lin1000.justdance.gamepanel.componentpanel.XBoxControllerComponent;
 import com.lin1000.justdance.gamepanel.effect.MotionDanceEffect;
@@ -79,6 +80,9 @@ public class MainMenu extends JWindow
 
         //Midi Controller Component
         public MidiControllerComponent midiControllerComponent = new MidiControllerComponent(200,470);
+
+        //HRM Component (Garmin Forerunner / any BLE HRM via ble_hr_bridge.py)
+        public HrmComponent hrmComponent = new HrmComponent(370, 470);
 
         //Webcam variable
         public WebCamComponent webCamComponent = null;
@@ -470,6 +474,13 @@ public class MainMenu extends JWindow
                     MidiPlayer midiPlayer = project.midiDeviceWatcher.getMidiPlayer(0);
                     if (midiPlayer != null) {
                         midiControllerComponent.draw(gc);
+                    }
+                }
+
+                if (project.getHrReceiver() != null) {
+                    int hrBpm = project.getHrReceiver().getHeartRate();
+                    if (hrBpm > 0) {
+                        hrmComponent.draw(gc, hrBpm);
                     }
                 }
 
